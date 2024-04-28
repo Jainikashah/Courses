@@ -1,0 +1,83 @@
+Note: the npm package thing, where we get millions of lines of code and packages for free, is a plus point in why node is so popular. So many developers putting out their best code for us. The community support is really good.
+
+What is the diff between package & module?
+- Module is a file where we import & export files and variables. A package is a collection of modules that are related to each other.
+
+- We can install any package from npm. But to install, we need a package.json file. 
+To create one:-
+    npm init
+    npm init -y //this says yes to all the questions asked while creating the package.json file
+
+
+- Creating our own script-
+In package.json, under scripts:- 
+    "start": "node filname.js"
+Now in terminal:
+    npm run start 
+    or 
+    npm start // we can omit run only for start. For others we need run.
+
+
+- Using axios to fetch apis:-
+    const axios = require("axios");
+
+    axios.get("https://www.google.com").then((res) => {
+        console.log("results: ", res);
+    }).catch(err => {
+        console.log("error")
+    }).then(() => {
+        console.log("all done") //runs irrespective of the error or not
+    })
+
+
+- Node modules:-
+A folder which includes all our dependencies' package. Lets say we install a package called axios, that package itslef has some other dependencies, and so on. Node makes sure it downloads all the dependencies packages that are required. You can see that inside of a package like axios code inside node-modules. You'll have package.json file there too.
+Also if lets say, we have a package called axios hvaing a dependency names - hello. Npm places hello in the same directory as it does axios (its parent directory). So that if any other package needs hello we can use the same one, instead of duplicating it.
+
+
+- Semantic Versioning:-
+MAJOR.MINOR.PATCH   eg - Vue 2.7.3
+Major means that they have major incompatible changes, almost like installing a new package, no guarantee that previous version code will work in this new version.
+
+Minor means that everything is same and compatible, nothing will break, just adding some more features on it. 
+
+Patch means its tiny bug fixes only. Nothing will break ofcourse.
+
+
+- Package-lock.json:-
+Lets us work with a team of developers. Whenever node_modules or package.json changes, package-lock.json updates. It holds a lot of descriptions and info about the dependencies we have. 
+
+semver.npmjs.com  -  a site that shows us which versions are under a range. Use ^ for minor and ~ for patch changes in the input box. It shows which other compatible versions can work with your current one.
+~ means patch version updates
+^ means minor version updates.
+
+Its a good idea to share package-lock.json. Because with only package.json, if I run npm i, then it will install the latest versions of npm package.
+eg I have, axios: { ^0.2.0 }
+and my coworker just takes package.json and run npm i for node_modules. He'll get axios: { ^0.2.1 } (in package-lock.json; the latest minor version of npm)
+If changes are significant it can create bugs.
+
+
+=> npm audit and npm audit fix:-
+`npm audit` cmd will show a list of issues that we might have in our packages. And if there's any high serverity issue, run `npm audit fix`.
+npm audit fix will fix all the bugs that has been reported previously. (It cant the ones that havent been reported.)
+
+
+=> Dev tools Nodemon:-
+`npm i nodemon` - runs node code automatically after every change.
+"dev": "nodemon request.js"  - add this script in our package.json scripts section. and then `npm run dev` for starting nodemon.
+
+To run nodemon in your terminal directly:-
+- `./node_modules/.bin/nodemon request.js`
+why does it work? Because writing nodemon request.js directly wont work in your terminal. As nodmeon is not directly installed in your PC but inside of your node_modules, hence we have to specify the path.
+But ofcourse this way isnt convenient enough. 
+Instead, install nodemon globally.
+
+`npm i -g nodemon`
+`nodemon request.js`
+Now nodemon in your terminal will work as above.
+
+The best way to install any package is not globally. Use the first way for nodemon, where we write a script in our package.json as this will specify all our dependencies at one place. If we install anything globally, its not included in our package.json
+
+
+
+

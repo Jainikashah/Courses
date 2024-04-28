@@ -1,0 +1,19 @@
+REST API:-
+
+- Representational State Transfer. An API that uses http requests to access & use data.
+- One api uses anothers api to form custom data; APIs are reusable.
+
+
+Node API versioning:
+- Api versioning means, all your routes will fall under a specific version. 
+eg - www.spacex.com/v4/planets
+here, this api would have multiple versions like v1, v2, v3, v4. 
+and v4 could be the latest versions and in some point in future we might stop supporting the previous versions.
+- We dont add version name before /* route as its the root route and its not an api route.
+- We can also mount all our api under a specific version without writing /v1 or related code everytime. Guess how? Ofcourse by express routers. Create a separate file for routes -> import express.router in there -> add your specific routes without /v1 or related code. -> export it -> now import it in main index file -> app.use("/v1", importedFileRouterName)
+- Rem, we have to update our front-end as well.
+
+test spacex api:-
+- api.spacexdata.com/v4/launches
+
+Such apis has real good documentation, like pagination, authentication, postman sample api calls, query params details etc.

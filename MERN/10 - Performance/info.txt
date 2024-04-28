@@ -1,0 +1,278 @@
+PERFORMANCE:-
+
+As we know js is a single threaded language. Node perform intensive operations like api calls or file system related, via thread pool and libuv and the OS mainly. We have covered this in depth before. But what if we have code in js that is taking too long? How to optimize that? Lets see.
+
+code:
+    // a naive delay function using a while loop:-
+    function delay(duration){
+        const startTime = Date.now()
+        while(Date.now() - startTime < duration){
+            // event loop is completely block
+        }
+    }   
+    app.get('/', (req, res) => {
+        res.send("Peformance Example")
+    })
+    app.get('/timer', (req, res) => {
+        delay(9000)
+        res.send("Ding Ding Ding");
+    })
+
+Here, we have a route /timer, wherein a delay function is called with duration of 9s. The code in delay() is processed in  our event loops. Since its not a network request or file system operation, it wont be passed to OS our thread pool. Now, while this code is running, our event loop is completely block. No other opertaions could be perform on it. JUST BLOCK. 
+
+Now lets go to browser. and see the timing of our get requests. For our /, e'll get hardly 10ms.
+For /timer we get around 9s.
+Now open a new tab and run the timer route in both the tabs, what you noticed?
+In first tab, on refresh in /timer route, it'll take 9s and immediately refrehsing in other tab, will take aorund 15+s. You see, our event loop was completely block untill it finished the first timer and then it started our next timer. No requests are taken if our event loop is busy. 
+Same goes for our / route. run timer in one and quickly switch the tab and run / route. You'll see even though it should take only 20ms it would take around 6-7s. Such delay function is called blocking code.
+Note the diff between s and ms - seconds and milliseconds.
+Too much time, isnt it?
+
+
+Real world blocking functions:-
+- JSON.stringify()
+- JSON.parse()
+Now, these functions dont take 9 whole seconds to finish, it takes hardly few ms. But for multiple requests, we have to call these functions which could add up our time. As these two functions are very common right, for every request we might do json.stringify() or json.parse().
+
+
+- Sort()
+- crypto function()
+Now crypto functions are created to run slowly and take time so it becomes harder for hackers to find out the creds.
+
+Such functions could block our event loops completely. Ofcourse incase of secutity its advisable to have slow blocking code instead of fast non-blocking code. But thats not in every case.
+
+The response time should hardly take 100-200ms at max. Studies shows - 
+0.1 second is the instant result feeling for a user.
+1.0 second is when user starts losing interest and is interrupted by other actions. 
+
+Load time longer than 3s, results in losing users about more than 73%. 
+Ofcourse it depends on what you are performing, if the user is convinced with that amt of time to be taken, lets say if its a long file or video, user can wait but that to till an extent.
+
+
+
+=> IMPROVEMENTS :-
+Idea is to divide the multiple requests to multiple servers and internally multiple processes.
+If we have one server and one process, it'll do what we saw before in our example of /timer route. Lets see how to break it even. 
+
+
+=> MULTIPLE PROCESSES FOR MULTIPLE REQUESTS:-
+
+1. Built-in cluster node module.
+Cluster module lets us create multiple processes from the master process which we call the worker process.
+
+         MASTER
+fork()  |      |
+        |      |
+     Worker1  Worker2
+
+Here, we use the fork() comes from cluster module. What it does is, create a copy of master process and create a worker process from it. we can fork as many processes as we want. for this eg, the requests are divided between the two worker processes, wherein the first req goes to first worker, second goes to second worker and third goes back to first one since we dont have others. This approach is called round robin and is surprisingly effective than other complex approaches like priotizing the tasks and others. Just a fair way of distributing work among processes is round robin. 
+Where the work of master process is to communicate with the worker processes. 
+Note: Node makes no guarantee in windows that it'll use round robin due to how the os works. It lets the os decides, it could use round robin or smething little different that that which can maximaize the performance. 
+
+
+Finally, lets see all this in code:-
+
+    // 2. CLustering processes. Performance improvement 
+        const express = require('express')
+        const cluster = require('cluster')
+
+        cluster.schedulingPolicy = cluster.SCHED_RR // for windows only
+        const app = express()
+        const PORT = 8000
+
+        // a naive delay function using a while loop:-
+        function delay(duration){
+            const startTime = Date.now()
+            while(Date.now() - startTime < duration){
+                // event loop is completely block
+            }
+        }   
+
+        app.get('/', (req, res) => {
+            res.send("Peformance Example", process.pid)
+        })
+
+        app.get('/timer', (req, res) => {
+            delay(9000)
+            res.send(`Peformance Example ${process.pid} `)
+        })
+        console.log("server.js running....")
+        if(cluster.isMaster){
+            console.log('master has been started');
+            cluster.fork()
+            cluster.fork()
+        }else{
+            console.log("worked process started")
+            app.listen(PORT, () => {
+                console.log("Listening on PORT ", PORT )
+            })
+        }
+
+here, we have imported built-in cluster module. and in cluster we get a property of isMaster through which we know if the current server file is working in master or worker process. Note, all the processes starts from server.js file only. And so, we have kept app.listen in else block, otherwise maste node will also start listening.
+And so we have written a condition that if current process is a master process than fork 2 worker copies otherwise listen to the app and start loading the requests.
+We have also consoled the pid, to know that each time the process id will be different as we have diff processes.
+
+O/P:-
+    server.js running....
+    master has been started
+    server.js running....
+    worked process started
+    Listening on PORT  8000
+    server.js running....
+    worked process started
+    Listening on PORT  8000
+
+IMP: Disable Cache should be checked on. Our browsers play smart and cache the code of one function and use the same if its used again. 
+Try the same thing again, with two tabs now and you'll see that the difference is 9s for both of it instead of 15 and more. Also the pid would be different from one another.
+(It sometimes act weirdly in my case but then it works.)
+
+
+=> Maximixing cluster performance:-
+- Our cluster has limits. We only have created 2 workers what if we have more than 2 requests? 
+- In our os, we have physical & logical cors. physical cors are separate processors that each handle work in parallel. logical cors uses complex logic that lets you run multiple processes on one physical cors. But Ofcourse it isnt as efficient as physical cors. 
+
+Now how many time could we write, .fork() thing. Ofcourse there's a limit to it. As for every worker node, we need a separate processor (cors).
+
+So lets create fork using automation:-
+    const NUM_WORKERS = os.cpus().length;
+    for(let i=0; i< NUM_WORKERS; i++){
+        cluster.fork()
+    }
+
+os.cpus() give us no. of logical cors available.
+And thats how we maximize the amt of performance by creating as many workers as we can based on our cpu cors/prcoessors.
+
+
+=> LOAD BALANCING:-
+- A fairly advanced topic. Distributing a set of tasks to a set of resources. We use load balancer to determine which request should go to which resource. 
+Like creating 2 different servers and load balancer will distribute the requests to those servers and internally on those servers, distributing tasks on different processes. 
+Running multiple servers and multiple processes in parallel.
+
+- Vertical scaling:- (scale up)
+Where we run our requests on one server that is quite fast & distibution of those tasks in multiple processes.
+
+- Horizonatal scaling:- (scale out)
+Where we have multiple servers (might not that fast) and requests are distributed on servers.
+
+We distribute these tasks based on several appraoches. 2 most popular ones are:- round robin (we saw how it works already) and randomized. Where we randomly distribute tasks. 
+
+To summarize, in node we use cluster module to do load balancing on the http requests that come to our server. & cluster module uses round-robin approach.
+
+
+=> PM2 Tool:- 
+The cluster module is good however many other features we need in production and for that we have a tool - PM2. PM means process manager. Nobody knows what happen to PM1 though :D.
+
+Things like logs, restarting our clusters, etc can be easily done in production mode via pm2. We can use it with non-node projects also.
+
+cmd: `npm i pm2 -g`
+not a dev dep as we'll need it in production as well. 
+
+commands:
+`pm2` - shows a list of commands available
+`pm2 start server.js` - to start our server
+`pm2 list` - list of current processes. list can be replaced with ls or status
+`pm2 stop 0` - to stop a server. 0 is the id here. we can use id or name
+`pm2 start server` - to start a server. here we are using name.
+`pm2 delete server` - to remove from the list of processes being managed by pm2.
+`pm2 start server.js -i 2` - to create exactly 2 workers
+`pm2 start server.js -i max` - to create utmost amt of workers available with the cpu.
+`pm2 logs` - to get all the logs
+`pm2 restart server` - to restart the server
+`pm2 logs --lines 200` - for the last 200 saved lines
+`pm2 start server.js -l logs.txt` - to create a server and have logs in a diff file named logs.txt
+`pm2 start server.js -l logs.txt -i max` - to get it all
+`pm2 show 1` - detailed look of a process. 1 is the id.
+`pm2 stop 1` - to stop an individual process id
+`pm2 start 3` - to start the process again
+`pm2 monit` - to get a fancy monitor. I swear it looks pretty cool. To see changes in cpu, run a route like timer and press enter in monitor. You'll see the changes.
+
+with pm2, we donot need any cluster module related code, we can remove it all. Checkout the example in server.js file
+
+Default server is 3000.
+
+// eg of how it looks in terminal
+[PM2] Applying action stopProcessId on app [0](ids: [ '0' ])
+[PM2] [server](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ server             │ fork     │ 0    │ stopped   │ 0%       │ 0b       │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+
+NOTE: In windows, the processes are scheduled based on the OS. And with PM2 it might not be possible for us to run multiple processes. We have a workaround for cluster module but not something reliable in pm2. (but sometimes it works. its weird)
+
+
+=> ZERO DOWNTIME RESTARTS:-
+- With pm2 we can have zero downtime restarts. Huh, means what?
+Lets say we have some changes in our code. And we made those changes and need to deploy it on server but we have live users using our app. And nobody wants to see "Scheduled downtime" thing when they browse an app. Or even worst, "Unscheduled downtime" :D
+So lets have zero downtime thing for our users.
+
+- Change your code as you want
+- now if you'll check, ofcourse it wont work. We need to send our code on server
+- `pm2 restart server` - this cmd will send our code but for a time, our apis wont respond. as all processes are busy in restarting and accepting the code.
+- `pm2 reload server` - this cmd will do what we need. It doesnt stop all processes at once, but one by one. It reloads the server on processes one after the other, keeping atleast one process working all time. 24*7 up and running. Keep the monitor open to see how the processes are reloaded one by one.
+
+- In our nasa app, we have added cluster as below steps:-
+    
+    // server/package.json
+    "cluster": "pm2 start src/server.js -i max" 
+
+    // code/package.json - root
+    "deploy-cluster": "npm run build --prefix client && npm run cluster --prefix server",
+    
+Thats it. Pretty easy.
+
+But oh wait. Will our run-time created launches will be visible in our history tab? Nope. Why? because we have multiple processes in our cluster. And each have their own map array. And so, the data is different in these processes. There's no guarantee that these processes will communicate.
+So to solve this, in our vertical scaling and even in our Horizonatal scaling, as in that we'll have multiple servers and they might have diff data. The soution is to have stateless processes. Wherein having data outside of our server. That is in a DATABASE. We'll have same data across all servers and processes. One place where our data will be persisted.
+We'll get there soonnnn!
+
+
+=> Worker threads.
+- Executing js in paraller, useful for performing CPU intensive operations. But hey, doesnt js runs on single thread? 
+Yes it does. But worker threads takes node a step closer to multi-threading concept.  
+Worker threads in node, are based on the web workers in our browsers with the web workers api. 
+worker threads in node were possible due to shiny new feature of v8 engine call v8 isoltes. They run js code in isolation/independently of each other.
+Our node worker threads, use these isolates and run our js code side by side. wherein each isolate having new thread, runs our js code parallely. 
+worker threads are like cluster only, but work pretty differently bts.  
+In cluster we have processes, in worker threads we have isolates. 
+in cluster, we have main master process and we fork the processes into multiple worker processes.
+in worker threads, we have main thread, and we create instances of it with new Worker() constructor in it, creating multiple worker threads.
+Cluster - 3 instances of node, in 3 processes
+Worker thread - 3 instance of node, in 1 process.
+
+Worker threads dont distribute the requests to multiple threads. No the concept isnt like that. Its only for the cluster module (and so we name server.js for cluser and index.js for threads as filename). Also, in WT (worker thread), the MEMORY is SHARED between the threads unlike the latter. 
+Note, WT is a fairly new concept and isnt as rock solid as cluster. Clsuter is there in node since the day it was published. So its not recommendable to use WT in production, as a lot is yet to explore in WT. 
+
+CODE:
+    const { Worker, workerData,  isMainThread } = require('worker_threads')
+
+    // __filename refers to the current threads file. 
+    if(isMainThread){
+        console.log(`in main thread ${process.pid}`)
+        new Worker(__filename, {
+            workerData: [10, 2, 3, 1]
+        });
+        new Worker(__filename, {
+            workerData: [3, 4, 1, 2]
+        });
+    }else {
+        // same id will be printed.
+        console.log(`in worker ${process.pid}`)
+        // this workerdata comes from the import we made.
+        console.log(`Worker data: ${ workerData.sort() }`)
+    }
+
+code explanation:-
+- first we import the important stuff.
+- isMainThread will tell us if the currentthread is main or worker thread.
+- if its main, then create workers. here we are creating 2 workers.
+- only once the if condition will be executed.
+- then we'll land up in the else block wherein, the workerdata provided during the creation of instance, will be provided.
+- Note, the data is specific for that worker instance only. 
+- We then sort that array in two different threads, with two different datasets, inside ONE process. 
+- This is the most efficient way we can use our cpu. 
+
+
+Here, the sorting of arrays is happening parallely. Note, the workerdata is specififc to that worker thread only. This is the most efficient way to run code in parallel, where in one process but multiple threads.
+Cluster - Good for handling multiple requests
+WT - Good for handling complex cpu intensive functions.

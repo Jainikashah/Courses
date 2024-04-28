@@ -1,0 +1,28 @@
+TESTING:-
+
+- Test runner: out of which all our tests code will go through
+- Test fixtures: setup or organization modules or tests which itself is one testing env.
+- Assertions: inputting data into our testing code
+- Mocking: not affecting the real world datasets via mocking while testing.
+
+Earlier we had diff appraoches for all these above features, now we have one - JEST.
+
+cmd: `npm i jest --save-dev`
+
+//Package.json  
+    "scripts": {
+        "test": "jest"
+    }
+
+now we can run, `npm test` and jest executes all the test files we have written in our code.
+
+2 main ways of organizing test:-
+1. In the root -> server -> __tests_ folder
+2. Inside the specific file -> launches.test.js / launches.spec.js
+
+either test or spec is considered by jest. 
+
+We also have another npm package - supertest.
+It gives us more features for assertions, kind of an extension of jest.
+
+For code: Refer the course pls. 

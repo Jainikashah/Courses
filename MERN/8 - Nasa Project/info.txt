@@ -1,0 +1,270 @@
+Project:- NASA MISSION CONTROL
+
+- To start, we'll have a client & a server folder with front-end and back-end code respectively. 
+- To start with in backend:
+
+- nodemon is a dev dep, so --save-dev. during build, we dont want to install nodemon as its jus for us and has nothing to do with the project performance.
+    npm i nodemon --save-dev
+    npm i express
+    "watch": "nodemon server.js"  // in package.json script section
+
+- Getting port with env variable:-
+    
+    // server.js
+    const PORT = process.evn.PORT || 8000;
+    console.log(PORT)
+
+    // package.json
+    "start": "PORT=5000 node src/server.js",              //mac 
+    "start": "set PORT=5000 && node src/server.js",       //win
+
+Now in our port console, we'll get 5000, if we remove it from package, we get 8000. 
+Run npm start 
+
+
+=> Setting up our server:
+
+    -------------- server.js ------------
+    const http = require('http')
+    // one way:-
+    // const express = require('express')
+    // const app = express()
+    // app.listen()
+
+    // another and more recommendable way:-
+    const app = require('./app');
+    const PORT = process.env.PORT || 8000;
+
+    const server = http.createServer(app);
+    server.listen(PORT, () => {
+        console.log(`Listening of port ${PORT}...`)
+    })
+
+    ----------- app.js ------------
+    const express = require('express')
+    const app = express()
+    module.exports = app
+
+We can use direct app.listen thing also, like we have done in previous section, but this way is more recommendable because we can use it with web sockets (later in the course)
+BTS express is doing the same thing with app.listen that we are doing with http.createServer and further.
+
+
+- Router is nothing but a type of middleware that groups together related routes.
+- To restrict cors error, as we'd be running our client in another port than that of server, browser will throw a cors error:-
+    // a package to handle cors error in npm.
+    npm i cors 
+
+    // app.js
+    const cors = require('cors')
+    
+    // By doing below, cors will allow all cross-origin requests.
+    // app.use(cors())
+
+    // whitelisting
+    app.use(cors({
+        // we can have multiple sites in our whitelisting; refer docs of cors npm package.
+        origin: 'http://localhost:3000'
+    }))
+
+
+=> Why we have controllers & routes in same folder but models in different?
+- because for every route there's a controller. One to one relationship.
+But in our controllers we can have multiple models. A controller can have lets say 2 different models. Also, a model can be used in 2 diff controllers. So we cannot group them in one folder. 
+
+
+=> fs.createReadStream:-
+It is a async function, means the code be still be running, and our module has epxorted the array already. Remember, the first time we make the require statement, at that time only, the code inside the plants.model will run and might return us an empty array as the stream code is running bts. To prevent such behavior:-
+
+    function loaddata(){
+        return new Promise((resolve, reject) => { 
+            if() resolve()
+            else reject()
+        })
+    }
+    module.exports = loaddata
+
+    //server.js
+    const server = http.createServer(app);
+    async function startServer(){
+        await loadPlanetsData
+        server.listen(PORT, () => {
+            console.log(`Listening of port ${PORT}...`)
+        })
+    }
+    startServer()
+
+here, we have to load data and await the result before we listen to our server. And using promises we can do so.
+- we also have a streams promises api that is good if we have multiple streams & promises related code
+
+
+=> Automating both the servers together (front + back end):-
+
+    "scripts": {
+        "client": "cd client && npm start",
+        "server": "cd server && npm run watch",
+    },
+- here, we are inside the root folder of client & server. First create a package.json file with `npm init -y` cmd. And then inside the scripts we add the above two lines. Our script tags are what run inside the terminal. and so it knows how to run cd client and go to the client folder and run npm start which is present inside the package.json of client folder. Same goes with the server folder.
+
+     "scripts": {
+        "client": "npm start --prefix client",
+        "server": "npm run watch --prefix server",
+    },
+
+shorthand way of writing cd foldername. using the prefix flag, it looks for the folder mentioned.
+
+-   "watch": "npm run client & npm run server",
+This script will run both the above scripts together. Note there's only one & sign and not two. why? because two && signs means the first cmd will run and it will wait until its done for the next to run. Well ofcourse we dont want that. We want both the cmds to run together which is possible via single & sign. 
+We can automate any such task via this & sign like npm test, or npm install. eg-
+
+    "scripts": {
+        "install-server": "npm install --prefix server",
+        "install-client": "npm install -- prefix client",
+        "install":  "npm run install-server && npm run install-client",
+        "client": "npm start --prefix client",
+        "server": "npm run watch --prefix server",
+        "watch": "npm run client & npm run server",
+        "test": "npm run test --prefix server && npm run test --prefix client"
+    },
+
+NOTE: THE & SIGN CMD doesnt work in widnows directly, we need concurrently npm package. some configuration is needed to setup in windows.
+   cmd: `npm i concurrently --save-dev`
+   in script:  
+    "watch": "concurrently \"npm run server\" \"npm run client\"",
+
+I tried it all, but nothing works sadly in windows :(
+
+(Waitttttttt! I got it. We can make it work in windows as well. ofcourse with practice, anything is possible. Keep going, here's the solution!)
+
+- open git bash
+- run `npm config set script-shell` 
+- in root folder install all your backend dependencies.
+- npm install npm-run-all --save-dev
+- in script: "dev": "npm-run-all --parallel server client"
+- to revert it back (means to make cmd as the default browser) - npm config delete script-shell
+THIS RUNS IN GIT BASH ONLY..
+
+(check out the practice code - app1 project for reference)
+
+
+    
+=> Serving react js from production:-
+
+- In our client project, we can run - npm run build cmd and it will provide a production ready code (optimized one) for us. the cmd will create a build folder, wherein all our assests will be there and a static folder containing all js files. This is the optimized version of our code.
+
+lets say we dont want our build folder in the client one, we want it to be inside the server folder, here's how we can do it.
+
+- In client/package.json/ script:-
+    "build": "set BUILD_PATH=../server/public&& react-scripts build",
+this creates an env variable build path. 
+    - cd client
+    - npm run build
+a build folder is created inside our server/public folder
+
+    // in server/app.js
+    app.use(express.static(path.join(__dirname, '..', 'public')))
+    app.get('/', (req, res) => {
+        res.sendFile(path.join(__dirname, '..', 'public', 'index.html'))
+    })
+
+via this, we connect our front-end (that is created by the build cmd in public folder) with our back-end on the same port - 8000.
+
+    // in root package.json
+    "deploy": "npm run build --prefix client && npm start --prefix server",
+
+finally, our code (both front+back) will run on a single port under a single server.
+
+in the deploy script, we are taking the entire code of front-end (client), copy-pasting it in the server folder under the build folder -> adn then running the server. thus, we'll have both on the same port. (no need of cors also in here)
+Dont run the nodemon script, as we'll be running this in deployment and there's no need of nodemon as its a dev dependency.
+
+
+
+=> Logging requests with morgans:-
+- You know there've been times when due to logs the hard disk would fill up and servers stop responding. Becuase there are millions of requests per second, and logging those request can fill up the hard disk.
+
+Hence, morgan , a middleware, lets us specify which format and what data to log. 
+It can tell us the request method, date, browser, origin etc infomration.
+predefined formats like combined, dev and common are known, out of which combined is well known for apache web server and has a lot of data to provide.
+
+- Code:-
+    cmd : `npm i morgan`
+
+    // app.js
+    const morgan = require('morgan')
+    app.use(morgan('combined'))
+
+and thats it, we'll get our logs noww!
+- Note, the sequence here matters, place app.use(morgan) thing below cors middleware, but above everything other middleware. Ofcourse why would I first run the .json or .static middleware before the morgan. 
+- combined is the default one, we can skip that paramter anyways
+
+
+
+=> Till now you'll see when we deploy our app, wherein both client & server on the same port, we are not able to route directly from the url. Why?
+because in our app.js file:-
+
+    app.use(express.static(path.join(__dirname, '..', 'public')))
+    app.use(planetsRouter)
+    app.use(launchesRouter)
+
+    app.get('/', (req, res) => {
+        res.sendFile(path.join(__dirname, '..', 'public', 'index.html'))
+    })
+
+our express server first looks in express.static line, for our route, but it doesnt find, then in our apis route i.e. planets and launches, it doesnt found there too. As our route actually lies inside the index.html file that we have written at last.
+So what we can do is, 
+    app.get('/*', (req, res) => {
+        res.sendFile(path.join(__dirname, '..', 'public', 'index.html'))
+    })
+
+add an aestrisk so that every url will be acceptable by index.html and later our react dom inside index file will handle the same. wwoooohhooo problem solved. 
+
+
+
+- Js Map : Similar to js objects, but have some key differences. Good point for an interview.
+js map, are stored in key-value pair, simialr to objects.
+But we can store any type of data in the key, in map, like functions, dates, booleans, any primitive type etc. (with obj, only string and symbol are allowed)
+Also in map, the order of insertion of data is preserved, which is not guaranteed in objects.
+
+
+=> Working with data models:-
+- Its recommended to use MVC in our projects having large scale implementation & database. So now what to keep in our models and controllers?
+In models we filter out the data and export it exactly how the controller needs. No data formatting related code should be inside a controller, everything that is related to data should be inside model. In controller we specify the conditions and request, response patterns that need to be send to the front-end and other logic inside of it. It uses the models and create response for front-end.
+SEPARATION OF CONCERNS ROCKSSS.. where every block of code/module, does one thing very well. 
+
+
+=> Others:
+
+To accept a post request:-
+    launchesRouter.post('/', httpAddLaunch)
+
+
+To throw an error:-
+    res.status(400).json({
+        error: "Misisng property" 
+    })
+
+
+To know if a date is valid:-
+    const date = new Date("January 1, 2030")
+    isNaN(date)  // false, means its a valid date 
+
+    const date2 = new Date("Hello")
+    isNaN(date2) // true, means its not a valid date
+what's happening bts is, that date2 object will get convert into mlliseconds, where in js additionally add - date2.valueOf() function, we dont add this function, js does. And valueOf returns milliseconds. Hence, isNaN() checks for that milliseconds thing and return appropriate value.
+
+
+To perform a delete request:-
+    launchesRouter.delete('/', deleteLaunch)
+
+
+To get the id in our controller (that :id thing)
+    launchesRouter.delete('/:id', deleteLaunch)
+    const launchId = req.params.id
+
+NOTE: During delete, never delete the record from our database directly, instead set a flag to true or false. Its an era of big data and hence, we store every bit of data.
+
+
+
+
+- About the cluster thing added, refer 10 -performace info document, related to that.
+
+

@@ -1,0 +1,309 @@
+EXPRESS.js API
+
+- Till now, we have done native node code. Where, using http we were making api calls. And it was no surprise how complicated it look. Express have made it a lot easy. Its clean.
+
+=> Lets jump directly to code:-
+To install:- `npm i express`
+To run:- `npm start`
+
+// server.js
+    const express = require('express');
+
+    const app = express()
+    const PORT = 3000;
+
+    app.listen(PORT, () => {
+        console.log("Listening on port: ", PORT)
+    })
+
+If the filename is server.js, node automatically creates a script for that. As handling servers is what node is really good at.
+
+If you run this on your localhost, you'll get a 404 automatically. Remember how much we had to do for a 404 in native node code?
+Also it looks good. 
+
+
+
+=> Making post and get request via express:-
+    const express = require('express');
+    const app = express()
+    const PORT = 3000;
+
+    app.get('/', (req, res) => {
+        res.send('Helloooooooo')
+    })
+
+    app.get('/messages', (req, res) => {
+        res.send('<ul><li>helo albert</li></ul>')
+    })
+
+    app.get('/friends', (req, res) => {
+        res.send({
+            id: "1",
+            name: "sir issac"
+        })
+    })
+
+    app.post('/messages', (req, res) => {
+        console.log("Updating messages")
+    })
+
+    app.listen(PORT, () => {
+        console.log("Listening on port: ", PORT)
+    })
+
+
+You'll see, express adds content-type & status code on its own. For js object, it'll set application/json with a statuscode of 200 and so on..
+- res.send() is use to send data to browser. self-explanatory it is.
+
+
+=> Express, Loopback, Nextjs, Koa
+- Express: The most popular node framework
+- Loopback: A highly extensible framework that are used for complex apps. Since it gives a lot, a lot is happening in the backend and so is the learning curve pretty hard.
+- Koa: A follow up framework that was created by express developers. Its more modular, and can accept modern js features like async await. 
+- Next js: Its centered around react framework. It makes the server side rendering with react front-end a lot easy. Server side rendering is when content on your webpage is rendered on server & not on your browser using js. Its great for seo and less load on front-end. The first page load is pretty quick, because the page has already been loaded. Its like a trade off from taking load from front-end and passing to server-side. Also it comes with a lot of pre-built features. But because its react-centered & a lot of integration with high-end features, its not as versatile as express.
+- Express is a kind of framework that will sets up a base for you to learn other frameworks in future incase. It'll be much easy for us to learn them if we hvae experience in express.
+
+
+=> URL parameterized code with express
+    app.get('/friends', (req, res) => {
+        res.json(friends)
+    })
+
+    app.get('/friends/:friendId', (req, res) => {
+        const id = +req.params.friendId;
+        const friend = friends[id]
+        if(friend){
+            // either of below friend is ok
+            // res.send(friend)
+            // res.json(friend)
+            res.status(200).json(friend)
+        }else{
+            res.status(400).json({
+                error: "Friend doesnt exist"
+            })
+
+            // for only sending the status with no data
+            // res.sendStatus(404)
+        }
+    })
+
+.json  makes sure the data is treated as a json object and res.send() will send the content-type as application/json, because friend is an array. .json() and .send() are same only, .json will just explicitly say that its a js object and for sure will be treated as a js object.
+
+'/friends/:friendId' - friendId can be any query passed by our browser. req.params.friendId will return us that query. its just express way of getting those query params.
++req.params.friendId - we get friendId in string via .params and to convert it into no, we used + operator, to convert it to a number.
+res.status(200).json(friend) - alternative way to pass statuscode ; though by default it is 200 only. It just allows us to be more explicit incase of passing extra info, like for errors:
+res.status(400).json({
+    error: "Friend doesnt exist"
+})
+
+To only pass statuscode:
+res.sendStatus(404) - to only pass statuscode.
+
+
+
+
+=> postman vs insomnia:-
+- postman : a tool where we can test our APIs. same is insomnia, though insomnia is more simpler & easy to use interface. Both of them can get the job done.
+
+
+=> DevDependencines:-
+`npm i nodemon --save-dev`
+--save-dev : is a flag that specifies that nodemon is a development dependencies and has nothing to do with code. Thus, this will create a new object in package.json and add nodemon as a dev dep, via which when we create build version of our project, nodmeon will be removed from the dependencies list as we wont need it on production. 
+    "devDependencies": {
+        "nodemon": "^2.0.22"
+    }
+- we now can use nodemon via scipt as below in package.json:-
+    "watch": "nodemon server.js"
+
+- in teminal `npm run watch`
+
+
+=> Middleware:-
+A piece of code that is placed between our api call. This code will be run for every request that is made. Before reaching the endpoint function, the request passes through all the middlewares that are available.
+A diagram of how the request flows:-
+
+    |     |
+    |     | 
+   req   res 
+    |     |
+    |     |
+   middleware 1
+    |     |
+   next() return
+    |     |
+   middleware 2
+    |     |
+   next() return
+    |     |
+   endpoint (a middleware that doesnt have next function. and so it now goes upwards from here.)
+
+the next function, calls the next middleware, untill it reaches the endpoint, where there's no endpoint available. Then the control is send back to the latest middleware, untill the first one. I think via code it'll be easy to understand despite of how hard I tried to create this diagram, it sucks I know!!!
+
+
+=> Writing our own middleware:-
+    
+    app.use((req, res, next) => {
+        console.log(`${req.method} ${req.url}`)
+        next()
+        console.log("end")
+    })
+
+- Thats it, its our first middleware. 
+app.use - a way to write middleware.
+it gets req, res and next.
+next is used to call the next middleware or the endpoint. 
+the last console will be run after all the next function or endpoint function is done. Hence, the last control comes here.
+
+- Measuring the amt of time it took to run the function.
+    app.use((req, res, next) => {
+        const start = Date.now()
+        // console.log(`${req.method} ${req.url}`)
+        next()
+        const delta = Date.now() - start;
+        console.log(`It took ${delta} ms to run the function`)
+    })
+
+- We write middleware right above our endpoints. and they will run before reaching to our endpoint code. 
+- Out of curiosity, if we remove next() from our middleware, our express app will get stuck and hang.
+- Also, the sequence of how we write middleware in our code, depicts the sequence of how it will run as well.
+eg - 
+    app.use((req, res, next) => {
+        console.log("in md1")
+        next();
+    })
+    app.use((req, res, next) => {
+        console.log("in md2")
+        next();
+    })
+
+o/p - in md1 in md2
+
+NOTE: Even in postman we get the time in ms, but you'll see the timings we log would be diff than that. Because postman calculates the time when the http request was made until the response gets back to the postman. whereas our middleware calculates the time it took to run the api endpoint code. Both of them are measuring 2 diff things, hence the time is different.
+
+
+
+=> Sending a post request:-
+
+    // express.json() - a built-in express middleware. It will look at the req content-type, and if it is application/json, then it will convert it to a js object. So that we dont always have to parse it, like we did earlier with native node. hence, we will get the paylod in req.body property in form of json.
+    app.use(express.json());
+
+    app.post('/friends', (req, res) => {
+        // no need to check for req.body because express.json() will always send js obj, even if data is empty or not json too. It will atleast pass {} empty obj. So below code wont break.
+        if(req.body.name){
+            const newFriend = {
+                name: req.body.name,
+                id: friends.length
+            }
+            friends.push(newFriend)
+            res.json(newFriend)
+        }else{
+            return res.status(400).json({
+                error: 'Name property doesnt exist'
+            })
+        }
+    })
+
+To run in postman, select post method -> endpoint: /friends -> body -> { "name" : "xyz" } -> (in raw) type : Json -> hit send. You'll get the repsonse.
+- Make the body in json only.
+A js object can accept function, numbers, etc. as a key in object, but json cant.
+hence, converting json to js is always fine, but other way around not. So, in json, key always has to be in double quotes.
+
+
+=> MVC (Model View Controller)
+- A software design pattern. It revolves around the concept as below:-
+
+USER <---- sees ---- VIEW---- updates ---- MODEL <---- manipulates (add/edit from and to database) <--- CONTROLLER <---- uses ---- USER
+
+Notice here, it starts from user and ends with user, actually it was circular but not possible to draw it that way in sublime, so bear with it pls.
+Start from the end:-
+User uses the controller (in express, the controller is the code we wrote for the request we got, that api.get/post function in short). 
+Controller manipulates(add/edit/update) the model (the model is the data, that is stored in db, here its the friendDB array)
+The model updates the view (for back-end its just the json repsonse we send, but what user actually sees is depend upon the front-end)
+
+The aim is to make the code more easy to understand. More manageable. Also separation of concerns is maintained. 
+We also have other design patterns like Model view presenter, model view view-model. But these are just dressed up versions of MVC. They grew out of mvc. So is learn that, it'd easy to learn others.
+
+Look at the MVC folder of code to get it in practical. Some key points:-
+- We create 1 controller file for each related route. 
+- Inside controller, we have used function(){..} way and not arrow function, because when we use arrow function at the top-level (Inside the controller file), and not in the api function, then our node server while debugging, doesnt gives us the name of the function. Even though we use const fun_name .... thing, its unable to get us the name, so its better for debugging perspective.  
+
+basically, view is what we see (for the BE its the response we send to browser),
+model is what holds the data and manages the data.
+and controller is soemthing thats responsible for accepting user requests (FE requests) and holds the logic, and then sends the response back to user.
+
+
+=> Express Routers
+- we can create an express router using express.router(). 
+- The benefit of it is, lets say, I have /friends as all my routes starting point. I can omit that if we are using express.router(), by adding that /friends in the .use middleware.
+- This is use to make our code look more manageable. 
+- We can also have specific middleware based on a router. eg - the friendsRouter will run friendsRouter.use middleware only.
+
+    const friendsRouter = express.Router()
+
+    friendsRouter.use((req, res, next) => {
+        console.log(req.ip) // sends us the ip address
+        next()
+    })
+
+    // here, /friends inside app.use() becomes the root for all our friendsRouter methods. So if we omit /friends from friendsRouter methods, its fine. (check out server.js file to understand more)
+    friendsRouter.get('/', friendsController.getFriends)
+    friendsRouter.post('/', friendsController.postFriend)
+    friendsRouter.get('/:friendId', friendsController.getFriend)
+
+    // server.js
+    app.use('/messages', messageRouter)
+    app.use('/friends', friendsRouter);
+
+
+- with express routers, we can either define middlewares or functions.  
+- Note: with req.ip - we get ip address that made the req call. It comes- ::1 then it means localhost. Its the IPV6 way of showing localhost, IPV4's way was: 127.0.0.1. Both are same anyways.
+- Note: while console.log(req.url), we'd get the entire endpoint, but with expres routers, as you see we only get '/'. To get the entire url:-
+console.log(`${req.baseUrl}${req.url}`)
+- Note: we are not using arrow functions here, One reason is that when we have any error in our function, if we have named function, then we get the name of the function as well during debugging. We dont get that in arrow functions even if we assign it to a constant, we dont get the name. Hence, for the debugging sake, we prefer named function (the old way)
+
+
+=> RESTFUL APIs:-
+- The most common & imp pattern to know while building APIs. Restful APIs basically are a set of guidelines/patterns we should follow while creating APIs. (though we have been following this pattern already, lets see how)
+Like:-
+- Using plural noun for api endpoints. eg- /friends, /messages
+and not like /createNewFriend. This is not ideal. (Though this is how we use to make calls before REST)
+- These plural nouns are called collections, these collection names are similar to that of what we have in server db.
+- REST - Representational State Transfer
+- Use Existing standards (HTTP, JSON, URL) : Getting data using the url, with the http protocol, wherein the format of data is in JSON.
+- Endpoints represents collection of data stored on the server side.
+- Use GET, POST, PUT, DELETE
+- Having a Client & server. Where client is reponsible for showing data and server is to send the data.
+- Requests are Stateless & cacheable
+
+Why are they called REST APIs?
+REST stands for Representational State Transfer. This means that when a client requests a resource using a REST API(GET, POST, PUT, DELETE), the server transfers back the current state of the resource in a standardized representation.
+
+
+=> Sending image files:-
+    const path = require('path')
+    
+    function getImage(req, res){
+        res.sendFile(path.join(__dirname, '..', 'public', 'img.png'))
+    }
+
+- send file needs absolute path. and so we use path lib, so that will work on every OS. like windows uses:- fol1\file2. whereas linux & mac uses fol1/file2
+- __dirname - points to the controller folder ie. the current folder this file is in. from c drive to current folder.
+- .. means that our file is 1 level up the folder.
+- Express also passes appr content-type i.e. image/png
+
+
+=> Serving websites with NodE:-
+    app.use('/site', express.static(path.join(__dirname, 'public')))
+
+- Having a folder with public as name, and having an index.html file. Running above code will make it run on browser, with the path /site. 
+- Often times, our static files should be kept on a Content delivery Network like akamai or amazon cloud front. They lents us specialized servers to host our static files on.
+
+
+=> Templating engines:-
+- It lets us write dynamic code in our html. It replaces variables with data coming from our node server. Hence, this is an approach where the html (front-end) files are created on server that then is served to browser.
+Some templating engines are handlebars, whiskers, etc. 
+Most of them are same, just a bit of syntactical difference. 
+`To me it doesn't look that imp, hence skipping the practical, go through videos any time - 99 & 100 are the video nos. for more info.` 
+
+SOME KEY POINTS:-
+- We have app.set function, it contains some settings for us to manage like case-sensitivity for routenames, adding templating engine definition, env variables, etc.

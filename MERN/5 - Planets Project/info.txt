@@ -1,0 +1,70 @@
+CSV parse package:-
+
+- cmd to install : `npm i csv-parse`
+
+=> Streaming large data files:
+- In csv-parse we have multiple ways to parse a file. Stream & callback api are 2 main. 
+Streaming means it will execute our file line by line
+Callback api will send us the result, after its been parsed completely.
+Whats better? Acc. to the docs, streaming is the best way to get the file parsed. As it takes the best out of the cpu and the node event loop by running one line at once. Making it faster as well.
+
+
+=> Code for converting csv file to an array of objects, with columnname as key and its value and value of the property.
+
+    const { parse } = require('csv-parse')
+    const fs = require('fs');
+    const results = [];
+
+    fs.createReadStream('./data.csv')
+    .pipe(parse({
+        comment: "#", // can be any character, need to mention here. since our file is using #, we wrote #.
+        columns: true // return each row in our csv file as our js object with key-value pair.
+    }))
+    .on('data', data => {
+        results.push(data)
+    })
+    .on('end', () => {
+        console.log("done processing");
+        console.log(results)   
+    })
+    .on('error', err => {
+        console.log("Oops..", err)
+    })
+
+    // createReadStream creates a readable stream that emits events that you can listen to
+    // pipe - creates a readable stream to writeable stream. here it takes the value of createReadStream and pipe it into writeable and assign the values. pipe takes readable data and returns writeable 
+    synatx- readable.pipe(writeable)
+    // createReadStream is like .read() or .write() function that lets read and write a string of text. whereas createReadStream allows us to open file as readablestream.
+    // It returns a readable stream that is nothing but event emitters.
+    // These events are like, if file has any error, then error emitter will be called, or file has reached the end and so on..
+
+
+=> Code for converting the result of array of objects into habitable planets; the one that supports life.
+    
+    // // 2. A LIST OF HABITUAL PLANETS:-
+    const habitalPlanets = [];
+
+    const isHabitualPlanet = planet => {
+        // some code that specifies if a planet is habitable or not.
+        return planet['koi_disposition'] === 'CONFIRMED' && planet['koi_insol'] > 0.36 && planet['koi_insol'] < 1.11 && planet['koi_prad'] < 1.6;
+    }
+
+    fs.createReadStream('./data.csv')
+    .pipe(parse({
+        comment: "#",
+        columns: true
+    }))
+    .on('data', data => {
+        if(isHabitualPlanet(data)) habitalPlanets.push(data)
+    })
+    .on('end', () => {
+        console.log("done processing");
+        console.log("names: ", habitalPlanets.map(planet => {
+            return planet['kepler_name']
+        }))
+        console.log("Total no. of habitable planets: ", habitalPlanets.length)  
+    })
+    .on('error', err => {
+        console.log("Oops..", err)
+    })
+
