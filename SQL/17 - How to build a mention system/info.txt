@@ -1,0 +1,66 @@
+MENTION SYSTEM:-
+
+- We'd working more on posts table in this scetion.
+Things to consider:-
+For our instagram post, we need:-
+- A photo (got it, with the url column)
+- A caption (uh no)
+- A comments box (yup, we got the cmts table right here)
+- How many hrs/days ago it was created. (oh yeah, that created_at column will finally come to use)
+- A location (noo)
+- A tagging feature (Oh no, not even close)
+
+So we'd go through these misisng ones, in this section.
+The caption would be easy, location - a little bit harder, but a tagging feature - oh yes. 
+tagging feature - We need to add a tag on our photo of an instagram user only. we also have to specify the exact place of the pjoto that tag was added. eg - 4 girls in a phot, on click, we see the tags right where we have added them on. 4 girls -> 4 instagram users -> on click -> the tag should be on the same girl with respective insta id.
+So this could be a little harder, but we got it. Just stay tunedddd.....!
+
+
+=> Lets add caption and location:-
+POSTS TABLE: id serial primary key, created_at timestamp, updated_at timestamp, url varchar(200), user_id integer references users(id),
+caption varchar(240), lat REAL, lng REAL
+
+- Remember real is not utmost accurate but for now its fine. 
+- Lat and lng are latitude and longitude of where the user is at, in the photo. using current location or manually added location, we'll get the longitude and latitude of that exact address.
+And thats it for caption and location.
+
+
+For tags:-
+TAGS TABLE:- id, user_id (of the person who got tagged), photo_id (the photo where the tag was added), x (coordinate of tag. distance from left side of the photo), y (coordinate of tag. distance from yaxis of the photo) 
+
+But we can have mentions in captions also right? I tell you, this course is pretty serious abt replicating instagram db. Nothing should be missed.
+
+TAG SOLUTION 1:
+- Everything would be same in tags table, but we wont need x and y coordinates ofcourse. We can set it to null.
+
+TAG SOLUTION 2:
+- Diff tables for photo_tags and cpation_tags. eg-
+TABLE PHOTO_TAGS: id, useR_id, post_id, x, y
+TABLE CAPTION_TAGS: id, user_id, post_id
+
+Which one should be used?
+- need to look at the requirement.
+    If we have the different hittig rates on both the tables, then for performance optimizations we should create 2 diff tables. As if cpation_tags are more often used than photo_tags, then querying over photo_tags records would be more time consuming.
+    
+    Also if we ever tend to change any of the columns inside any of the table, lets say photo_tags will now have a samll section of comments added to it, then again we need 2 diff tables for that, otheriwse it'd be a mess.
+
+So, lets go with solution 2.
+
+Table photo_tags: id primary key, created_at timestamp, updated_at timestamp, post_id integer reference posts(id), user_id integer reference users(id), x integer, y integer.
+
+Table caption_tags: id primary key, created_at timestamp, post_id integer reference posts(id), user_id integer reference users(id)
+
+
+TILL NOW OUR SCHEMA LOOKS LIKE:-
+
+USERS TABLE: id serial primary key, created_at timestamp, updated_at timestamp, username varchar (30)
+
+POSTS TABLE: id serial primary key, created_at timestamp, updated_at timestamp, url varchar(200), user_id integer references users(id)
+
+COMMENTS TABLE:  id serial primary key, created_at timestamp, updated_at timestamp, contents varchar(240), user_id integer references users(id), post_id integer references posts(id)
+
+LIKES TABLE:- id, created_at, user_id integer references users(id), cmt_id reference comments(id), post_id reference posts(id)
+
+PHOTO_TAGS TABLE:- id primary key, created_at timestamp, updated_at timestamp, post_id integer reference posts(id), user_id integer reference users(id), x integer, y integer
+
+CAPTION_TAGS TABLE:- id primary key, created_at timestamp, post_id integer reference posts(id), user_id integer reference users(id)

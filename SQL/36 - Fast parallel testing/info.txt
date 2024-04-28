@@ -1,0 +1,331 @@
+TESTING IN POSTGRES:- CODE IN 33 SECTION
+
+
+Ok, so whats the challenge here?
+- We'll be creating around 3 test files in this section. And lets say in testfile1 I created a user and fetching the data, and in the microsecond, the other test file is doing the same. We might have some conflicts here. SO thats whatwe'll be solving in this section!
+We'll use JEST module!
+
+A folder in src -> test -> routes -> users.test.js
+
+
+Inside the file:-
+    const request = require('supertest')  // help you test express apps 
+    const buildApp = require('../../app')  
+    const userRepo = require('../../repos/user-repo')
+
+    it('create a user', async () => {
+        const startingCount = await userRepo.count();
+        expect(startingCount).toEqual(0)
+
+        await request(buildApp())
+        .post('/users')
+        .send({ username: 'testuser', bio: 'testbio' })
+        .expect(200)
+
+        const finishCount = await userRepo.count();
+        expect(finishCount).toEqual(1)
+    })
+
+- supertest : lets us test express apps.
+- buildApp : just taking that express app we created in app file
+- await request(buildApp()) : we take the buildApp and pass it to the request object of supertest.
+- we then make a post request or creating a new user.
+- we expect 200 as the status.
+
+- startingCount and finishCount is like we are checking the count of the users. It has to be 0 at first and after creating the user, we expect the count to be 1.
+- inside the userRepo we created a count function that will make a query to fetch the count of users. here's the code:-
+    static async count(){
+        const { rows } = await pool.query(`SELECT count(*) from users`);
+        // rows == [{ count: 2384 }] // result is so
+        return parseInt(rows[0].count)
+    }
+
+// add this in package.json file under script
+    "test": "jest"
+
+// To run - npm run test(Its not working for me, so just going with the videos)
+
+Now, inside the users.test.js file, we need to make a connection to our db, otherwise it will throw error for that pool, remember.
+beforeAll and afterAll are functions in jest.
+
+    // will run the below code before anything else.
+    beforeAll(() => {
+        return pool.connect({
+            host: "localhost",
+            port: 5432,
+            database: "socialnetwork",
+            user: "postgres",
+            password: "Admin@123"
+        })
+    })
+
+// Naturally the connection we make to the postgres, never gets terminated on its own, so we have to do it manually on our own. hence, writing the code after everything is done. 
+    // will run the below code after everything else.
+    afterAll(() => {
+        return pool.close()
+    })
+
+
+// Our test that we wrote, where initially we expect 0 rowsand after creating we expect 1.
+The problem is, rn our test env and dev env are same. We getting data from the same db. So, our test would fail normally, as I might have data I would have added via my dev env. 
+so we create a new db for test all together. So that we get separate environments to test on and dev on.
+
+In pgamdin:- create a new db socialnetwork-test
+
+In code:- change the db name 
+    // will run the below code before anything else.
+    beforeAll(() => {
+        return pool.connect({
+            host: "localhost",
+            port: 5432,
+            database: "socialnetwork-test",
+            user: "postgres",
+            password: "Admin@123"
+        })
+    })
+
+- Now run that databse_url line inside the terminal, but do change the db name from socialnetwork to socialnetwork-test. To get all the migrations in our new db.
+
+
+    static async count(){
+        const { rows } = await pool.query(`SELECT count(*) from users`);
+        // rows == [{ count: 2384 }] // result is so
+        return parseInt(rows[0].count)
+    }
+
+Do parseInt the result of count. To match it with our test.
+
+=> Ok, now some code changes in our test function.
+we have this:-
+
+        it('create a user', async () => {
+            const startingCount = await userRepo.count();
+            expect(startingCount).toEqual(0)
+
+            await request(buildApp())
+            .post('/users')
+            .send({ username: 'testuser', bio: 'testbio' })
+            .expect(200)
+
+            const finishCount = await userRepo.count();
+            expect(finishCount).toEqual(1)
+        })
+
+But, there's a problem. The above test will run perfectly for the first time, assuming our db is empty and so startingCount would be 0 and finishCount would be 1.
+What if I run this test twice or more. well since we are saving a new user, we wont be succesfull as startingCount then would be +1 everytime.
+So, lets tweak it in a way, that it would run.
+    
+    it('create a user', async () => {
+        const startingCount = await userRepo.count();
+
+        await request(buildApp())
+        .post('/users')
+        .send({ username: 'testuser', bio: 'testbio' })
+        .expect(200)
+
+        const finishCount = await userRepo.count();
+        expect(finishCount - startingCount).toEqual(1)
+    })
+
+Just removed the expected 0 thing and at last we'll expect finishCount - startingCount as the 1.
+And problem solved!!
+
+
+=> Running tests files parallely.
+To make it run parallely, inside the package.json script section:-
+From 
+    "test": "jest"
+To  
+    "test": "jest --no-cache"
+
+This will force jest parallely, otherwise it might run it sequentially (one by one) in some cases, whcih we dont want.
+
+Lets make some mess now-
+- Create 2 diff files with the same content of users.test.js. Name anything like 2, 3..
+- Now run the test file.
+- You'll see all or 1 or 2 tests would fail.
+- hey, whys there an or. Dont we get the same failure count each time? No.
+- Whats happening is, that we are running all the 3 test files parallely, and chances are our we create 2 or 3 users simulatenously, so our expected result would not exactly be one. It could 3-1 = 2
+or 4-1=3 or 2-1 = 1
+- It works in some case, it wont in others as its random. 
+I hope you got it!
+
+Lets figure this out:-
+- One way is creating separate db for every test file. 
+What you think about this? 
+This would work and will surely solve the problem but incase of many test files, there would be as many db as well. Which is a big downside.
+
+The other way is to create separate schemas.
+Hey whats a schema?
+- Can think of it as folders to organize things in our db
+- For each schema, we gets a default schema called public.
+- Each schema can have its own separate copy of a table.
+
+Well, its exactly what we want. we'll have diff tables for diff test files and so we wont have such conflicts also.
+We can see schema in pgamdin also, go to yourdb -> schemas -> public. This public one is the default one.
+Then in our code, we'll reference each test file with a diff schema and thats it!
+
+Lets see in practical:-
+In pgamdin
+    Create schema test;
+
+And thats pretty much it. you can see that in sidebar structure as well.
+
+To create a table in a specific schema
+    Create table test.users(
+        id serial primary key,
+        username varchar(30)
+    );
+    Insert into test.users(username) values('Gia');
+    Select * from test.users;
+
+test.users will create a table named of users inside the test schema. The default is public schema.
+
+
+How does postgres knows whihc schema to use and how does it set the priority?
+POSTGRES, maintains something called - search_path,
+go to pgadmin and run   
+    SHOW search_path;
+
+result:
+    "$user", public
+
+Ok, so based on these values, postgres depicts which one to see first. 
+public:- the second highest priority and postgres will look inside this schema, if there's no schema with $user. whats $user
+$user - The username from whcih we loggedIn in postgres. for windows its mostly 'postgres' only as the username. so, if there's a schema with that username, go look in that first.
+
+We can also change this search_path on our own.
+
+    SET search_path to test, public;
+    show search_path;
+    select * from users;
+
+Here, now, the select * will look into the test schema by default. and to access public one, now you''ll have to mention it as below:
+    select * from public.users.
+
+To undo the cmd:-
+    set search_path TO "$user", public
+
+
+Come back to our test files now:-
+- We have created few schemas lets say, but our test files till refercing to the public schema as now we very well know why so.
+- lets solve it now.
+- The first approach would be to pass schema name as an argument in the functions we are using:-
+eg-
+    static async count(schemaName){
+        const { rows } = await pool.query(`SELECT count(*) from ${schemaName}.users`);
+        return parseInt(rows[0].count)
+    }
+
+    // test file:
+    const startingCount = await userRepo.count('schem-name-test');
+
+Now this will technically work, but it will slowly get a lot tedious to know which sceham we are running this code for. We should have a better solution, and yup there's one more way.
+
+
+What we'll do is:-
+step1: connect to pg as normally
+step2: generate a random string of chars like "asdf"
+step3: create new user (role) with that name "asdf"
+step4: create a new schema with that name "asdf'
+step5: tell our test file to connect to db with that name "asdf"
+
+OK.
+Ik you didnt get it!
+Lets see, whats happening. we will basically connect to our pg with a diff username like asdf.
+and will create a schema with that name only.
+now we know, that the default search_path has $user as the first priority. So, since our user is asdf and our schema is asdf, it will by default automatically look into that schema only. And thats a win win for us!
+
+
+Practical:-
+
+----- IMPORT THE FOLLOWING ----
+    const { randomBytes } = require('crypto');
+    const { default: migrate } = require('node-pg-migrate')
+    const format = require('pg-format')
+
+----- BEFORE ALL HOOK ------
+    beforeAll(async () => {
+        // Randomly generating a rolename 
+        const roleName = 'a' + randomBytes(4).toString('hex');  // creates an alphanumeric string of numbers and letters. It alsways has to start with a letter, and so we just used a trick by adding 'a' in front.
+
+        // Connecting to pg as usual
+        await pool.connect({
+            host: "localhost",
+            port: 5432,
+            database: "socialnetwork-test",
+            user: "postgres",
+            password: "Admin@123"
+        })
+
+        //  Create a new role. Dont forget the '' in rolename as added below. Just a weird syntax
+        await pool.query(`
+            Create role ${roleName} with login password '${roleName}' 
+        `)
+
+        // Create a schema with the same name. Again just a syntax
+        await pool.query(`
+            Create schema ${roleName} authorization ${roleName}
+        `)
+
+        // Dsiconnect entirely from pg
+        await pool.close()
+
+        // Run migration files programmaically in new schema. Need migrate package to run migration files programmatically
+        await migrate({
+            schema: roleName, // schema name would be rolename righ
+            direction: 'up', // could be up or down, whichever block we want to run 
+            log: () => {},  // empty log function will remove every log, that migrate will print. since we in testing mode, we dont want any logs, so pass an empty ()
+            noLock: true,  // by default we are only allowed to run 1 migration, to remove that, we add noLock true. 
+            dir: 'migrations', // the folder wehre all the migration files are stored
+            databaseUrl: { // the config for our schema
+                host: "localhost",
+                port: 5432,
+                database: "socialnetwork-test",
+                user: roleName,
+                password: roleName
+            }
+        })
+
+        // Connect to pg as the newly created role
+        await pool.connect({ 
+            host: "localhost",
+            port: 5432,
+            database: "socialnetwork-test",
+            user: roleName,
+            password: roleName
+        })
+
+    })
+
+
+--- SOME OPTIMIZATION IN ABOVE CODE FOR PRVENTING SQL INJECTION ---
+    //  Create a new role
+    // ----- one way, but to prevent sql injection, there's another way. though this is testing mode, and sql attack is not of any harm here, but just incase ----
+    // await pool.query(`
+    //     Create role ${roleName} with login password '${roleName}' 
+    // `)
+
+    // we could use, our $1, $2 synatx as well, but remembr they dont let us replace identifiers only values.
+    // use FORMAT module for to do so.
+    // %I - means its an identifier - like tablename, schemaname, dbname, columnnames, etc
+    // %L - means its a literal value.
+    await pool.query(format(
+        'Create role %I with login password %L', [roleName, roleName]
+    ))
+
+
+    // Create a schema with the same name
+    // --- replacing the below for preventing sql injection --- 
+    // await pool.query(`
+    //         Create schema ${roleName} authorization ${roleName}
+    //     `)
+    await pool.query(format(
+        'Create schema %I authorization %I', roleName, roleName
+    ))
+
+
+Thats it!
+
+Also, we can optimiza the above code, and make it reusbale in all migration files, with classes and so.
+Just go throught the video - sec : last : 287, 288, 289 no.

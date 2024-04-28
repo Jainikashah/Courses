@@ -1,0 +1,82 @@
+From the ecommerce_dataset:-
+
+Q. Get fullname of users in uppercase. eg - JAINIKA SHAH
+
+Q. Get price / weight column from products with column name as price_weight_ratio
+
+Q. Get price of products whose price is greater than 500
+
+Q. Get price of proucts whose price is between 100 and 300
+
+Q. Get items that belongs to toys dept
+
+Q. Print prouduct id, dept and paid value from products and orders wherein the items belongs to toys dept and order is paid.
+
+Q. Update record of user where first_name is Iva to Illa.
+
+Q. Delete user with first_name Jannie
+
+Q. Write a query to print no of paid and unpaid orders.
+
+Q. Write a query to print first_name and last_name of users and whether they have paid or not.
+
+Q. Get us 5 least expensive products
+
+Q. Get us 5 least expensive products except the first one
+
+Q. Get us the names of phones of only second and third most expesive products
+
+Q. Find the 4 products with the highest price and the 4 products with the highest price/weight ratio.
+
+Q. Write a query that will print the manufacturer of phones where the phone's price is less than 170
+
+Q. Get products that lies between 100 to 500 price tags and orders are paid.
+
+Q. Get union of Products that have price less than 100 and more than 900.
+
+Q.  List the name and price of all products that are more expensive than all products in TOYS department
+
+Q. Find the avg number of orders for all users
+
+Q. Find name, department, price of all products whose price is greater than all products  of industrial department.
+
+Q. Show the name of products that are more expensive than at least one product in the industrial department.
+
+Q. Show the name of phones that have a price greater than any phone of samsung
+
+Q. Show the name, department, price of the most expensive product in each department.
+
+Q. Without using a join or a group by, print the number of orders for each product.
+
+Q. Get max price from products & count of comments.
+
+Q. Print name of all products that are not in the same department as products with a price less than 100.
+
+Q. Find the first_name from users where product_id = 3
+
+
+
+From phones data:-
+Q. Calculate avg price of phones of each manufacturer and the print the highest avg price
+Q. Print name of all phones that have a price higher than the avg price of all phones
+Q. Print name and price of phones that have a price greater than 'p4' phone
+
+
+
+From example_data set:-
+
+Q. Show content of comments alongwith the username of the user who wrote it.
+
+Q. List content of comments and url of the photo that comment was added to.  
+
+Q. Write a query to display url, contents from photos and comments resp. where the user himself has commented on his own photos. Basically we want to know who is commenting on their own photos.
+
+Q. Write a query to display url, contents, username from photos and comments resp. where the user himself has commented on his own photos. Basically we want to know who is commenting on their own photos.
+
+Q. Get total comments of all users based on user_id. Means I want to know how many comments each user has made.
+
+Q. Get the no of comments on each photo
+
+Q. Find the no of comments for each photo where the photo_id is less than 3 and the photo has morethan 2 comments
+
+Q. Find the user_ids where the user has commented on the first 50 photos and the user added more than 20 comments on those photos 

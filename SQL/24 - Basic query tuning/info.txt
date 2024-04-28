@@ -1,0 +1,96 @@
+BASIC QUERY TUNING:-
+
+- The query processing pipeline:-
+    select * from users where username = 'Alyson'
+
+What happens when we run this query?
+PARSER:
+- First it goes to the parser. Parser checks if the syntax is valid, the query is a valid sql query or not. 
+It then evaluates the query into programmatic code. Means, the entire query's code is programmatically written in form of a query tree.  (query tree is nothing just code, written in a specific language that looks like a tree (formatting we call it)). Basically logical steps a computer can understands.
+
+REWRITE:
+Rewriter is something thta takes the query tree and makes some adjustments/improvements in it, whch will do stuff more efficiently. However what happens more frequently, is applied the concept of views (we'll see what views are shortly). 
+
+PLANNER:
+What we need to understand is planner. Planner basically plans out all the possible ways of fetching the data. eg -
+1. Look at user_index then get users. - (Oh I think you're fast)
+2. Fetch all users and search them one by one. 
+Planner then decides which would be the fastest of all and that it passed on to the execute step.
+
+EXECUTE:
+Finallyyyyyyyyyyyyyy Runssssssssssssssss!
+
+
+=> Explain and Analyze:-
+
+Explain:- Build a query plan and display info about it.
+Explain analyze : Build a query plan, RUN IT, and display info abt it.
+
+Expalin just tells us the query and info abt that query. It just explains, does nothing.
+explain analyze together will run the query as well.
+Note: we'd never be using these keywords in production as they dont return any rows, are just used for benchmarking + evaluating queries. 
+
+
+eg- 
+    EXPLAIN select username, contents
+    from users
+    join comments on comments.user_id = users.id
+    where username = 'Alyson14'
+
+
+    EXPLAIN ANALYZE select username, contents
+    from users
+    join comments on comments.user_id = users.id
+    where username = 'Alyson14'
+
+
+    // explain result
+    "Hash Join  (cost=8.31..1756.11 rows=11 width=81)"
+    "  Hash Cond: (comments.user_id = users.id)"
+    "  ->  Seq Scan on comments  (cost=0.00..1589.10 rows=60410 width=72)"
+    "  ->  Hash  (cost=8.30..8.30 rows=1 width=17)"
+    "        ->  Index Scan using index_name on users  (cost=0.28..8.30 rows=1 width=17)"
+    "              Index Cond: ((username)::text = 'Alyson14'::text)"
+
+
+    // explain analyze
+    "Hash Join  (cost=8.31..1756.11 rows=11 width=81) (actual time=0.111..10.981 rows=7 loops=1)"
+    "  Hash Cond: (comments.user_id = users.id)"
+    "  ->  Seq Scan on comments  (cost=0.00..1589.10 rows=60410 width=72) (actual time=0.011..3.707 rows=60410 loops=1)"
+    "  ->  Hash  (cost=8.30..8.30 rows=1 width=17) (actual time=0.028..0.030 rows=1 loops=1)"
+    "        Buckets: 1024  Batches: 1  Memory Usage: 9kB"
+    "        ->  Index Scan using index_name on users  (cost=0.28..8.30 rows=1 width=17) (actual time=0.024..0.025 rows=1 loops=1)"
+    "              Index Cond: ((username)::text = 'Alyson14'::text)"
+    "Planning Time: 0.238 ms"
+    "Execution Time: 11.015 ms"
+
+
+COOL: Inside pgadmin, we have a button (in form of charts) that says explain analyze, clicking on that will give some cool graphics as well abt th query and more statistics info too. try it out!! ( Remove explain analyze fro query and make sure to tick off every option belongside the icon)
+
+
+
+- Lets understand this result one by one.
+    "Hash Join  (cost=8.31..1756.11 rows=11 width=81) (actual time=0.111..10.981 rows=7 loops=1)"
+    "  Hash Cond: (comments.user_id = users.id)"
+    "  ->  Seq Scan on comments  (cost=0.00..1589.10 rows=60410 width=72) (actual time=0.011..3.707 rows=60410 loops=1)"
+    "  ->  Hash  (cost=8.30..8.30 rows=1 width=17) (actual time=0.028..0.030 rows=1 loops=1)"
+    "        Buckets: 1024  Batches: 1  Memory Usage: 9kB"
+    "        ->  Index Scan using index_name on users  (cost=0.28..8.30 rows=1 width=17) (actual time=0.024..0.025 rows=1 loops=1)"
+    "              Index Cond: ((username)::text = 'Alyson14'::text)"
+    "Planning Time: 0.238 ms"
+    "Execution Time: 11.015 ms"
+
+- Every line that has an arrow in front is referred to as query node. These nodes means, we are making some processing like accessing rows, inside the database in following line. And there's a default invisible arrow in the first line; the hash join line.
+
+- We read this from the innermost arrow line. here its the index scan line. It then passes it to the parent line that has an arrow in front. And same goes for the next one, untill we get the hash join step. 
+
+- From the first line:-
+    - The rows (rows=11) and width (width=81) denotes the no. of rows this query will return and the avg no of bytes that will be required for this query respectively. 
+    - Lets removed analyze keyword and run the query with just explain.
+    - Now, there's a mystery here. With just explain, postgres doesnt run the actual query in the database yet, no tables were read no where clauses were checked. It just tells us some info abt it. So hey does it knows how many rows will be returned and width is required huh?
+    - postgres maintains a table called pg_stats, and it holds the information about all the tables and few more things that could be pretty useful to us. Here's the query- 
+        select * from pg_stats where tablename = 'users';
+    - The result contains columns like- distinct values (unique ones if you remember), avg_width, most common value, and so on. By looking at this table, postgres gives the no. of rows and width from the explain keyword.
+    Cost = 8.31
+
+To be continued...

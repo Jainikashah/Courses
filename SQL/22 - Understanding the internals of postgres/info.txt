@@ -1,0 +1,87 @@
+Understanding the internals of postgres:-
+
+- Where does postgres store data?
+    SHOW data_directory
+    "C:/Program Files/PostgreSQL/15/data"  // result
+
+- Show is a keyword that lets us view one of the configuration option of postgres. eg- data_directory
+
+- data_directory results in a path of directory where postgres is installed and run our operations at.
+
+- Open that folder in file explorer
+
+- A lot of mysterious looking files and folders.
+
+- All the databases we create, are stored in base folder (one of those mysterious folders)
+
+- Inside base folder, we have folders, each represents a database of our postgres. The names are something like:- 24567, 24798.
+
+- Lets find our instagram from it:-
+
+- The below cmd will show all the oid and db name that we have, like below:
+    select oid, datname from pg_database
+
+    "5"	"postgres"
+    "24576"	"Course-Validation"
+    "1"	"template1"
+    "4"	"template0"
+    "24798"	"InstagramClone"
+
+From here, we can match the id with the folder name Inside base. (forget abt template0 and 1 for now, we'll see that later)
+
+- Open that folder (24798). And boom. A whole lot of filess. 
+- To know what these files mean:-
+    select * from pg_class
+A big listing comes up from this cmd. Each row, signifies a file of that folder. These files represents an object in our database. These objects doesnt just represents tables, but indexes, sequences, primary keys, and more. Lets find our users table of instagram db from that list.
+
+Got it:-
+    "24800"	"users"	"2200"	"24802"	0	"10"	"2"	"24800"	0	109	5345
+
+The relname (column name) is users, and we can find the id from it easily. Its 24800.
+Open that file inside the file explorer and that would contain all the information of the users table.
+Thats how postgres stores data. A folder of db -> and multiple files representing tables, sequences, indexes, primary keys, and more..
+
+
+=> In detail, of whats in that file. 
+
+First some terminology:-
+- Heap or heap file
+A file that contains all the data (rows) of a table (eg- 24800 file, contains data for users table)
+- Tuple of item
+Individual row from the table 
+- Block or page
+Heap file is divided into multiple different blocks or pages. and these blocks consists of multiple rows.
+Thus, a big heap file consists of multiple blocks which then consits of multiple tuples.
+These blocks are precisely of 8kb in size. Regardless of how many items it has, more or less, It always has 8kb of size.
+
+Ok lets see how it goes now:-
+Blocks:-
+    -----
+    | 0 |
+    -----
+
+    -----
+    | 1 |
+    -----
+Inside these blocks:-
+    BLOCK 1
+Info about the block
+Loc1       Loc2 
+FREE SPACE  
+Data for tuple 1
+Data for tuple 2
+
+Harddisk stores info in form of binary data. Hence these blocks contains information about the zeros and ones that will be stored in our Harddisk. each zeros and ones (or in combination of them) represnts something out of this block.
+
+    Info about the block
+    Loc1       Loc2 
+This specifies some info abt the data to be stored. Note its not the actual data, its just information abt the data like location.
+
+    FREE SPACE
+The zeros and ones that are not being used by the data.
+
+    Data for tuple 1
+The actual data we have. Our rows basically.
+
+
+Now, to understand more in detail abt whats in the blocks and how it stores in very precisely, go through the last lecture of this section. Its in very detail so I didnt write it in notes. Just go through if you're curious enough.

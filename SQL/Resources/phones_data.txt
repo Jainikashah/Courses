@@ -1,0 +1,17 @@
+CREATE table phones(
+	id serial PRIMARY key,
+  name VARCHAR(50),
+  manufacturer VARCHAR(50),
+  price Numeric,
+  units_sold INTEGER
+);
+
+INSERT INTO phones(name, manufacturer, price, units_sold)
+VALUES
+('p1', 'nokia', 199, 1925),
+('p2', 'apple', 399, 9436),
+('p3', 'samsung', 299, 2359),
+('p4', 'samsung', 250, 2385),
+('p5', 'nokia', 150, 7543),
+('p6', 'motorala', 150, 8395),
+('p7', 'samsung', 175, 9259)

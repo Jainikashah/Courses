@@ -1,0 +1,51 @@
+Materialized views:-
+
+- A variation of views.
+- A query that gets executed only at very specific times, but the results are saved and can be referenced without re-running the query.
+- If I have a query whose result doesn't change that frequently or is prety expensive and take more seconds to run, we add it inside a Materialized view.
+
+To understand lets take a query:-
+Q. For each week, (starting from the first post that wa created), show the no of likes that posts and comments receieved. use the post and comment created_at date, not when the like was received.
+    select 
+        date_trunc('week', coalesce(posts.created_at, comments.created_at)) as week,
+        count(posts.id) as num_likes_for_posts,
+        count(comments.id) as num_likes_for_comments
+    from likes
+        left join posts on posts.id = likes.post_id
+        left join comments on comments.id = comments.post_id
+    group by week
+    order by week
+    limit 100000  // use it if server lost error comes
+
+date_trunc - takes a value and rounds down the value. eg - 1-8-19 --> 8-8-19 (a week span) any record that has values like 3-8-19 would fall under 1-8-19 span. It also works with day, hour, month, etc.
+This query takes a lot of time (thats why I have added limit). So we def need to Materialize it.
+
+
+    create materialized view weekly_likes as (
+        select 
+            date_trunc('week', coalesce(posts.created_at, comments.created_at)) as week,
+            count(posts.id) as num_likes_for_posts,
+            count(comments.id) as num_likes_for_comments
+        from likes
+            left join posts on posts.id = likes.post_id
+            left join comments on comments.id = comments.post_id
+        group by week
+        order by week
+        limit 100000
+    ) with data
+Query returned successfully in 3 secs 93 msec.
+
+You can see it took 3 sec +.
+with data keyword says that hey postgres, save my result and get me the data everytime I run this table.
+
+
+    select * from weekly_likes
+Successfully run. Total query runtime: 912 msec.
+
+Now if we run or manipulate anything from weekly_likes table, its superfast as we dont run the entire query again. we just fetch the data it has once stored. 
+One downside here is, if anytime data is changed in my og table like comments, posts, users, etc, then that data is not replicated here. It still gives us the same result with previous data. Ofcourse right, we dont re-run it again only, how will it get the new data only. so to get the result from the newdata we can make a refresh call fro our materialized view.
+
+    REFRESH MATERIALIZED VIEW weekly_likes
+This will re-run the whole query again with the new set of data.
+
+Note: Run those query in materialized view, which doesn't change that often. otheriwse we have to make a refresh call everytime.

@@ -1,0 +1,12 @@
+We'll use ecommerce_dataset.txt file here in resources.
+And go through all the topics we have learnt so far and practice them out using that dataset.
+
+Q1. Write a query to print no of paid and unpaid orders.
+    SELECT paid, count(*) FROM orders group BY paid 
+
+Q2. Write a query to print first_name and last_name of users and whether they have paid or not.
+    select first_name, last_name, paid 
+    FROM orders
+    JOIN users on users.id = orders.user_id
+
+

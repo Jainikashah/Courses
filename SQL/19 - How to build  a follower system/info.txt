@@ -1,0 +1,49 @@
+FOLLOWERS SYSTEM:-
+
+- Okay, whats the first idea that came to store followerS?
+Um, we might add that in users table where we'll have a followers count column. and everytime there's a new follower, we'll increment it or delete it incase of removing a follower. 
+
+But you see, this count is a derived data. derived data means, any data that is calculated based on something and we store that data in our db for further use. We generally never store derived data. we just write a query for it each time we need it. unless there's a big performance improvement or the query is pretty complex. 
+
+Here, in our case, we'll just create a followers table and have a link of it user's id. this way we can get followes of any user by - select count(*) from followers where user_id = 10
+
+ok, got it!
+
+Now, the requirements could be:-
+- I cannot follow myself
+- I can follow a person only once.
+
+Followers table:-
+    id, user_id, user_id.
+oh wait, we cant have 2 diff columns with same name, though they are referecing the same table. out of the two, one is follower id and other is following's id.
+so lets name them like that
+
+    id, folling/leader id, follower_id
+(both reference to the user table)
+
+    check (leader_id <> follower_id) 
+    unique(leader_id, follower_id)
+
+TABLE FOLLOWERS: id primary key, created_at timestamp, leader_id integer refereces users(id), follower_id integer refereces users(id)
+
+(A TIP: Diagram.io is pretty cool. you might need to learn the syntax of it a bit, but the result is pretty understandable. the relationships, table design, simplicity, its worth the learning)
+
+OUR SCHEMA TILL NOW:-
+
+USERS TABLE: id serial primary key, created_at timestamp, updated_at timestamp, username varchar (30), bio varchar(300), avatar varchar(200), phone varchar(20), email varchar(40), password varchar(50), status varchar(15) 
+
+POSTS TABLE: id serial primary key, created_at timestamp, updated_at timestamp, url varchar(200), user_id integer references users(id)
+
+COMMENTS TABLE:  id serial primary key, created_at timestamp, updated_at timestamp, contents varchar(240), user_id integer references users(id), post_id integer references posts(id)
+
+LIKES TABLE:- id, created_at, user_id integer references users(id), cmt_id reference comments(id), post_id reference posts(id)
+
+PHOTO_TAGS TABLE:- id primary key, created_at timestamp, updated_at timestamp, post_id integer reference posts(id), user_id integer reference users(id), x integer, y integer
+
+CAPTION_TAGS TABLE:- id primary key, created_at timestamp, post_id integer reference posts(id), user_id integer reference users(id)
+
+HASHTAGS TABLE:- id primary key, created_at timestamp, title varchar(20)
+
+HASHTAGS_POSTS TABLE:- id primary key, post_id integer reference posts(id), hashtag_id integer reference hashtags(id)
+
+TABLE FOLLOWERS: id primary key, created_at timestamp, leader_id integer refereces users(id), follower_id integer refereces users(id)

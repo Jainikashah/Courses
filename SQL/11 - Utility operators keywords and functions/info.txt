@@ -1,0 +1,36 @@
+Utility functions:-
+
+Greatest:-
+    select GREATEST(10, 20, 2) 
+Get the greatest value from the list. ans - 20
+
+Q. Compute the cost of shipping for each item. the formula is :- take the maximum of (weight * 2) or $30. Means, the minimum is 30 or Calculate the weight * 2 and fetch the maximum of the two.
+    select name, price, GREATEST(weight*2, 30)
+    as shipping_cost FROM products
+
+
+Least:-
+    select least(10, 20, 1)
+Get the least value from the list. and - 1.
+
+Q. Calcualte sale price. price is the least of the products price * 0.5 or 400. Here, the maximum price would be 400.
+    select name, price, least(price * 0.5, 400) FROM products
+
+
+Case:-
+Allows us to add condition for each record
+
+Q. Print each product name and price, and a description of the price with high, medium and cheap.
+price > 600 - high, price > 300 - medium, else cheap
+
+    select 
+	name, price, 
+    CASE 
+        when price > 600 THEN 'high'
+        when price > 300 THEN 'medium'
+        else 'cheap'
+    END
+    FROM products
+
+If we have a condition that doesnt match any of the if-else statement, then null is the result.
+Its not that more often that we use case, we do such conditional checks morely on our codebase and not on the database side.

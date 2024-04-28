@@ -1,0 +1,150 @@
+Example of a photo sharing app like instagram
+
+Four Relationship Types:-
+1. One to many Relationship - A user has many photos, a photo has many comments.
+2. Many to one One Relationship - Many photos have one user, many comments have one user
+(Diff is in the perspective, we take user? then one to many, if we take photos then we have many to one)
+More example could be - 
+boat -> many crew members
+school -> many students
+company -> employees
+These examples can be use in one to many and many to one, based on the perspective here. 
+
+3. One to one Relationship:-
+boat <-> has <-> one caption
+company <-> has <-> one CEO 
+country <-> has <-> one capital
+student <-> has <-> one desk
+person <-> has <-> one id card 
+
+4. Many to many Relationship:-
+students <-> has <-> many classes
+players <-> has <-> many matches
+movies <-> has <-> many actors
+tasks <-> has <-> many engineers
+
+In both the above Relationships, note the Relationship is same from both the sides, like student has many classes, and a class can have many students.
+A caption has one boat and a boat has one caption.
+
+
+=> Primary keys and Foreign keys:-
+Every table in a databse has a primary key, that uniquely identifies the record.
+To form a Relationship between two tables, Foreign key is used. A foreign key in a table, is a primary key in another table. 
+Lets see an eg- 
+
+Photos table (id as primary key)
+id      url     user_id
+1       a1      3
+2       b1      3
+3       c1      4
+4       d1      1
+
+Users table  (id as primary key)
+id      name    email
+1       x       x.com
+2       y       y.com
+3       z       z.com
+4       w       w.com
+
+Here, in photos, id is the primary key and user_id is the foreign key that connects the users table. the values of user_id in photos table and id in users table is same. Means, we can have multiple records in photos table that connects to one user (rememebr, one user can have many photos)
+
+How to know which table will have foreign key?
+- The table that has 'many' on its side does. eg - A user has many comments. Or. A photo has many comments.
+Here, since 'many' is associated with comments, we'll have foreign key in comments table.. lets see an exmaple:-
+
+comments table
+id      text    user_id     photo_id
+1       a1      3           1
+2       b1      3           2
+3       c1      4           3
+4       d1      1           1
+
+Users table
+id      name    email
+1       x       x.com
+2       y       y.com
+3       z       z.com
+4       w       w.com
+
+Photos table
+id      url     
+1       a1      
+2       b1      
+3       c1      
+4       d1      
+
+Here, we have user_id and photo_id in comments table which are foreign keys that connnects users and photos table respectively.
+we say, 'The comment 1 is added by the user with id 3 and on photo with id 1.
+UUID - universally unique identifier. (A random string of a unique value)
+
+
+Examples:- Creating primary keys:-
+    CREATE TABLE users(
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50)
+    )
+
+    INSERT INTO users(username)
+    VALUES ('A1'), ('B1'), ('C1'), ('D1')
+
+Serial - a datatype that postgres gives us, that automatically fills up this row's value whenever we add a new record. we dont have to manually write a new uid in our records everytime we create a record. Serial basically means that postgres will start from 1, and keep adding +1 to the last inserted record for the new one. 
+
+Result for above queries:-
+id	username
+1	A1
+2	B1
+3	C1
+4	D1
+See here, the id is automatically provided by postgres, we havent included in while creating records.
+
+
+Example:- Creating foreign keys:-
+    CREATE TABLE photos(
+        id SERIAL PRIMARY KEY, 
+        url VARCHAR(50), 
+        user_id INTEGER REFERENCES users(id)
+    );
+    INSERT INTO photos(url, user_id)
+    VALUES('a.com', 4)
+
+To create a foreign key and form a relationship with other table, we use references; the keyword.
+user_id INTEGER REFERENCES users(id)
+here, user_id is the name of column it will be in photos table.
+INTEGER is the type of datatype
+references is the keyword use to create foreign keys
+users is the name of the other table we want to form a link with
+id is the column name in the users table, we want to set as the foreign key in this table.
+If we write a value in foreign key that has no reference in the other table, we'll get a foreign key constraint error.
+If we dont want to add value in a column of foreign key that NULL is acceptable, we can write that.
+If we delete a record that is dependent on another table via foreign key, it will throw an error. (eg- here, if we delete a record in users table, that is used in photos, we'll get an error.) This behavior is the default one and is called - on delete restrict
+on delete no action - throws an error too. similar as restrict but a minor change, we'll see later.
+on delete cascade - if we delete a user, it will delete the records from photos table too, that are referencing the record.
+on delete set null - if we delete a user, it will set the null value to the records in photos table that are referencing the record.
+on delete set default - sets the default value to the records.
+
+Lets see some examples:-
+
+    CREATE TABLE photos(
+        id SERIAL PRIMARY KEY, 
+        url VARCHAR(50), 
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
+    );
+This will delete all the records from photos table too, if we delte a record from user thats referencing here, in photos table.
+real world example could be for cascade is - if I delete a blog, i want to delete the related comments too. same like if i delete my insta account, i dont want my photos either. when data is related, we would want to delete all of it in one go.
+
+    CREATE TABLE photos(
+        id SERIAL PRIMARY KEY, 
+        url VARCHAR(50), 
+        user_id INTEGER REFERENCES users(id) ON DELETE set NULL
+    );
+will set null value to records in photos that no longer have reference to other table. Note, to delete a record from users to test this out. 
+
+
+
+
+Andddddddddd thats it!!
+
+
+Just a glance at one of the toughest query of sql as it includes JOIN:-
+    SELECT * FROM photos JOIN users ON users.id = photos.user_id
+

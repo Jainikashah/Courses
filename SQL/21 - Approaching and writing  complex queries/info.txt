@@ -1,0 +1,23 @@
+Let's import a backup file in our pgadmin.
+
+steps:-
+- Get a .sql file like we have in our resources. It consists of a lot of data that we can import in our pgadmin. This looks unreadable because its a binary one, but very well readable by our pgadmin.
+- Go to pgadmin
+- right click on the database -> select restore -> select filename -> select all files from ddl at right botton -> select your file (ig.sql) -> check (only data, owner, single selection, trigger) from side tabs -> keep whats on, on. Click on restore.
+
+Note, if any error occurs, you can view in view details under processes. errors pretty self explanatory.
+
+Some exercise:- (Data from ig.sql file)
+Q. Select the 3 users with the highest ids from the users table.
+    select * from users order by id desc limit 3 
+
+Q. Join users and posts table show the username of user id 200 and the captions of all posts they have created.
+    select username, caption from users
+    join posts on posts.user_id = users.id
+    where users.id = 200
+
+Q. Show each username and the no. of likes they have created.
+    select username, ( select count(*) as no_of_likes from likes where user_id = users.id )
+    from users
+    OR
+    select username, count(*) from users join likes on likes.user_id = users.id group by username

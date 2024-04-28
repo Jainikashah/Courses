@@ -1,0 +1,36 @@
+COMMON TABLE EXPRESSIONS:-
+
+- A way to make our queries look more readable.
+
+Lets start with an eg-
+Q. Show the username of users who were tagged in a caption or photo before jan 7th, 2010. also show the date they were tagged.
+    
+    select username, tags.created_at from users join (
+        select user_id, created_at from caption_tags
+        union all
+        select user_id, created_at from photo_tags
+    ) as tags on tags.user_id = users.id
+    where tags.created_at < '2010-01-07'
+
+Writing the same query with CTE - Common table expression.
+
+    with tags as (
+        select user_id, created_at from caption_tags
+        union all
+        select user_id, created_at from photo_tags
+    )
+    select username, tags.created_at from users join tags as 
+    tags on tags.user_id = users.id
+    where tags.created_at < '2010-01-07'
+
+
+ - define with a 'with' before the main query
+ - produces a table that we can refer to aywhere else.
+ - bts its the same thing. no performace issue, we can check it via explain keyword. its the same result we get.
+
+
+ But is that it?
+ Is it only for better readbility.
+ Nope, there's something called recursive CTE'S.
+
+

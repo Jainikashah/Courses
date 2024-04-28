@@ -1,0 +1,259 @@
+SCHEMA vs DATA migrations:-
+
+Data migration is where we change the data of the db like specific rows of the table.
+
+To understand, we'll take the example of posts table -> lng and lat column.
+In posts we have:-
+    id, 
+    url,
+    lat,
+    lng
+
+Lets say we have created this table way before in the above structure. But now we need to change the lng and lat to a point datatype.
+point datatype takes coordinates like x,y as values. eg: point(10,34)
+hence, we want to store lng, lat in this format.
+note: since we have created this table way before, there are records ofcourse, that would be in the old format or maybe we should call it current format. ANyways we need to change all those millions of records maybe, to our new format.
+
+The strategy here would be:-
+
+- ADD column loc
+- copy lat/lng to loc in point datatype
+- drop column lat, lng
+
+Here, 1 and 3 belongs to schema migration, but 2 belongs to data migration.
+schema migration - works with the structure of db
+data migration - works with the data of db; moving data around
+
+
+=> Why its not a great idea to do shcema and data migration at the same time?
+1. Do everythin in single file
+- Add column loc
+- copy lat/lng to loc
+- drop column lat and lng.
+
+In way1, (NOTE: Copying millions of records to a different column will take time, around 30mins or so) but creating and dropping columns in instantenous. 
+- We would do way1, inside a transactions right, its preferrable. so we dont have half migrated tables. Incase of any issue, we would just rollback it.
+Now lets see whats happening:
+- I have a posts table and in it, I have cretaed a transaction and performed the above 3 steps in it.
+Now transaction has its own world right. It takes a snapshot of the table right at the begin statement and performs queries of that snapshotted table data only.
+If my app is up and running, I might have requests that would refer to lat and lng column. 
+These new records are not inside my transaction snapshot. Thus, when the transaction is over, we'll comit it since there wont be any error. But the new records will have null values inside the loc column. Because it had values in lat/lng column, but we dropped it, and that data wasnt migrated. So BOOM! Null values in loc column.
+
+Hence, we would never want to do data and schema migration at the same time.
+
+ANOTHER WAY:- The working approach for doing schmea and data migration together.
+2. Split over migration files:-
+- Mig1 : add column loc
+- Mig2 : copy lat/lng to loc
+- Mig3 : drop column lat and lng.
+
+
+How it works?
+- Add column loc.
+Just one simple step. No transaction nothing required.
+
+- Deploy api code that will write values to both lng/lat and loc column
+All the new records would have the loc column filled now.
+
+- Copy lat/lng to loc
+For all the previous records, who value is null in loc column, copy those values (in any progamming language)
+
+- Update code to only write to loc/lng column
+Now no need to write n lat/lng column, just write in loc column, combining the two.
+
+- Drop columns lat/lng
+Since ther's no api code that would refer to lat/lng now, and all the previous records has also been combined to loc, we can delete those columns.
+
+DONEEE!
+the best thing is, that these operations are not time bound at all. I can run first step tpday and next step a month later. Or third step on firday and others on monday. Nothing would break
+
+Schema and data migration can be done together but not simulatenously
+(Go through diagrams to understand it better)
+
+
+=> LETS DO ALL THIS IN PRACTICAL:-
+creating a posts table migration file.
+
+    exports.up = pgm => {
+        pgm.sql(`
+            create table posts(
+                id serial primary key,
+                url varchar(50),
+                lat numeric,
+                lng numeric
+            )
+        `)
+    };
+
+    exports.down = pgm => {
+        pgm.sql(`
+            drop table posts
+        `)
+    };
+
+We knwo the preious and after steps of running a migration file right?
+So after running the databasE_url cmd, chekc in pgadmin if the table is created.
+
+NOw, we'll create a web server, using node. 
+    npm i express
+
+Checkout index.js file inside code for the structure of connecting node to pg
+
+run node index.js
+
+you'll see a list of posts and a form via whihc we can create more posts. Oh yeah! That data is actually stored in our db and doesnt go away if we refresh the page..
+
+NOW, 
+We'll see how to add migration files that will do the needed. 
+
+    npm run migrate create add loc to posts
+
+    // inside the migation file
+    exports.up = pgm => {
+        pgm.sql(`
+            alter table posts add column loc point;
+        `)
+    };
+
+    exports.down = pgm => {
+        pgm.sql(`
+            alter table posts drop column loc;
+        `)
+    };
+
+    DATABASE_URL=postgres://postgres:Admin@123@localhost:5432/socialnetwork npm run migrate up 
+
+We are making a migration file that will create a column name loc with point datatype.
+
+STEP2:-
+Make changes in code, such that it saves data to lat, lng as well as loc column as well.
+here's the code:
+    app.post('/posts', async (req, res) => {
+        const { lng, lat } = req.body;
+        await pool.query(`
+            insert into posts (lat, lng, loc) values ($1, $2, $3)
+        `, 
+        [lat, lng, `(${lng},${lat})`])
+
+        res.redirect('/posts')
+    })
+
+NOTE: Point datatype value has to be stored liek: (5,1)
+And thats what we are doing here: [lat, lng, `(${lng},${lat})`]
+Now, when we run our server, it will store data in all three columns, check the same in pgadmin
+
+
+STEP3:
+Copying data from lat/lng to loc.
+1way:
+Write it inside the js file where we'll select the posts and then update it as follow:-
+    select id, lat, lng from posts where loc is null;
+    update posts set loc =... where id =...
+
+Here there are few downsides like:-
+- We might have many posts, millions at times, our server might crash if we load all of them at once.
+- We could use batching wherein we'll limit the records to be fetch at once, lets say 5000 in first batch and so on. But what if at any point, in any batch, there's an error, we'd stuck halfway there. 
+- It also requires to manually connect to the db from a node environment, which incase of aws, or other database systems, could be a little tedious
+
+One upside is:-
+- we can calcualte complex business login here easily. rn we just have to merge the two columns and store in 1. which is pretty simple. But what if to calcualte loc, there must be some complex logic. doing so in our db isnt as simple as it could be in server-side coding.
+
+
+2WAY:-
+- Updating the loc column, inside the db directly.
+Upside is, no moving info between db and node - as fast as possible. No server loading and stuff
+Downside is, cant write complex business logic to calcualte value inside the db.
+
+Issue with both approaches:-
+Happens only when we data in millions. Too large datasets
+- Lets say we are updating loc one by one inside a transaction, which is always a good idea so incase if any error occurs, all over updates are rollback.
+- We have udated record 3 and moving to 4 and so on..
+- When inside a transaction, a record is updated, its locked untill the transaction is over.
+- By locked, it means, no other transaction can change the value of the record, untill transaction1 is done.
+- Since we have millions of records, it might take time. Adn in between that time, if any user tris to edit record 3, he might needs to wait for a while to see the diff. Which would be - transaction1 is done and transaction2 that updates the record 3 is done. after that only, user can view the changes.
+
+Let see this in action in pgadmin.
+- open 2 query tool
+- transaction1:-
+    BEGIN;
+    Update posts set lat = 1 where id = 1
+Dont commit it yet
+transaction2:-
+    BEGIN;
+    Update posts set lat = 10 where id =1
+It will wait until transaction1 is done. and only after that we'll see 10.
+
+
+Lets go with the update using the way2:
+We'll create a migration file and update the loc value. We can do this in pgadmin directly also, but hey, remember we have a team of engineers, who might need our queries later on, and do need to see these changes in version control, come on we dont wanna get fired this time!
+
+For data migration:-
+a folder inside migration -> data -> a file name 01-lng-to-lat-loc.js -> 01 is just the index of files we might have several data migration files, so just to track the order of it to run in.
+inside the file:-
+    const pg = require('pg')
+
+    // connection to our database
+    const pool = new pg.Pool({
+        host: 'localhost',
+        port: 5432,
+        database: 'socialnetwork',
+        user: 'postgres',
+        password: 'Admin@123'
+    })
+
+// updating the columns by taking the lng, lat of that record where its null
+    pool.query(`
+        update posts set loc = point(lng, lat) where loc is null;
+    `).then(() => {
+        console.log("update complete")
+        pool.end()
+    })
+    .catch(err => {
+        console.log(err.message)
+    })
+
+Run in terminal:- cd to data -> node filename.js
+And its doneeee!
+You can see in pgadmin, that all our record swould now have loc column filled up.
+
+STEP4:
+Reading & writing only from and to loc column
+    
+    // fetching data as so..
+    <tr>
+        <td> ${row.id} </td>
+        <td> ${row.loc.x} </td>   //thats how we get data from the rows, try consoleing out it to get better idea
+        <td> ${row.loc.y} </td>
+    </tr>
+
+    // writing data as so..
+      await pool.query(`
+        insert into posts (loc) values ($1)
+        `, 
+        [`(${lng},${lat})`])
+    
+Thats itt!!!
+checkthe same in pgamdin, we'll have null vale in lat and lng, and values inside loc column
+
+STEP5:-
+Dropping the columns. (no need to change directory inside migration folder, remember pg does it on it own.)
+    npm run migrate create drop lng and lat
+
+    // inside the file:
+    exports.up = pgm => {
+        pgm.sql(`
+            alter table posts drop column lat, drop column lng
+        `)
+    };
+
+    exports.down = pgm => {
+        pgm.sql(`
+            alter table posts add column lat numeric, add column lng numeric
+        `)
+    };
+
+// and lastt:-
+    DATABASE_URL=postgres://postgres:Admin@123@localhost:5432/socialnetwork npm run migrate up 
+
+Check the same in pgamdin and server, all good? oh yeah!
+ITS DONE!!!!!

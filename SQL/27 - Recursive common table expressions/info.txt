@@ -1,0 +1,148 @@
+Recursive common table expressions:-
+
+- Well, recursive ctes are one of the toughest and most advanced topic all of all in postgres.
+- they are very very diff from simple ctes, we just saw.
+- useful anytime we have a tree or graph-like data structure
+- must have an union keyword. unlike in simple ctes.
+
+Lets see it in action:-
+    with recursive countdown(val) as (
+        select 3 as val
+        union
+        select val - 1 from countdown where val > 1
+    )
+
+    select * from countdown
+
+Woahhhh, what is that?
+
+step by step:-
+- The union keyword is necessary. cant write recursive statement without it.
+- The select above union is called initial/non-recursive query
+- The select below union is called recursive query.
+
+Now lets look at the working:-
+- Imagine 2 tables:- results table and working table. 
+results table       working table
+- with recursive is the keyword to start a recursive statement
+- countdown is just any name given to it
+- (val) is the column we want inside the table. We can any have any no. of columns in it. eg (val, created_at, etc)
+- Now, run the initial statement
+    select 3 as val 
+- The above will print 3. can check in pgadmin also.
+- Put the result of initial stateent in both the tables.
+results table       working table
+    3                       3
+
+- Run the recursive statement, by replacing the tablename countdown, with the working table (in mind, just to understand it well) like:-
+    select val - 1 from working_table where val > 1
+
+- It says, get values from working_table where val > 1. we'll have 3 right? Now subtract 3 with - 1 and get the value. It would be 2. The result of running the recursive query will be 2.
+
+- Next step: If the statement returned any row, then append it to the results table. and run the recursion again on the working table, after removing all the values except the latest result value.
+// appending.
+results table       working table
+    3                       3
+    2
+// removing
+results table       working table
+    3                       
+    2
+// adding
+results table       working table
+    3                   2               
+    2
+
+and now run recursion on the working table. 
+It will give us 1. append it to results table, remove from working table (other than resulted value) and run recursion again.
+// appending.
+results table       working table
+    3                       2
+    2
+    1
+// removing
+results table       working table
+    3                       
+    2
+    1
+// adding
+results table       working table
+    3                   1              
+    2
+    1
+
+If rows return, run it again. 
+And here it'll break. as the condition in our recursion statement breaks (val > 1) which is false. We dont return ans rows.
+So, stop the recursion.
+
+Now rename the results table to countdown and give the table to the outer query.
+countdown     
+    3                                
+    2
+    1
+    select * from countdown
+Thus, we get the countdown values in console.
+
+=> Why would be ever use it?
+Lets take our instagram example in action.
+
+          me
+           | 
+      |---------|
+    rock      justin
+      |         |
+    selena    miley       
+
+Lets, say I follow rock and justin. and instagram has that suggestions list you know. So, instagram is giving me some suggestions. how?
+based on people who I am following. It looks in my following list and checks who they are folling. like rock is following selena and justin is miley. so instagram will give suggestions of selena and miley.
+till now, we can figure this out by any join statement. but what if i m not interested in selena or miley.
+who then will be search list. it comes out that, it looks for people who selena and miley follows. and thats how the list goes on.
+
+          me
+           | 
+      |---------|
+    rock      justin
+      |         |
+    selena    miley
+      |         |
+    jeez      Karen
+      |         |
+    Kim       kylie
+
+And so on, whats a good solution for this? well you guessed it right, RECURSIVE is the best.
+Now remember, recursion works for data structure like tree or graph.
+- lets assume the above is a tree ds. (though in reality, it would be stored in a graph instead)
+
+Now, here's the query
+    with recursive suggestions(leader_id, follower_id, depth) as (
+        select leader_id, follower_id, 1 as depth
+        from followers 
+        where follower_id = 10
+	union 
+        select followers.leader_id, followers.follower_id, depth + 1
+        from followers 
+        join suggestions on suggestions.leader_id = followers.follower_id
+        where depth < 3
+    )
+
+    select distinct users.id, users.username from suggestions
+    join users on users.id = suggestions.leader_id where depth > 1 limit 30
+
+woahh! This doesnt looks easy at all. I mean, CTEs are not making our life any easier, are they!
+whats happening here is:-
+- depth is the depth of the tree we saw. rock and justin are at depth 1. so we start from them. 
+- see who the follower_id with 10 is following from the followers table. get leader_id and followers_id from those records, and depth would be constant as 1 (This is our initial query)
+- add those in both the tables; result and working table
+- now, the second query
+- join suggestions (our working table) with the followers table. where working_table's leader_id should be equal to followers's follower id
+- we'll get who our leaders are following. I mean, who the leaders(following) of userid 10 is following.
+- now add that in working and results table.
+- conitnue it untill the depth is less than 3
+- done?
+- now outside query:
+- join users and suggestions table, where depth > 1 and get upto 30 records only
+- why depth > 1 because, we dont want the list of people I'm already folling and depth 1 would be that list of people. By I, I mean, user with id 10
+- select only user id and name from it.
+- VOWW! We did it. we got the list.
+
+NOTE:- Recursion should be used only where there's any hirearchical relation. 

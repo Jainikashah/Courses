@@ -1,0 +1,32 @@
+POSTGRES INSTALLATION:-
+
+- https://postgresapp.com  for mac 
+- https://postgresql.org/download/windows
+We use this app as its easy and best way to use postgres. Also if ever we dont want to use postgres in future, we can easily start and stop it. And so, it wont use our computer's resources anymore like ram, memory, etc.
+
+Windows steps to install:-
+- Go to the link: https://postgresql.org/download/windows
+- Click on download the installer link
+- select the latest version of postgres
+- donwload it and wait.
+- If asked for any file to get run, run it.
+- Let the configuratin happen
+- Select next for the first popup.
+- Let the default selection for location as it is.
+- then form the checkboxes appear, uncheck the stack bulder, we dont want that.
+- Click next
+- Set a password. mine is Admin@123
+- And next for all other popups.
+After installation:-
+search for pgadmin4.
+enter the password Admin@123
+
+
+pgadmin - is installed automatically (as we kept the checked button on) in windows, but in mac we hvae to do it. 
+we have password so that sometime if anyone starts your laptop, they dont make changes in your pgadmin database.
+
+What did we just do?
+- we'd have a database postgres by default. We'll create more databases along the way. we mostly have 1 database for 1 application.
+pgadmin :- a web based tool, to manage and inspect a postgres database. can connect to a local or remote databases. we can read value, write values in our database. basically a one stop for oour database operations.
+A server has many databases, like for todo app - todo db, phone app - phone db. All these dbs lies on your machine. 
+

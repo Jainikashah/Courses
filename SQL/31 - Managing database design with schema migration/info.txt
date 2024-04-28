@@ -1,0 +1,174 @@
+SCHEMA MIGRATIONS:-
+
+- Schema migrations is all about making careful and well-planed changes in the structure of your db. Like adding/deleting columns, renaming columnnames, adding/removing tables.
+
+Lets say, we are an engineer working at instagram in charge of comments table.
+We have 2 places :- 
+postgres hosted on our machine (local env)
+postgres hosted on aws (production env)
+
+Lets say we got a feedback to change the contents columnname to body as columnname. 
+content -> body
+- We did it:-
+    ALTER TABLE comments RENAME COLUMN contents To body
+Done! Its working great on your local machine, no errors, pretty fast and all good. You decide to make the same change on your production env. And the moment you did, BOOOM! There's a lot of emails in your inbox stating the comments table error. Nothings working. instagram stucked. Wooh! All because of changing the column name via pgadmin for your production env? Oh yes!
+
+Your api still makes changes in the contents column.
+REQUEST FROM CLIENT ---> API SERVER ---> BUILDS SQL COMMENT ---> INSERT INTO COMMENTS(contents) VALUES ('Heyy!')
+
+So here, the LESSON1:- Whenever we change the structure of our db, we need to make sure that the api is in sync. 
+
+Now, deploying the code in our api to sync it with db, its might takes some time. and in between that time, what if our db has the body column, but our api is still referring to contents column.
+You see api deploying can take minutes to run. 
+So, you know that schdeuled maintenance thing? Yeah thats what happen during that time. Syncing of database and api code. So that in between we dont get any errors. 
+
+
+Now, your manager no longer trusts you well and asks you to raise a review request everytime you make a change. Yeah Ik, managers are sometimes hell of a burden. 
+
+So, you are asked to do the same thing now. change contents to body columnname. 
+You made changes in your db as well as in the api code. 
+Now, you raised a pr and in it there's only the api code. (because you have diff pgadmin and your boss has diff. In your local, you've run the alter columnname code, but your boss hasnt, so they have the same contents as columnname and the code refers to the body column)
+And your boss's db breaks. You might give them the alte query and ask them to run in their pgadmin and now it workss.
+But hey, now your boss has reveiewed your code and needs to revert it back from his local, so that he can carry on with his own work. And he do so. But now, the db breaks again. Because the code will refer to contents columnname but nobody changed back the body columnname from comments table.
+Oh man! You're almost fired now!
+
+We actually need a better way to tie our db and our api code. 
+Lets see how and save you from getting fired!
+
+- Lets stop using pgadmin and now we'll create migration files to communciate db to our code.
+- Whats a migration file? Any changes regaring the schema like changing columnname, creating tables, deleting columns, etc is done under this file.
+- It can be written in any language like node, c, java, python, etc.
+- It has 2 main section:- UP and DOWN 
+UP - Contains statements that advances or upgrades the struture of db, like changing columnname.
+DOWN - Contains statements theta exactly undo's the up command, like reverting back the columnname.
+
+EG-
+Migartion file #1
+- up has creating comments table code.
+- down has code to drop the table comments.
+
+EMPTY DB  -->  migration file #1 UP code run --> In DB, got comments table
+COMMENTS Table in db  --> migration file #1 DOWN code run --> EMPTY DB
+
+We have quite a few migration files in our project. Now, if there's any new engineer in your team, we can just hand over all these files to him and get his db started on the same level as do.
+
+So do these migration files solves our issues?
+- 1. changes in our db is reflected in our api code as well?
+Yeah! 
+The process is like:-
+Start the deployment
+take the new version of code on remote server
+run all available migration files -> db struture updated
+and its done!
+App is up and running!
+Hnece, both the code and db are updated together, though they are down for a small period of time, during the build process.
+
+- 2. While working with a team of devs. We need an easy way to tie our db and our code.
+In our PR, we'll have our api code and the migration files too. Anybody can take your code and run it in their local, test your code as both code and db structure will be same as yours. 
+and now can revert their code back if they want their version of it. 
+Thus, no need to toggle betwee pgadmin and run the same queries back and forth.
+
+Sounds like it works pretty well, doesnt it!
+
+=> Now, how to create a migration file?
+- We'll see this in node. We can do it any other lang as we saw.
+
+In node:- node-pg-migrate package is used
+In most of such packages accross diff languages, there are tools that automatically generate the migration files, but its highly recommended that we do it on ourself. We know enough sql to write it on our own. A downside is that they can do some assumptions on their own, eg- add null values in a column, event though we dont ever want that, or add some default values, add unwnated indexes on some columns.
+We have a lot of power when we write the migration files on our own.
+
+To get the package.json file
+    npm init -y
+
+Install node-pg-migrate to write migration files, and pg cmd is for postgres.
+    npm i node-pg-migrate pg
+
+Create a rough db - socialnetwork from pgadmin
+
+In package.json, change below code to:-
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+    },
+
+   --------------To-------------
+
+   "scripts": {
+    "migrate": "node-pg-migrate"
+  },
+
+
+In terminal, run:
+    npm run migrate create table comments
+This will run the migrate script we just wrote and create a migrations folder in which we'd have a file with the current_timestamp_table-commments
+table comments is the name of the file. could be anything but descriptive enough.
+current_timestamp tells us the pg-migrate package that in which order these migration files should be run in. Like, if I have create table code in mig1, and alter that table name in mig2. It wont make sense if I run mig2 first right? It will break It.
+so node-pg-migrate determines it based on the current_timestamp. 
+
+Inside that file:-
+    exports.shorthands = undefined;
+    exports.up = pgm => {};
+    exports.down = pgm => {};
+up will contains code that will upgrades the structure of db and down will undo the same changes.
+pgm is the object we use to create table, add columns, etc.
+
+- migrationfile code.
+
+    exports.up = pgm => {
+        pgm.sql(`
+            create table comments (
+                id serial primary key,
+                created_at timestamp with time zone default current_timestamp,
+                updated_at timestamp with time zone default current_timestamp,
+                contents varchar(240) not null
+            )
+        `)
+    };
+
+    exports.down = pgm => {
+        pgm.sql(`
+            drop table comments
+        `)
+    };
+
+pgm.sql - lets us write sql code.
+up - creating table comments
+down - dropping that table.
+
+
+=> run the migration file
+
+- We first need to set an env variable, that our node-pg-migrate package will look at, to locate to our db location. NOTE: THE PROCESS VARIES FROM OS TO OS.
+For windows:
+    DATABASE_URL=postgres://postgres:Admin@123@localhost:5432/socialnetwork npm run migrate up
+
+This url is for git bash, works in that only. Have diff urls from diff os. 
+Run this above line in terminal and you can see in your pgadmin, the table would be created.
+We'd have one more table - pgmigrations. Its created by node-pg-migrate package for its own use. It basically use it to keep track of which migration file has been runned and not to run them again. You can view the data in there too.
+
+    DATABASE_URL=postgres://postgres:Admin@123@localhost:5432/socialnetwork npm run migrate down
+To run the down code.
+
+
+Lets do one more example of renaming the columnname
+    - npm run migrate create rename contents to body
+
+    exports.up = pgm => {
+        pgm.sql(`
+            alter table comments rename column contents to body
+        `)
+    };
+
+    exports.down = pgm => {
+        pgm.sql(`
+            alter table comments rename column body to contents
+        `)
+    };
+
+    - DATABASE_URL=postgres://postgres:Admin@123@localhost:5432/socialnetwork npm run migrate up
+    - DATABASE_URL=postgres://postgres:Admin@123@localhost:5432/socialnetwork npm run migrate down
+
+We create a mig file - rename contens to body
+Run the sql command to rename it in the file
+up command will run the up code
+NOTE: In down command, it only runs the down cmd one by one. We need to run it as many times as we want to run the down code of migration files.
+Ik its a little weird.

@@ -1,0 +1,70 @@
+Sorting is pretty easy in sql, lets see an example:-
+
+    SELECT * FROM products order BY price
+    SELECT * FROM products order BY price DESC
+    SELECT * FROM products order BY price ASC
+
+default is ascending. if we want descending, add desc. asc is optional here.
+
+=> Two variations of sorting:-
+- Non-numeric numbers:-
+    SELECT * FROM products order BY name ASC
+    SELECT * FROM products order BY name desc
+
+- Multiple columns:-
+    SELECT * FROM products order BY price, weight
+    SELECT * FROM products order BY price, weight desc
+this will first sort by price, and if prices are equal for multiple rows, then for those rows it will sort acc to weight.
+can also do desc.
+eg -
+unsorted:-
+price   weight
+2       7
+10      17
+2       9
+2       1
+1       12
+9       6
+
+sorted:
+1       12
+2       1
+2       7
+2       9
+9       6
+10      17
+
+you see, 2 was multiple times, so we sorted that according to weight. its opposite would be desc.
+
+
+=> OFFSET and LIMIT:-
+    select * FROM users OFFSET 40
+offset means skip the records. here, its 40, so it says skip first 40 records and show the last 10 ones (if the total is 50)
+
+    select * FROM users LIMIT 10
+limit gives the first (10) records from the result.
+
+we can use offset and limit together, like get me records between 20-30
+here, offset 20 limit 10 would work.
+
+Q1. Get us 5 most expensive products:-
+    select * FROM products order BY price desc limit 5
+
+Q2. Get us 5 least expensive products:-
+    select * FROM products order BY price limit 5
+
+Q3. Get us 5 least expensive products except the first one:-
+    select * FROM products order BY price desc limit 5 offset 1
+
+Q4. Get us the names of phones of only second and third most expesive products:-
+    select name FROM phones 
+    order BY price DESC
+    LIMIT 2
+    OFFSET 1 
+
+
+Order of writing:- (works anyways, it just a convention)
+first order by -> then limit -> then offset.
+
+
+    

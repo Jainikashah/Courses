@@ -1,0 +1,139 @@
+ACCESSING POSTGRES FROM APIS:
+
+- A folder inside code -> social-repo
+- cd into social-repo
+- npm init -y
+- npm i dedent express jest node-pg-migrate nodemon pg pg-format supertest
+- package.json add in scripts:-
+    "migrate": "node-pg-migrate",
+    "start": "nodemon index.js"
+
+- npm run migrate create add users table
+- creating table users:-   
+    exports.up = pgm => {
+        pgm.sql(`
+            create table users(
+                id serial primary key,
+                created_at timestamp with time zone default current_timestamp,
+                updated_at timestamp with time zone default current_timestamp,
+                username varchar(30) not null,
+                bio varchar(400)
+            )
+        `)
+    };
+
+    exports.down = pgm => {
+        pgm.sql(`
+            drop table users
+        `)
+    };
+
+// To run migration file:
+    DATABASE_URL=postgres://postgres:Admin@123@localhost:5432/socialnetwork npm run migrate up 
+
+(Note, we have dropped the previous socialnetwork db just for simplicity sake, to drop - close all query tool windows and drop the table. And then create the same socialnetwork db again)
+
+SETUP OF OUR EXPRESS SERVER:-
+- create an src folder -> app.js file -> routes folder -> index.js
+
+inside app.js
+    const express = require('express')
+    const usersRouter = require('./routes/users')
+
+    module.exports = () => {
+        const app = express()
+        app.use(express.json())
+        app.use(usersRouter)
+        return app;
+    }
+
+inside router->index.js file
+    const express = require('express');
+    const router = express.Router()
+    
+    // setting up routers
+    router.get('/users', async (req, res) => {})
+    router.get('/users/:id', async (req, res) => {})
+    router.post('/users', async (req, res) => {})
+    router.put('/users/:id', async (req, res) => {})
+    router.delete('/users/:id', async (req, res) => {})
+
+    module.exports = router;
+
+
+Now, we'll use pg package that we just installed.
+- The use of pg module is specifically to setup connection with postgres and run sql. thats it.  A very popular module. Many other node postgres modules, like node-pg-migrate internally use pg.
+- A pg module is use to create a CLIENT.
+- A CLIENT can be only used for one query at a time.
+- But ofcourse we would want to run multiple queries
+- so we use something called POOL. Pool internally maintains several different clients that can be reused. 
+- we tell pool which query we want to run. 
+- There's a scenario where we might need to run client, i.e when we have a transaction to run.
+
+IN PRACTICAL:
+    // Normally we would create a pool like this:-
+    const pool = new pg.Pool({
+        host: "localhost",
+        port: 5432, // and other config.
+    })
+
+    module.exports = pool;
+
+But we wont use this method here. Beacuse of some solid testing reasons. This way wont let us connect to multiple dbs at a time. In relaity, we wouldnt even want to connect, but just for testig purpose, we'd be using some diff ways.
+
+Lets see how we'll create pool:-
+ 
+// index.js file
+   const app = require('./src/app');
+const pool = require('./src/pool');
+
+// connecting to our db:-
+    pool.connect({
+        host: "localhost",
+        port: 5432,
+        database: "socialnetwork",
+        user: "postgres",
+        password: "Admin@123"
+    })
+    .then(() => {
+        app().listen(3005, () => {
+            console.log("Listening on port 3005")
+        })
+    })
+    .catch(err => console.error(err))
+
+socialnetwork is our db that we want to connect. And rest is just the usual connection stuff.
+
+
+    // pool.js  
+    const pg = require("pg");
+
+    class Pool {
+        _pool = null;
+        
+        // to create a new pool
+        connect(options){
+            this._pool = new pg.Pool(options)
+            return this._pool.query('SELECT 1 + 1')
+        }
+        
+        // to end the pool
+        close(){
+            return this._pool.end()
+        }
+        
+        // to run queries. HERE, THERE IS A REALLY BIGGGG SECURITY ISSUE, WE'LL SEE THIS LATER
+        query(sql){
+            return this._pool.query(sql)
+        }
+    }
+
+    module.exports = new Pool();
+
+Just a class based.
+what is this return 1+1 thing?
+- It turns out that, simply creating a pool instance, wont create a client. To create a client, means to connect to our actual socialnetwork db, we have to have atleast 1 query.
+- Now 1 + 1 thing might sounds naive, but in actual its not, in fact many libariries also uses this way.
+- close() will close the current instance pool.
+- with the way we have written code for query(), there's a big SECURITY issue which we'll see later.
+- Run node index.js to see if everythings working!

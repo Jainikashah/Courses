@@ -1,0 +1,109 @@
+All about Postgres:-
+
+- The idea of databases is to store data on memory or hard disk and we retrieve that data in future.
+
+SQL - Kind of a programming language, via which we can talk to our postgres database. We make request from our client and get the data back via APIs.
+Databases such as oracle, ms Sql server, mysql, and postgres supports SQL as a language to communicate.
+
+=> Challenges of postgres:-
+1. Writing efficient queries to retrive info.
+2. Designing the schmea, or structure of database.
+3. Understanding when to use advanced features.
+4. Managing the database in a production environment.
+
+
+=> While designing the database, things to ask:-
+1. What kind of thing we are storing?
+2. What properties does this thing have?
+3. What type of data does each of those properties contain?
+
+Example- we have to store list of largest cities with some info, the answers would be-
+1. We are storing list of cities
+2. Each city has a name, country, population and area
+3. name = string, country = string, population and area = number
+
+How these answers will be reflected in our database?
+1. A table of cities.
+2. The table contains the columns as name, country, population and area.
+3. Each column should indicate the type of data that we'll store.
+Eventually we'll have records in this table with the relevant info.
+
+For free sql web app - www.pg-sql.com 
+
+=> Creating tables:-
+    CREATE TABLE cities (
+        name VARCHAR(50),
+        country VARCHAR(50),
+        population INTEGER,
+        area INTEGER
+    );
+Write this inside the playground of pg-sql.
+
+Lets understand the syntax now:-
+    Keywords = CREATE TABLE (What we want to do?; Always capitalize)
+    cities = Identifier (What we want to operate on; always lowercase)
+
+    VARCHAR, INTEGER - Types of data types.
+    VARCHAR(50) - a sequence of string whose length can be max 50
+    INTEGER - number without a decimal. Ranges from +2billion to -2billion. Anyhting larger or smaller will throw an error. (precisely, -2147483647 to +2147484647)
+
+=> Inserting rows:-
+    INSERT INTO cities (name, country, population, area)
+    VALUES ('Tokyo', 'Japan', 38288292, 8223);
+
+Make sure the order of column names here should match the value in values brackets.
+
+=> To insert multiple rows at once:-
+    INSERT INTO cities (name, country, population, area)
+    VALUES 
+    ('Delhi','India', 2983992, 2239),
+    ('Shanghai', 'China', 28782792, 2828),
+    ('Sao Paulo', 'Brazil', 27289298, 8722)
+
+=> To retrieve information:-
+    SELECT * FROM cities;
+    SELECT name, country FROM cities;
+    SELECT name, name, name FROM cities;
+
+* means get me every column of table.
+name, country will get specific column values only.
+can retrieve same column multiple times also, like we did for name.
+
+
+=> SQL is not only about retrieving data the way we stored it, we can also transfrom the data as per the need. Lets see that:-
+
+    SELECT name, population / area, country FROM cities;
+
+Here, we'll get a new column, which is the density of a city, which we get by dividing population / area. 
+We can use multiple math operations here such as:- +, -, /, %, ^, square root, @, *, etc..
+Note- with this query, we'll get the column name as ?column?
+not so helpful right?
+
+    SELECT name, population / area AS density, country FROM cities;
+
+Now, we'll get the density as the column name for our math opertaion column.
+Also, we can change any column's name via this AS keyword (only in the response, wont change anything in db.)
+
+
+=> Some more opertors to work with:-
+
+    SELECT name || country FROM cities;
+Combines the name and country and give as one column:- TokyoJapan DelhiIndia...
+
+    SELECT name || ', ' || country FROM cities;
+To get a space between the two alongwith a comma:- Tokyo, Japan
+
+    SELECT name || ', ' || country AS location FROM cities
+To give a name to this newly created column
+
+    SELECT CONCAT(name, country) AS location FROM cities;
+Another way of concating two columns
+
+    SELECT CONCAT(name, ', ', country) AS location FROM cities;
+Another way of adding comma in between
+
+    SELECT CONCAT(UPPER(name), ', ', UPPER(country)) AS location FROM cities;
+    SELECT CONCAT(UPPER(name), ', ', country) AS location FROM cities;
+To uppercase the values of columns
+
+    

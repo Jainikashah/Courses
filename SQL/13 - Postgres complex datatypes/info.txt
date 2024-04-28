@@ -1,0 +1,198 @@
+What did we just do?
+- we'd have a database postgres by default. We'll create more databases along the way. we mostly have 1 database for 1 application.
+pgadmin :- a web based tool, to manage and inspect a postgres database. can connect to a local or remote databases. we can read value, write values in our database. basically a one stop for oour database operations.
+A server has many databases, like for todo app - todo db, phone app - phone db. All these dbs lies on your machine. 
+
+
+=> Datatypes:-
+Categories of datatypes.
+- Numbers, currency, binary, date/time, character, json, geometric, range, arrays, boolean, xml, uuid
+Emphasizing the fact that these are Categories, we have more types in each one of them.
+
+1. Numbers (numeric types)
+    Numbers without decimal points:-
+    smallint - (-32768 to +32767),
+    integer - (-2147583648 to +2147483647)
+    bigint - too big to write, just google it out.
+
+    Numbers with no decimal points, but auto increments:-
+    smallserial - (1 to 32767)
+    serial - (1 to 2147483647)
+    bigserial - again too big to write.
+
+    Numbers with decimal points:-
+    decimal
+    numeric
+    real
+    double precision
+    float
+    (the conditions are too big, again ask your good friend google.)
+
+NUMERIC TYPES FAST RULES:-
+1. 'id' column of any table  -  use SERIAL.
+2. need to store a number without decimal  -  use INTEGER
+3. A number with decimal value and the data needs to be very accurate  -  NUMERIC
+    eg - Bank balance, grams of gold, scientific calculations
+4. A number with decimal and the decimal doesnt make a big difference  -  DOUBLE precision
+    eg - Kg of trash in a landfill, litres of water in a lake, aur pressure in a tyre.
+
+
+Numeric datatype in detail:-
+To understand it in detail, we need an editor to run queries. So to pgadmin -> databases -> postgres -> right click -> query tool -> and there's your editor. We can have any arbitary numeric operations on this editor, it doesnt necessarily has to be a query everytime.
+
+Write: 
+    select 2 + 2
+And play btn.
+
+Lets now learn abt numeric datatypes.
+    select (2)
+Prints the type of data it is, ie integer and prints the value itself.
+
+    select (2.0)
+Prints numeric and 2.0
+
+    select (2.0::INTEGER);
+Print integer and 2. :: Will tell the editor that this is an integer type, treat it that way.
+
+    select (1.0::SMALLINT)
+Prints smallint and 1.
+
+    select (9999999::SMALLINT)
+Error: outside the range. The max value is 32767.
+
+    select (1.99999::REAL - 1.99998::REAL)
+Real, double precision, float are the datatypes that are faster than numeric and decimal. But they dont always give the most accurate result. The result of above opertaion is: 1.001358e-05.
+Now how did that came? Well postgres treat real, dp, and float at floating point math. This is some sort of math that doesnt give the most accurate result.
+
+    select (1.99999::NUMERIC - 1.99998::NUMERIC)
+Gets, 0.00001 - the accurate one. The numeric and decimal datatypes are mostly same. 
+
+
+=> CHARACTER TYPES:-
+- char(5) : stores fixed characters. if we store 2 chars, postgres will add 3 spaces after that, but it will be 5 always.
+    select ('UYIUSYIWUIW'::CHAR(3))
+print UYI 
+
+    select ('U'::CHAR(5))
+print U    . There'll be 4 spaces.
+
+
+- VARCHAR.
+Stores any length of string
+    select ('U938DNKJIUYEIUYEIYEI'::VARCHAR)
+
+- VARCHAR(5)
+Store upto 5 and removes anything after that.
+    select ('U938DNKJIUYEIUYEIYEI'::VARCHAR(5))
+prints U938D.
+
+    select ('U9'::VARCHAR(5))
+Print U9, with no spaces as it was with char.
+
+- TEXT
+Stores any length of string.
+    select ('U9'::text)
+
+Note: there's no performance difference between these types. They are just for us to have specific validations. like for credit card cvv, we need 3 chars only.
+
+
+=> BOOLEAN TYPES:-
+TRUE : true, yes, on, 1, t, y 
+FALSE : false, no, off, 0, f, n 
+NULL : null
+
+Postgres, will take the true, yes, on... as true value, and false, on, off... as false values.
+It can also have null as boolean type.
+
+    select ('y'::boolean)
+Prints true
+
+    select (0::boolean)
+Prints false
+
+    select (true::boolean)
+Prints true
+
+    select ('true'::boolean)
+Prints true
+
+    select (null::boolean)
+Prints null.
+
+
+=> DateTime:-
+Extremely flexible postgres is with dates and time.
+Provide any format of date and postgres will convert it into its satndard way.
+    
+    select ('Nov-20-1980'::DATE)
+    select ('Nov/20/1980'::DATE)
+    select ('Nov 20, 1980'::DATE)
+    select ('Nov 20 1980'::DATE)
+    select ('1980 November 20'::DATE)
+
+Prints the same for all - Prints "1980-11-20". Any format you can imagine.
+
+- TIME.
+Time, Time without time zone. Converts time into 24hour time zone. we can add any format of time.
+Time without time zone is an alias for time.
+
+    select ('01:24'::Time)
+Prints time withut time zone and 01:24:00
+
+    select ('01:24'::Time without time zone)
+Prints time withut time zone and 01:24:00
+
+    select ('01:24 PM'::Time without time zone)
+Prints "13:24:00"
+
+    select ('01:24:2 PM'::Time without time zone)
+Prints 13:24:02
+
+- Time with time zone:-
+Any value we provide, will be converted to UTC time zone.
+
+    select ('01:24:2 PM EST'::Time with time zone)
+Prints 13:24:02-05:00. -05 says that its 5 hrs behind the utc time zone.
+
+    select ('01:24:2 PM PST'::Time with time zone)
+Prints 13:24:02-08:00. -08 says its 8hrs behind the utc time zne. 
+
+    select ('01:24:2 PM utc'::Time with time zone)
+Prints 13:24:02+00:00. 00 means its same to the utc time zone ofcourse we have added utc already.
+
+    select ('01:24:2 AM utc'::Time with time zone)
+Prints 01:24:02+00:00.
+
+
+- TIMESTAMP:-
+    select ('Nov-20-1980 1:23 AM PST':: Timestamp with time zone)
+Prints 1980-11-20 14:53:00+05:30
+
+I told you, its really flexible.
+
+
+=> INTERVALS:-
+1 Day  --  1 Day
+1 D    --  1 Day
+1 D 1 H 1 M 1 S  --  1 day 1 hour 1 minute 1 second
+
+    select ('1 DAY'::INTERVAL)
+Prints interval and 1 day.
+
+    SELECT ('1 D 20h 1m 27s'::INTERVAL)
+Prints 1 day 20:01:27
+
+We can also have numeric opertions like + - with intervals.
+
+    SELECT ('1 D 20h 1m 27s'::INTERVAL) - ('20h 1m 20s':: INTERVAL)
+Prints 1 day 00:00:07
+
+we can also perform numeric opertions on dates with intervals.
+
+    SELECT ('Nov 20 1980, 01:23 AM PST'::TIMESTAMP WITH TIME ZONE) - ('20h 1m 20s':: INTERVAL)
+Prints timestamp with time zone. 1980-11-19 18:51:40+05:30
+
+    SELECT ('Nov 20 1980, 01:23 AM PST'::TIMESTAMP WITH TIME ZONE) - ('Nov 10 1980, 01:23 AM PST'::TIMESTAMP WITH TIME ZONE)
+Prints 10 days. As interval the datatype
+
+Being able to do such operations on database side, instead of server side, is pretty cool and useful. 

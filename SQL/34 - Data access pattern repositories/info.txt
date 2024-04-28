@@ -1,0 +1,105 @@
+CODE IS IN PREVIOUS CODE FOLDER ONLY, AS WE ARE WORKING ON THE SAME PROJECT.
+
+- Lets dive in coding:-
+We'll create a users repository. It will include many methods like find, findbyid, insert, delete, update, etc. that we can perform on our users table.
+
+To create such methods we have few ways:-
+1. Plain functions that we'll export
+2. An instance of class will have access to these methods.
+3. As a class with static methods. (we'll go with this one)
+
+any of the above way is fine, we'll just go with 3. No performance or any kind of diff in using one over the other.
+
+STEP1:
+- Create a repos folder in src, with a user-repo.js file.
+- The functions in which we make the queries, like in find function, its always an async function. It will return some rows or anything else. But always an async one.
+
+
+    const pool = require("../pool");
+
+    class userRepo {
+        static async find(){
+            const { rows } = await pool.query('SELECT * FROM users')
+            return rows;
+        }
+    }
+
+    module.exports = userRepo;
+
+    // Other ways of creating functions:-
+    // 2. 
+    // class userRepo {
+    //      find(){
+    //     }
+    //     findById(){
+    //     }
+    // }
+    // module.exports = new userRepo();
+
+    //3.
+    // module.exports = {
+    //     find(){...},
+    //     findById(){...}
+    // }
+
+
+    // users.js file, importing the function we just created:-
+        router.get('/users', async (req, res) => {
+            const users = await userRepo.find()
+            res.send(users)
+        })
+
+
+EXPLANATION:-
+- pool.query returns quite a few things, all what we should mostly be concerned about is the rows. so destructuring it only.
+- To test these endpoints, we'd need either postman or an extension inside vscode called rest client (Its good too. pretty quick to set up) but anyways we'll use postman.
+- Just run localhost:3005/users - inside the postman get request.
+- To see some records, lets create some records via pgadmin only:-
+    INSERT into users(bio, username)
+    values('my bio', 'ayson'),
+    ('about me', 'gia')
+- Now, you'll see those records as well in postman.
+
+There's a tini-tiny gotcha for casing here. For created_at and updtaed_at kind of columns where we are using kebabcase, but in js, the convention is to use camelcase. 
+In sql, convention is to use kebabcase.
+So, what to do ? SHould we just stick to it? Huh! Sure, if you and your manager dont care, but the instructor do, so here's the solution:-
+
+// utils -> to-camelcase.js
+    module.exports = (rows) => {
+        // will convert kebabcase (sql columnnames) to camelcase
+        return rows.map(row => {
+            const replaced = {}
+            for(let key in row){
+                const camelCase = key.replace(/([-_][a-z])/gi, ($1) => $1.toUpperCase().replace('_', '')
+                )
+                replaced[camelCase] = row[key];
+            }
+            return replaced;
+        })
+    }
+
+This function will take a bunch of rows and will return the camelCase version of all the keys present in the data.
+
+STEP2:
+- Now, the next api:-
+
+    // users.js
+    router.get('/users/:id', async (req, res) => {
+        const { id } = req.params;
+        const user = await userRepo.findById(id)
+        if(user){
+            res.send(user);
+        }else {
+            res.sendStatus(400)    
+        }
+    })
+
+    // user-repo.js
+     static async findById(id){
+        // REALLY BIG SECURITY ISSUE
+        const { rows } = await pool.query(`SELECT * FROM users where id = ${id}`)
+        return toCamelCase(rows)[0] // to get the first row only; though it will either be 1 or null rows only 
+    }
+localhost:3005/users/1 - in postman
+
+Here, we have a realllyyyy biggg SECURITY issue inside the findbyid function. lets see. Otherwise it works great. we'll see exactly one record in our postman and null if the entry doesnt exists

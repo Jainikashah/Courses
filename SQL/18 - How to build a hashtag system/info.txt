@@ -1,0 +1,62 @@
+HASHTAG SYSTEM:-
+
+Where can be a hastag added?
+- posts, comments, and user bio.
+
+Ok so based on what we have done, we might create 3 diff tables, post_hashtags, comments_hashtags, and user_hashtags too.
+
+But hey, do we do anything with these hashtags at all? Remember where we use hashtags in instagram. 
+In the search bar of tags, we search for something. Thats where are posts hashtags are used. But for the other two they are not used anywhere at all. So the data that needs to be quered upon, only, should have a model (table) in our db. Its important to know which data to store in our db. we dont have to use them all you see. these hashtags can easily be carried in comments table and user bio table in themselves, we dont need a diff table like we do for posts hastags.
+
+Lets dive into creating tables:-
+- The first approach here would be:-
+Hastgats table:- id, post_id, contents
+
+This would work. But there's a problem. Its related to optimization. You see, the content is a string value. and as many time as a hashtag will be used, we'll have a new entry in this table. Strings are tend to take more space then integers. 
+So, instead of using this, we switch to:-
+
+hashtags table: id, content
+hashtags_post : id, hastag_id, post_id
+
+here, hashtags_post table will connect the two tables. here, everytime a hashtag is used, we'll have aew entry in hashtags_post table. And since it stores an integer the sapce is less consumed. also, hashtags table will be full of unique strigs only.
+This is a performance optimization thing.
+
+OUR SCHEMA:-
+HASHTAGS TABLE:- id primary key, created_at timestamp, title varchar(20)
+
+HASHTAGS_POSTS TABLE:- id primary key, post_id integer reference posts(id), hashtag_id integer reference hashtags(id)
+
+
+Some changes in user table:-
+Till now we have, 
+    id serial primary key, 
+    created_at timestamp, 
+    updated_at timestamp, 
+    username varchar (30)
+
+we might need to add:-
+    bio varchar(300),
+    avatar varchar(200),
+    phone varchar(20),   // not integer or number, bcoz we dont expect to make any calculations on a phone number right. We just need it as it is.
+    email varchar(40),
+    password varchar(50),
+    status varchar(15)   // is user active, busy, not busy, online, offline, etc.
+
+
+OUR SCHEMA TILL NOW:-
+
+USERS TABLE: id serial primary key, created_at timestamp, updated_at timestamp, username varchar (30), bio varchar(300), avatar varchar(200), phone varchar(20), email varchar(40), password varchar(50), status varchar(15) 
+
+POSTS TABLE: id serial primary key, created_at timestamp, updated_at timestamp, url varchar(200), user_id integer references users(id)
+
+COMMENTS TABLE:  id serial primary key, created_at timestamp, updated_at timestamp, contents varchar(240), user_id integer references users(id), post_id integer references posts(id)
+
+LIKES TABLE:- id, created_at, user_id integer references users(id), cmt_id reference comments(id), post_id reference posts(id)
+
+PHOTO_TAGS TABLE:- id primary key, created_at timestamp, updated_at timestamp, post_id integer reference posts(id), user_id integer reference users(id), x integer, y integer
+
+CAPTION_TAGS TABLE:- id primary key, created_at timestamp, post_id integer reference posts(id), user_id integer reference users(id)
+
+HASHTAGS TABLE:- id primary key, created_at timestamp, title varchar(20)
+
+HASHTAGS_POSTS TABLE:- id primary key, post_id integer reference posts(id), hashtag_id integer reference hashtags(id)

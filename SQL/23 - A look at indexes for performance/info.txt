@@ -1,0 +1,228 @@
+Look at indexes for performance:-
+
+=> Full scan tableS:-
+
+    - Select * from users where name = 'Ryan'
+Lets say I made this query.
+
+In our heap file on Harddisk, we'll have data divided into blocks at below (note its in binary format as we saw in previous section):-
+
+
+        Heap File on Harddisk
+        ---------------------
+        |      Block 1         |
+            Nancyy 
+                Alf 
+        -----------------------
+        |      Block 2         |
+                Jia 
+                Ryan
+        -----------------------
+
+The first step is to take this data into the memory (RAM) in order to make operations on it.
+
+        MEMORY (RAM)
+        -----------
+        Nancyy
+        Alf
+        Jia 
+        Ryan
+
+Data loaded in memory. Now search occurs one by one untill we find the name of Ryan. 
+IMP: This loading data from heap file to memory is very costly. So to increase the performance, we have to minimize this loading data. 
+
+This is called full table scan where Postgres has to load many or all rows from the heap file to memory. Its a poor performance thing.
+
+So everytime we make a full table scan, we need to invetsigate if could do anything better. Lets see how?
+
+
+=> INDEXES:
+
+select * from users where name = 'ryan'    =====>        INDEX       ======>          Heap File on Harddisk
+                                                            |                        ---------------------
+                                                            |                        |      Block 1         |
+                                                            |                               Nancyy 
+                                                            |                               Alf 
+                                                            |                        -----------------------
+                                                            | ------------------>     |      Block 2         |
+                                                                                            Jia 
+                                                                                            Ryan
+                                                                                    -----------------------
+
+Wouldnt it be amazing if we have a tool that would tells us, hey your ryan record lies inside the block 2, so go load only that block and not the entire table. 
+Well, we do have something like that, and its called indexes. They tell us where our particular record is located in.
+Index - a data structure that efficiently tells us what block/index a record is stored at.
+
+
+=> How an index works? 
+- Select the column that we need to have fast lookups on, eg username. We can have it on multiple columns though.
+- Extract only the property we want to do fast lookups on and get the block/index for each record too.
+
+ Heap File on Harddisk            =>    Extracting      =>      Nancyy (Block 0, index 1)
+---------------------                                           Alf (Block 0, index 2)
+|      Block 0        |                                        Jia (Block 1, index 1)
+        Nancyy                                                  Ryan (Block 1, index 2)    
+        Alf 
+-----------------------
+|      Block 1         |
+        Jia 
+        Ryan
+-----------------------
+
+- No other information is taken, other than the username. 
+- Now, sort it in some meaningful way like alphabetical for text, greatest or least for numbers, earliest or latest for datest
+
+Nancyy (Block 0, index 1)    =>      alphabetical sorting    =>      Alf (Block 0, index 2)
+Alf (Block 0, index 2)                                              Jia (Block 1, index 1)    
+Jia (Block 1, index 1)                                              Nancyy (Block 0, index 1)
+Ryan (Block 1, index 2)                                             Ryan (Block 1, index 2) 
+
+
+- Organize into a tree data structure. 
+            ROOT NODE
+            -------------
+            |           |
+            |           |
+        Leaf NODE       Leaf NODE
+        ---------       ---------
+        Alf   Jia        Nancyy     Ryan   
+    (B0,I2) (B1,I2)     (B0, I1)    (B1, I2)
+
+Note that we are adding data in the same alphabetical order only that we have sorted that in. Here, B means block and I means Index. Ofcourse you would have guessed it. 
+
+- Add helpers to the root node that will have some directions that which node the query should look in, to get the desired record.
+
+                        ROOT NODE
+                        -------------
+Go this way if                          Go this way if       
+'alf' <= username < 'Nancyy'            'Nancyy' <= username
+            |                               |
+            |                               |
+        Leaf NODE                           Leaf NODE
+        ---------                           ---------
+        Alf   Jia                            Nancyy     Ryan   
+    (B0,I2) (B1,I2)                         (B0, I1)    (B1, I2)
+
+
+Lets say we are looking for username - ryan.
+                        ROOT NODE
+                        -------------
+Go this way if                          Go this way if       
+'alf' <= 'ryan' < 'Nancyy'            'Nancyy' <= 'ryan'   (true)
+            |                                   |
+            |                                   |
+        Leaf NODE                           Leaf NODE
+        ---------                           ---------
+        Alf   Jia                            Nancyy     Ryan    (found it in block 1 at index 2. Go get it from there.)  
+    (B0,I2) (B1,I2)                         (B0, I1)    (B1, I2)
+                                                            |
+                                            ----------------
+                                            |
+                                            |
+         Heap File on Harddisk              |
+        ---------------------               |    
+        |      Block 1         |            |
+                Nancyy                      |
+                Alf                         |
+        -----------------------             |
+        |      Block 2         |            |
+                Jia                         |
+                Ryan            -------------
+        -----------------------
+
+With this, we get the block and index and can load only that block inside the memory. No need to go through the first leaf node, as we have a condition right above it, and no need to go through each blocks as well. Thus finally we'll get our ryan record. 
+
+
+
+=> Lets try in practical:-
+    Create index on users (username)
+
+Thats it. Seriously, all these diagrams are created just by this one command, bts. Its like that joke, where interview is hell hard and the work you get to do, is pretty easy.
+- users is the tablename
+- username is the column we want to add index on. 
+- To check, go to users table in sidebar and you can see the index. 
+- A default name is given to that index like:- users_username_idx
+- To give a custom name to your index:-
+    Create index index_name on users (username)
+
+- To delete an index:-
+    drop index users_username_idx
+
+- users_username_idx is the index name.
+
+
+=> Benchmarking. (benchmarking in english means, evaluate (something) by comparison with a standard.)
+- OKay all does really works? Does it really decrease my time and imrpove performance?
+
+Lets see. 
+Ok note:- The msg, "Query returned successfully in 204 msec." includes the networking time also (travel timefrom pgamdin to the database location). So it wont be accurate for us in a situation where we need to test indexes.
+
+    explain analyze Select * from users where username = 'Emil30'
+
+    ---------- result ----------
+    "Index Scan using users_username_idx on users  (cost=0.28..8.30 rows=1 width=202) (actual time=0.047..0.049 rows=1 loops=1)"
+    "  Index Cond: ((username)::text = 'Emil30'::text)"
+    "Planning Time: 0.138 ms"
+    "Execution Time: 0.079 ms"
+
+explain analyze keyword will result into data that will show some timings like execution time.
+with index we get approc 0.075ms. Note the result might change a bit on every run,  but we can take an avg value. 
+
+
+Now drop the index:-
+        drop index users_username_id
+Run the same query:-
+        explain analyze Select * from users where username = 'Emil30'
+
+And there we can see the difference that an index could make.
+        "Seq Scan on users  (cost=0.00..175.81 rows=1 width=202) (actual time=0.846..4.047 rows=1 loops=1)"
+        "  Filter: ((username)::text = 'Emil30'::text)"
+        "  Rows Removed by Filter: 5344"
+        "Planning Time: 14.247 ms"
+        "Execution Time: 4.114 ms"
+
+With index, execution time  0.075ms
+without index, execution time  4ms
+
+Divide, 4.114 / 0.075 = 54. Means it is 54 times faster than doing it without indexes. OH MY GOD. This looks like such a savior doesnt it. Wwe should use it everywhere. shouldnt we? Uh no, not really.
+
+=> Because there are times when we shouldnt use indexes as in some cases, it can ultimtely slow down our db's performance.
+- Remember while creating indexes, diagrammatically, we had a tree structure. Inside which our indexes were stored and had a pointer to the heap file of that specific block.
+The indexes we store, takes up space. Yeah, real storage space on our database. Its not just stored in our memory (ram), instead its a file where all of these indexes are stored in and storage costs money.
+Lets see how much money it takes:-
+
+Create an index:
+    Create index index_name on users (username)
+
+    select pg_size_pretty(pg_relation_size('users'))    // returns entire table size 
+    select pg_size_pretty(pg_relation_size('index_name'))   // returns the indexes size
+
+800kb and 184kb was the result for above queries. Doenst look much na. I mean, come on, this much storage we can afford if we get better performance. But what if we had, 80gb large table and hence 18gb of index size for one column. Thats more isnt it. Becuase if we have a hosting solution like aws, it costs more for storage. But ok, lets say I can give as much money as possible as the software would generate enough revenue. 
+So now? should we use it everywhere?
+No, we have more downsides.
+- can be large, we saw that.
+- slows dow insert/update/delete operations as now the postgres needs to update the indexes as well. eg- adding 20rows, postgres will change 20 indexes as well.
+- indexes might not actually get used. Postgres decides whether it will use indexes or not. It will execute other ways which could be faster than indexes in certain situation/query. So boom. you're paying for storage, and accepting performance declination via insertion, deleteion, etc. operations and they are all of no use, if postgres isnt using indexes at all. so we need to know where postgres uses indexes and on such columns only we need to add indexes and not everywhere.
+
+=> INDEX types:-
+B-Tree : the one we saw with tree structure using root and leaf nodes. 99% of the time you want this.
+Hash : speeds us simple quality checks
+Gist : Geometry, full-text search
+SP-gist : clustered data, such as dates - many rows might have the same year
+GIN : for columns that contains arrays or json data
+BRIN : specifialized for really large datasets
+
+- we are never going to use most of these other than the b-tree. Seriously none of them. 
+
+=> Automatically generated indexes.
+- postgres Automatically creates an index for primary key columns and columns that have unique constraint of every table. They just dont get listed under indexes in pgamdin sidebar.
+so never create an index on primary keys columns and unique constraint columns.
+To see all the indexes of our databases:-
+    select relname, relkind from pg_class where relkind = 'i'
+    
+relkind = 'i' means get me every data where relkind is equal to indexes, i stands for indexes.
+we can see hashtags_pkey (primary key), hashtags_title_key (unique constraint) indexes in the list.
+
+
+
+=> IMP- Go through the last lecture of this section. Very much detail explaination of how indexes are stored. Its reallyyyy coooollll to know. Including pageInspect extension, the structure of index like we have for heap file, how pages are linked with each other via indexes, ctIds, and much more.

@@ -1,0 +1,99 @@
+Simplifying queries with views:-
+
+Q. Write a query to show the most popular users - popularity decided by the no of tags they have.
+    select username, count(*) as no_of_tags
+    from users
+    join 
+    (
+        select user_id from photo_tags
+        union all
+        select user_id from caption_tags
+    ) as tags on tags.user_id = users.id
+    group by username
+    order by count(*) desc
+
+All good!
+But how many times have we did this union for photo_tags and caption_tags? Maybe it was a mistake to create them separately and we should have one tags table only.
+So now? what can we? when there's no meaning in creating 2 seaprate tables for tags. we just need one.
+
+Solution 1 could be:-
+- create a table tags and copy all the rows from photo_tags and caption_tags and delete the original ones.
+how do we copy all the rows bdw?
+    insert into tags(col1, col2)
+    select (col, col2) from photo_tags
+
+ok back to the problem.
+sure solution 1 could be a way but there's 2 problems that comes with it.
+1. cant copy the ids of photo_tags and caption_tags as they might be same and copying them together can result into conflicts.
+2. if we delete og tables then if we have previous queries referencing them, what would happen to those? we'll break them.
+
+
+Solution2 : views
+- We create a view by adding any type of query, like merging two tables and use it anywhere. Its like cte but the main diff is we can use it anywhere. Unlike cte we dont have to attach a query after that with query.
+- It creates a fake table that has rows from other tabess.
+- No need for unions, it can compute asolutely any values.
+
+Lets create a view for our merging two tables issue:-
+    
+    create view tags as (
+        select id, created_at, user_id, post_id, 'photo_tag' as type from photo_tags
+        union all
+        select id, created_at, user_id, post_id, 'caption_tag' as type from caption_tags
+    )
+
+    select * from tags 
+It prints all the data from photo and caption tags.
+For our sub query, we had before:
+    select username, count(*) as no_of_tags
+    from users
+    join 
+    (
+        select user_id from photo_tags
+        union all
+        select user_id from caption_tags
+    ) as tags on tags.user_id = users.id
+    group by username
+    order by count(*) desc
+
+
+=> To change/delete a view:-
+create or replace view recent_posts as (
+    select * from posts order by created_at desc limit 15
+)
+
+DROP view recent_posts
+
+To view in sidebar:- schemas -> public -> views.
+
+Q. Create a view of recent 10 posts and perform following queries on it.
+    - Show users who created the 10most recent posts
+    - Show no of likes each of the 10 most recent posts receieved
+    - show users who were tagged in 10most recent posts
+    - show hashtags used by 10most recent posts
+    - show avg no of hashtags used in 10most recent posts
+    - show total no of comment on 10most recent posts.
+
+Solution:-
+    - create view recent_posts as (
+        select * from posts order by created_at desc limit 10
+    )   
+
+    - select username from recent_posts 
+        join users on users.id = recent_posts.user_id 
+    
+    - select post_id, count(*) as no_of_likes from likes 
+        join recent_posts on recent_posts.id = likes.post_id group by post_id
+    
+    - select distinct recent_posts.user_id from recent_posts 
+        join tags on tags.user_id = recent_posts.id
+    
+    - select title from hashtags_posts 
+        join hashtags on hashtags.id = hashtags_posts.hashtag_id
+        join recent_posts on recent_posts.id = hashtags_posts.post_id
+    
+    - select count(title) / count(distinct user_id) from hashtags_posts 
+        join hashtags on hashtags.id = hashtags_posts.hashtag_id
+        join recent_posts on recent_posts.id = hashtags_posts.post_id
+
+    - select count(*) from comments 
+        join recent_posts on recent_posts.id = comments.post_id 

@@ -1,0 +1,108 @@
+A post can be liked:- lets create that!
+
+Rules of 'Likes system'
+- A user can like a specific post one time only.
+Means if I liked a picture, I cant like it again.
+- A user should be able to unlike a post.
+- Even comments can be liked and unliked.
+- Need the no. of counts of how many user liked a post.
+- Need to able to list down the usernames who like the posts. eg- krishna and 10 others liked the photo.
+- We might want to think about dislikes or other kind of reactions like sad, excited, etc.
+
+
+A brute-force approach would be-
+Adding a likes column to posts table and count of likes.
+eg-
+1  url.com      14 likes
+2  url2.com     27 likes
+
+Why not this approach? 
+- No way to restrict user from liking it more than once.
+- No way to figure our which user liked the post
+- No way to remove a like automatically when a user is deleted.
+
+Instead we'll have a likes table.
+Likes table:- id primary key, user_id reference users(id), post_id reference posts(id)
+
+Here, we can have unique constraint on posts and users both. UNIQUE(user_id, post_id)
+It will match both together, and we'll match our condition.
+Bt what abt multiple reactions and likes on comments? We only implemented likes on posts yet.
+Lets see that:-
+
+Instead of like table, call it reactions table and a new column in it - type:-
+Table Reactions: type (like, love, care, sad, etc)
+
+
+=> Now lets create schema which will allow both likes on comments and posts. Its a complex topic and we'll see few solutions that could work.
+
+1. Polymorphic association:-
+Changes in likes table-
+TABLE LIKES:- id, user_id, LIKES_ID, LIKED_TYPE (post/comment)
+We'll check if LIKED_TYPE is post that go to post table and fetch for likes_id row.
+This form is called Polymorphic association. Now this works, but there's a problem. 
+likes_id is the column that we cant have a foreign key on. Becuase it refers to 2 diff tables (posts and comments). lets say we have-
+posts - 1,2,3,4
+comments - 2,3,4,5,6
+The likes_id has to be an integer type instead of foreign key becuase you see, what if sql tries to fetch 6 id in posts table, it doesnt exist, will throw error. Data consistency issue occurs in this approach.
+Even though this approach has this issue, its still used a lot in projects. 
+
+
+2. Another alternative:-
+likes table: id, user_id, post_id(null, 2, null, null, 5), cmt_id (1, null, 3, 4, null)
+
+here, we create 2 columns; post_id and cmt_id. 
+The row should either have a post_id or cmt_id. it cant be both null or both filled. We need exact 1 column to be filled. 
+To check this, we need to do a bit of weird code, but its easy and makes sense, let see:-
+
+    ADD CHECK OF (
+        COALESCE((post_id)::Boolean::Integer, 0)
+        + 
+        COALESCE((cmt_id)::Boolean::Integer, 0)
+    ) = 1
+
+woahh, whats that?
+Ok one step at a time. 
+COALESCE - it takes arguments and return the first arg which is not null.
+    eg- COALESCE(10, null)   - 10
+    COALESCE(null, 4)   - 4
+    COALESCE(5, 7)      - 7
+We are taking post_id and cmt_id, converting it to boolean, which means if value is null then false, if value has something, make it true.
+we are then again converting the boolean value to an integer which will give us 0 or 1.
+if the addition of 0 + 1 is 1, then either of the two value is filled (valid).
+if its 2, then both are filled (not valid)
+if its 0, then both are null (not valid)
+
+Got it, didnt you?
+
+But hey, there's a problem here too. Ofcourse, how can it even be easy for us huh!
+imagine what if we have 10 different buttons user can like on, eg - posts, comments, messages, reels, websites, and much more.
+here we'll have a new column for each feature, which will consist of a lot of null values too. It can be a mess.
+In case of such situation, we can use Polymorphic association which would be a little better than this approach atleast.
+
+
+3. The simplest alternative:-
+create a diff table for each like feature:-
+post_likes table:- id, user_id, post_id
+comments_likes table:- id, user_id, cmt_id
+
+Simple, readable, and lets us add as many constraint and check as we want pretty easily.
+hey but what if I want to know, total no. of likes. in before two approaches since we have 1 single table, we could easily have the count function. Here, we might have to use union or a view.
+- The downside here could be the same as above, we might have to create a whole new table foreach like feature. 
+
+=> Oh boy, just tell me what are we gonna use in our app, pls.
+- ok.
+We'll use 2nd approach. why? becuase we dont have much diff in a post or comment table for now. so need for multiple tables already. 
+So, here's the schema:-
+TABLE LIKES:- id, created_at, user_id, cmt_id reference comments(id), post_id reference posts(id)
+
+No need for updated_at column in likes, since we would never update a like, we either have it or delete it. sure we need created_at, incase if user needs to know the last 10 likes he recieved.
+
+
+Till now our entire schema:-
+USERS TABLE: id serial primary key, created_at timestamp, updated_at timestamp, username varchar (30)
+
+POSTS TABLE: id serial primary key, created_at timestamp, updated_at timestamp, url varchar(200), user_id integer references users(id)
+
+COMMENTS TABLE:  id serial primary key, created_at timestamp, updated_at timestamp, contents varchar(240), user_id integer references users(id), post_id integer references posts(id)
+
+LIKES TABLE:- id, created_at, user_id integer references users(id), cmt_id reference comments(id), post_id reference posts(id)

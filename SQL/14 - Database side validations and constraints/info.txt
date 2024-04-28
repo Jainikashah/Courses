@@ -1,0 +1,222 @@
+DATABASE SIDE VALIDATIONS:-
+
+There are mainly two scenarios. 
+1. we have a web interface and a admin user wants to add new product in the products table of our ecommerce database. 
+Oh and here, user added a price of -25. A negative value. Here, we want to send an error back to the web saying, "Hey we need a position price value". 
+
+2. We dont have a web interface and the admin user directly changes the products table with the same input of -25. lets say using pgadmin it is adding that product. at such case we want to send an error as well. This will come form the table we are storing value in.
+
+We need to understand where to throw validations from, the database or the table. CALM DOWN , I know its way too much, but remember: "Its not hard, it new".
+
+
+=> ROW-LEVEL VALIDATIONS:-
+Things we can check for when a row is being inserted:-
+    - Is a given value defined?
+    - Is a value unique in its column?
+    - Is a value >, <, >=, <=, = than some other value?
+
+Lets try it on practical:-
+In pgadmin -> right click on databases in sidebar -> create database -> give a name like validation.
+Then right click -> and open query tool.
+Note, this editor is specifically connected to validation database only. No other db is affected by writing query in editor.
+
+Now, create a products table:-
+    create table products (
+        id serial primary key,
+        name varchar(40),
+        department varchar(40),
+        price integer,
+        weight integer
+    )
+To see this, go to validation db -> schemas -> public -> table -> right click -> view data -> all rows.
+(ofcourse if you are following, there wont be any data for now)
+
+insert into products (name, department, price, weight)
+values ('Shirt', 'Clothes', 20, 10)
+
+- NOT NULL VALIDATION:-
+    insert into products (name, department, weight)
+    values ('Shirt', 'Clothes', 10)
+Lets say I added a value with no price data in there, it will be easily saved, since we dont have any vaidation there. So in our products table the value would be like:-
+    2   shirt   Clothes     null    10 
+
+by default if no value is inserted, postgres sets the value as null.
+
+To throw an error in such case,
+WHEN CREATING TABLE:    
+    Create table products (
+        id serial primary key,
+        name varchar(40),
+        department varchar(40),
+        price integer NOT NULL,
+        ..
+    )
+
+AFTER CREATING TABLE:
+    Alter table products
+    alter column price
+    set not null;
+
+But the alter code has a gotcha, since we already have a row of price as null, it will throw below error:
+    ERROR:  column "price" of relation "products" contains null values 
+
+So, now we need to update price or delete rows will null values. 
+To update: setting it to default 999. 
+    update products set price = 999 where price is null
+
+Now we can run the alter code again.
+    Alter table products
+    alter column price
+    set not null;
+    
+    // trying insert now with no price column.
+    insert into products (name, department, weight)
+    values('he', '872', 82)
+
+    ERROR:  Failing row contains (3, he, 872, null, 82).null value in column "price" of relation "products" violates not-null constraint.
+
+Gets this error. ofcourse thats what we want to see.
+
+Ok, but there are some products whose price we dont know, lets just keep a default value for such products.
+
+WHEN CREATING TABLE:    
+    Create table products (
+        id serial primary key,
+        name varchar(40),
+        department varchar(40),
+        price integer DEFAULT 999,
+        ..
+    )
+
+AFTER CREATING TABLE:
+    Alter table products
+    alter column price
+    set DEFAULT 999;
+    
+// Lets try a query without price, will save 999 as default value and no error will be thrown.
+    insert into products (name, department, weight)
+    values('he', '872', 82)
+    
+
+- UNIQUE value validation:-
+Lets say we only want unique values inside a column of products.
+    insert into products (name, department, weight)
+    values('Shirt', 'CLUTHE', 982)
+
+    insert into products (name, department, weight)
+    values('Shirt', 'CLUTHE', 982)
+For now, it would work. since we dont have any validation.
+
+WHEN CREATING TABLE:    
+    Create table products (
+        id serial primary key,
+        name varchar(40) UNIQUE,
+        department varchar(40),
+        price integer,
+        ..
+    )
+
+AFTER CREATING TABLE:
+    Alter table products
+    ADD UNIQUE(name)
+Again we have a gotcha here, if we already have values that are duplicated, the above query will be failed.
+    ERROR:Key (name)=(Shirt) is duplicated.could not create unique index "products_name_key
+
+To directly change data in db from pgadmin, instead of running a query. Just ftech the data -> click on the edit button of the row -> change it and press save button (right above the table, besides the delete btn, in form of a database icon)
+
+Now if we try alter code for unique values, it would work
+And after inserting we get below erorr:
+    ERROR:  duplicate key value violates unique constraint "products_name_key"
+
+
+=> Multi column uniqueness:-
+Lets first remove a constraint that we just added.
+- Go to databases -> your db (products) -> tables -> products -> constraints. Expand it, frm here you get the name of the constraint you want to delete. run the below query then, replace products_name_key with the constraint name.
+    alter table products
+    drop constraint products_name_key
+To see the result in the sidebar, right click on products and refresh. You'll see that the constraint is removed now.
+
+Adding multi uniquess columns:-
+    Create table products (
+        id serial primary key,
+        name varchar(40),
+        department varchar(40),
+        price integer,
+        UNIQUE(name, department)
+    )
+
+AFTER CREATING TABLE:
+    Alter table products
+    ADD UNIQUE(name, department)
+
+Note:- This will consider name and department together.
+Example:-
+    name    dept
+    shirt  clothes
+    shirt  house
+    pants  clothes
+These will be acceptable, because unless both are same, we wont get unique constraint error.
+    shirt  clothes
+This will throw an error, as both are same in the table.
+
+
+=> Other validations:
+- Greater than:-
+
+WHILE CREATING TABLE:
+      Create table products (
+        id serial primary key,
+        name varchar(40),
+        department varchar(40),
+        price integer CHECK (price > 0),
+    )
+
+AFTER CREATING TABLE:
+    Alter table products
+    ADD CHECK (price > 0)
+
+A check can only work on the row we are adding / updating, like not allowed in a subquery or while checking something in where.
+We got that gotcha thing here too. it wont allow us to add this check if there's a row that has a price less than 0.
+
+    insert into products(name, department, price, weight)
+    values ('belt', 'house', -38, 3)
+
+Throws error:
+    ERROR:  new row for relation "products" violates check constraint "products_price_check"
+
+Similarly we can multiple such operations like <, = and so on..
+
+
+=> Lets look at one more example for check for a new table:-
+    create table orders (
+        id serial primary key,
+        name varchar(40) not null,
+        created_at timestamp not null,
+        est_delivery timestamp not null
+        check(created_at < est_delivery)
+    )
+
+    // works great, since created_at is before than est_delivery
+    insert into orders (name, created_at, est_delivery)
+    values('shirt', '2000-nov-20 01:00 AM', '2000-nov-25 01:00 Am')
+
+    // throws error, since created_at is after est_delivery
+    insert into orders (name, created_at, est_delivery)
+    values('shirt', '2000-nov-20 01:00 AM', '2000-nov-5 01:00 Am')
+
+
+=> When to use web server for validation and when database?
+
+WEB SERVER :-
+- Easier to express more complex validation.
+- Far easier to apply new validation rules, want price greater than 10 today and 20 tomorrow.
+- Many libraries to handle validation automatically, like a no looks like number, an email looks like an email.
+
+Database:-
+- validation still applied even if you connect with a diff client.
+- Guaranteed that valiation is always applied.
+- Can only apply new valiation rules if all existing rows satisfy it.
+
+You know, if we have a valiation in our db, changing it later on, and making it customize for different users, is a lot complex specifically on production mode.
+No matter where our data is coming from, the validation would be same for every request, so most basic ones are mostly added in our db side.
+So we should use valiation that might change, or are very complex, on the server side. Baisc valiations like username should be greater than 3 chars, price should be greater than 0, etc. can still work on db side.

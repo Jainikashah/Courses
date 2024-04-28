@@ -1,0 +1,100 @@
+Unions AND Intersections:-
+
+Lets take a real world problem. A company sell phones and need to sell the highest price phones in order to make more profit. Also, it needs to know the products whose weight is less so that its easy to ship them. So we need atmost 8 products that we need to sell more.
+So, here's the question:-
+
+Q1. Find the 4 products with the highest price and the 4 products with the highest price/weight ratio.
+
+Here, the first approach would be, that we can write 2 diff queries for it:-
+    select * FROM products order BY price desc LIMIT 4
+    select * FROM products order BY  price/weight desc LIMIT 4    
+Now,
+to combine them:-
+    (select * FROM products order BY price desc LIMIT 4)
+    UNION
+    (select * FROM products order BY  price/weight desc LIMIT 4)
+
+Note: union will remove the duplicates. To keep the duplicates try the below query:-    
+    (select * FROM products order BY price desc LIMIT 4)
+    UNION ALL
+    (select * FROM products order BY  price/weight desc LIMIT 4)
+
+
+Note about unions:-
+We dont need parathesis everytime, but since we are using order by and limit, it could confuse the db if we dont add (), but other wise we can skip parenthesis.
+    SELECT * FROM products
+    UNION
+    select * FROM orders
+
+
+- We can combine two specific columns only if their name and datatype are same:-
+eg the below query wont work, beacuse the name and price columns have different datatypes and diff columnnames.
+    SELECT name FROM products
+    UNION
+    select price FROM products
+
+This will work. I know it looks silly and not so useful.
+    SELECT name FROM products
+    UNION
+    select name FROM products
+
+
+=> Types of set operations:-
+- Union : Combines all, remove duplicates
+- Union ALL : Combines all
+- Intersect : Find common records, remove duplicates
+- Intersect ALL : Find common records
+- Except : Find the rows that are present in first query but not in second, remove duplicates. (A-B)
+- Except ALL : Find the rows that are present in first query but not in second.
+
+
+- INTERSECT:
+    (select * FROM products order BY price desc LIMIT 4)
+    INTERSECT 
+    (select * FROM products order BY  price/weight desc LIMIT 4)
+Finds the common one out
+
+- INTERSECT ALL:
+    (select * FROM products 
+    order BY price desc LIMIT 4)
+    INTERSECT ALL
+    (select * FROM products 
+    order BY  price/weight desc LIMIT 4)
+Note, Intersect all will not print the output of common one twice.
+Instead it will look for common rows inside one query and if it exists, it will print that twice. Not the common one out of the two queries(twice). But the duplicate one from each of the one query.
+
+
+- EXCEPT: 
+Its like (A-B), find the rows present in A but not in B.
+example:-
+A   B       Except
+1   2          1
+2   4          3
+3   6
+4   8
+Note Here, the order of the query matters. 
+
+    (select * FROM products order BY price desc LIMIT 4)
+    EXCEPT
+    (select * FROM products order BY  price/weight desc LIMIT 4)
+
+
+- EXCEPT ALL:
+It just keeps the duplicates from the first query:-
+example:-
+A   B       Except
+1   2          1
+2   4          3
+3   6          3 
+3   8
+
+
+Q1. Write a query that will print the manufacturer of phones where the phone's price is less than 170.
+Also print the manufacturer that have created more than 2 phones
+    select manufacturer 
+    FROM phones
+    where price < 170
+    UNION
+    select manufacturer
+    FROM phones
+    group BY manufacturer HAVING count(*) < 2

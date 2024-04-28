@@ -1,0 +1,73 @@
+TRANSACTIONS:-
+- Lets say, I have a db for a bank. And there are 2 customers alyson and gia.
+alyson needs to transfer $50 from alyson to gia's account. what we'd do?
+    Update accounts set balance = balance - 50 where name = 'alyson'
+    Update accounts set balance = balance + 50 where name = 'gia'
+Good enough?
+Sure,
+But imagine, what if I run first query and due to some reason, our server crashes. Now, 50$ is deducted from alyson but not added in gia. And we would never know that we have any pending queries to run.
+
+In some cases, transactions are pretty handy. What happens in transactions is that we either run the whole block of code inside the transactions or nothing at all. 
+Works great where we have a block of queries that are related to each other and needs to run in whole.
+
+Lets try in practical:
+    create table accounts (
+        id serial primary key,
+        name varchar(30) not null,
+        balance integer not null
+    )
+
+    insert into accounts(name, balance)
+    values ('gia', 100), ('alyson', 100)
+
+
+- Now everytime we create a new querytool window, we create a new connection in our database. Any querytool window or if we open our db from any other app has a unique connection with our db.
+All these connections refers to the exact same data in our db.
+
+To start a transaction:-
+
+    BEGIN;
+Yeah, thats how we begin a transaction. 
+NOTE:- On right corner of the tool, we have an icon, on hover it says- the session is idle and there is no current transaction. 
+Once you run the begin code, it will change the icon to a clock-like icon and reads - the session is idle and there is a valid transaction block.
+It says that the current querytool is a separate block than other querytools. 
+
+BTS, it creates a new workspace for the data which donot affect the og db. 
+
+    update accounts set balance = balance - 50 where name = 'alyson'
+    update accounts set balance = balance + 50 where name = 'gia'
+    select * from accounts
+
+In our transaction we'll see that the data would be updated as below:-
+    1	"gia"	100
+    2	"alyson"	50
+
+But in other query tools, we have:-
+    1	"gia"	100
+    2	"alyson"	100
+
+You see, the query we run in the transaction query tool, doesnt affect other query tools, as we have a diff workspace that we now refer to.
+
+Now, how to merge it with the og db?
+-   COMMIT;
+Will take our transaction changes and merge into the og database. No longer we'll have that clock-like icon and in all querytool windows, our updates will be visible
+
+-    ROLLBACK;
+Will revert back the changes of current transaction and delete the connection. now the querytool will refer to the og db instead of its workspace thing.
+
+- In case of any error occurs, we must need to run rollback, otherwise it wont let us run further queries
+
+    select * from 'eeiuie'
+Invalid query, so now if we try t orun any query even if its valid, will get us the below error.
+So, run rollback to get the transaction back.
+    
+    ERROR:  current transaction is aborted, commands ignored until end of transaction block 
+    rollback; // to get it back
+
+- If at any point, the db loses server connection, then automatically the rollback command is runned and deletes the current transaction (you see thats what we wanted for our banking app). To simulate a connection-loss thing:-
+    begin;
+    update accounts set balance = balance - 50 where name = 'alyson'
+
+Now, go to the dashboard -> scroll down -> Under activity -> refresh it (on right side) -> you'd see 2 conn (inside application name) rows. 2 or 1 or 3 or whatever. Just press the cross icon and delete those only. they represent the no. of open query tool windows we hvae. so we are just deleting those connections to get the connection lost error 
+Now, if we now try to run that querytool window with transaction or any of those deleted connection, we'll see connection lost error. and on ok, if we run the select query, we'll have the same data as the og one. 
+Thus, the in short meaning is, incase if we every have a connection loss issue, postgres will automatically rollback our transaction.

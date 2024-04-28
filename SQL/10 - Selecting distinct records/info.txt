@@ -1,0 +1,16 @@
+selecting distinct records:-
+
+    select distinct department from products
+Gets us all the unique values of department.
+
+To get count of how many unqiue values are there in a column:-
+    select count(DISTINCT department) FROM products
+
+Similar to group by. we can use group by in place of distinct but not distinct in group by.
+
+Get the unique values of department and name:-
+    select DISTINCT department, name FROM products
+here, the department could occur twice or more but not with the same name. baiscally a unique combination of the two.
+
+Q. Get the number of unique manufacturers from phones
+    select count(DISTINCT manufacturer) FROM phones

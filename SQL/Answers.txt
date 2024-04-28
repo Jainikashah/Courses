@@ -1,0 +1,216 @@
+upto section - 9
+From the ecommerce_dataset:-
+
+Q. Get fullname of users in uppercase. eg - JAINIKA SHAH
+    select concat(first_name,' ', last_name) FROM users2
+
+
+Q. Get price / weight column from products with column name as price_weight_ratio
+    select price / weight as price_weight_ratio FROM products
+
+
+Q. Get price of products whose price is greater than 500
+    select price FROM products WHERE price > 500
+
+
+Q. Get price of proucts whose price is between 100 and 300
+    select price FROM products WHERE price BETWEEN 100 AND 300
+
+
+Q. Get items that belongs to toys dept
+    select * FROM products WHERE department = 'Toys'
+
+
+Q. Print prouduct id, dept and paid value from products and orders wherein the items belongs to toys dept and order is paid.
+    select products.id, department, paid FROM orders
+    JOIN products on products.id = orders.product_id
+    WHERE department = 'Toys' And paid = TRUE
+
+
+Q. Update record of user where first_name is Iva to Illa.
+    UPDATE users2 set first_name = 'Ella' WHERE first_name = 'Iva'
+
+
+Q. Delete user with first_name Jannie
+    DELETE FROM users2 WHERE first_name = 'Jannie'
+
+
+Q. Write a query to print no of paid and unpaid orders.
+    select paid, count(*) FROM orders group BY paid
+
+
+Q. Write a query to print first_name and last_name of users and whether they have paid or not.
+    select concat(first_name, ' ', last_name), paid FROM users2 
+    JOIN orders on orders.user_id = users2.id
+
+
+Q. Get us 5 least expensive products
+    select * FROM products order BY price desc LIMIT 5
+
+
+Q. Get us 5 least expensive products except the first one
+    select * FROM products order BY price desc LIMIT 5 OFFSET 1
+
+
+Q. Find the 4 products with the highest price and the 4 products with the highest price/weight ratio.
+    (select * FROM products order BY price desc LIMIT 4)
+    UNION
+    (select * FROM products order BY price / weight desc LIMIT 4)
+
+
+Q. Get products that lies between 100 to 500 price tags and orders are paid.
+    select name, paid, price FROM products
+    JOIN orders on orders.product_id = products.id
+    WHERE price BETWEEN 100 AND 300 
+    AND paid = TRUE
+
+
+Q. Get union of Products that have price less than 100 and more than 900.
+    select * FROM products WHERE price < 100
+    UNION 
+    SELECT * FROM products WHERE price > 900
+
+
+Q.  List the name and price of all products that are more expensive than all products in TOYS department
+    select name, price FROM products
+    WHERE price > (
+    select max(price) FROM products WHERE department = 'Toys'
+    )
+
+Q. Find the avg number of orders for each user.
+    select avg(orderValue) from (
+        select user_id, count(*) as orderValue
+        FROM orders group BY user_id 
+    )
+    as ordertable            
+
+
+Q. Find name, department, price of all products whose price is greater than all products  of industrial department.
+    select name, department, price FROM products WHERE price > ALL (
+        select price FROM products WHERE department = 'Industrial'
+    )
+
+
+Q. Show the name of products that are more expensive than at least one product in the industrial department.
+    select name, department, price FROM products WHERE price > SOME (
+        select price FROM products WHERE department = 'Industrial'
+    )
+    
+
+Q. Show the name, department, price of the most expensive product in each department.
+    select name, department, price FROM products as p1
+    WHERE p1.price = (
+        SELECT max(price) FROM products as p2
+        WHERE p1.department = p2.department
+    )
+
+
+Q. Without using a join or a group by, print the number of orders for each product.
+    select name, (
+    select count(*) FROM orders as o1 WHERE o1.product_id = p1.id
+    )
+    FROM products as p1
+
+
+Q. Get max price from products & count of comments.
+    select 
+        (select max(price) FROM products),
+        (select count(*) FROM orders)   
+
+
+Q. Print name of all products that are not in the same department as products with a price less than 100.
+    select name, department FROM products WHERE department not in (
+    select department FROM products WHERE price < 100 )
+
+
+Q. Find the first_name from orders where product_id = 3
+    select first_name FROM orders
+    JOIN users2 on users2.id = orders.user_id
+    WHERE product_id = 3
+
+
+
+From phones data:-
+
+Q. Calculate avg price of phones of each manufacturer and the print the highest avg price
+    select Max(avg_price) as max_avg_price 
+        FROM (
+            select manufacturer,
+            avg(price) as avg_price
+            FROM phones group BY manufacturer
+        ) 
+        as phoneTable
+
+
+Q. Print name of all phones that have a price higher than the avg price of all phones
+    select name FROM phones WHERE price > ( 
+    select avg(price) FROM phones )
+
+Q. Print name and price of phones that have a price greater than 'p4' phone
+    select name, price FROM phones WHERE price > (
+        select price FROM phones WHERE name = 'p4'
+    )
+    
+Q. Get us the names of phones of only second and third most expesive products
+    select name FROM phones order BY  price desc OFFSET 1 LIMIT 2
+
+
+Q. Write a query that will print the manufacturer of phones where the phone's price is less than 170. Also print the manufacturer that have created more than 2 phones
+    select manufacturer FROM phones WHERE price < 170
+    UNION
+    select manufacturer FROM phones group BY manufacturer 
+    HAVING count(*) > 1 
+
+
+Q. Show the name of phones that have a price greater than any phone of samsung
+    select name, manufacturer, price FROM phones 
+    WHERE price > some(
+         select price FROM phones WHERE manufacturer = 'samsung' 
+    ) AND
+    manufacturer != 'samsung'
+
+
+
+
+From example_data set:-
+
+Q. Show content of comments alongwith the username of the user who wrote it.
+    select contents, username FROM COMMENTS 
+    JOIN users ON users.id = comments.user_id
+
+
+Q. List content of comments and url of the photo that comment was added to.
+    select contents, url FROM COMMENTS
+    JOIN photos ON photos.id = comments.photo_id
+
+
+Q. Write a query to display url, contents from photos and comments resp. where the user himself has commented on his own photos. Basically we want to know who is commenting on their own photos.
+    select contents, url FROM COMMENTS JOIN photos ON
+    photos.id = comments.photo_id
+    WHERE photos.user_id = comments.user_id
+
+
+Q. Write a query to display url, contents, username from photos and comments resp. where the user himself has commented on his own photos. Basically we want to know who is commenting on their own photos.
+    select contents, url FROM COMMENTS JOIN photos ON
+    photos.id = comments.photo_id
+    WHERE photos.user_id = comments.user_id
+
+
+Q. Get total comments of all users based on user_id. Means I want to know how many comments each user has made.
+    select user_id, count(*) FROM COMMENTS group BY user_id
+
+
+Q. Get the no of comments on each photo
+    select photo_id, count(*) FROM COMMENTS group BY photo_id
+
+
+Q. Find the no of comments for each photo where the photo_id is less than 3 and the photo has morethan 2 comments
+    select photo_id, count(*) as total_count FROM comments
+    group BY photo_id
+    HAVING count(*) > 17 AND photo_id < 5
+
+
+Q. Find the user_ids where the user has commented on the first 50 photos and the user added more than 20 comments on those photos 
+    select user_id, COUNT(*) FROM COMMENTS
+    WHERE photo_id <= 50
+    group BY user_id HAVING count(*) > 20

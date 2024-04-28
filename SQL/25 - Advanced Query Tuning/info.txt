@@ -1,0 +1,172 @@
+- What is cost? Amount of time to execute some part of our query plan. Its not super accurate but good enough for now.
+
+Cost in detail:-
+Remeber the planner we talked about before, the one that decides which way would be faster, the fetching all users and searching through them, or looking at table via the indexes.
+- How does the planner calculates this?
+- Lets go through the steps of each way:-
+IMP - The caclcualtion we do is based on how many pages we load from the heap file to the memory.
+
+Way1 :- Look at users_username_index then get users.
+- Find the ids of users who have username of Alyson14.
+    - Get the root node
+    - Jump to some random child page
+    - Process the values in that node
+- Open users heapfile
+- Jump to one/each block that has the user/users we are looking for. 
+
+Here, 
+First get the root node, then in the tree based on the condititon check, select a page that mathces it. Then find the exact user we want, get its pointer (index and block), and then look for it the heap file. Find that particular block only in the heap file and get the item.
+We'll have around 2 pages , 1 - Jump to random child page (inside the tree), and 2nd jump to one/each block line.
+Technically we'll also have one page for root node, but lets keep 2 for now. 
+
+Way2:- 
+- Open heap file
+- Load all users from first block.
+- Process each user, see if it constains the correct username
+- Repeat the process for next block.
+
+This is self explanatory. The page loads is for every page/block available.
+
+Now we have to find the cost. Means whats taking more time, how do we do that? 
+Based on how many pages we load. 
+- For way1 we have 2 pages
+- For way2 we have (total no of pages available in the users heap file), lets say 100 pages we have.
+The caclcualtion looks simple. 2 < 100; So indexes wins.
+
+No, not really. We need take one more aspect into consideration.
+While we load data randomly from our hard drive, there's a performance penalty we get, comapre to doing it sequentailly.
+Hence, indexes method (way1) loads data randomly. Way2 loads it sequentailly as it needs to go through all of it one by one.
+Lets ASSUME, loading data from randomly is 4 times more costly than loading in sequentailly. Ik the assumption is pretty random too, but we are just assuming here.
+So lets make the caclcualtion. 
+- 2 * 4 = 8  (way1)
+- 100 * 1 = 100   (way2)
+
+Yes, now we can make a fair decision. (Surprisingly, there's no unit after 8 or 100 (the cost basically)) 
+Here, 8 page loads is faster than 100, so indexes way is better than loading sequentailly.
+
+And thats how our planner makes the decision.
+
+
+Lets look at the seq scan line now:- (result from join query we run in last section)
+    "  ->  Seq Scan on comments  (cost=0.00..1589.10 rows=60410 width=72) (actual time=0.011..3.707 rows=60410 loops=1)"
+
+Way1:- Fetch all comments
+Open the comments heap file
+load all comments from the first block
+process each comment in some way 
+Repeatthe process for next block.
+
+Total cmts:- 60410 rows
+Total pages:- 985 pages
+
+    To find no of pages required for a table to store in postgres.
+    SELECT oid, relpages
+    FROM   pg_class
+    WHERE  relname = 'comments';
+
+Note:- unlike in previous eg, we are also considering no of comments here. 
+
+We know, that loading pages sequentailly from hard disk is costly. But obviously, loading every comment would not. I mean, we loaded the entire data from Harddisk, now we want to read each row. the reading each row thing is Ofcourse less costlier becuase we are just using some cpu time for that, nothing more.
+So lets make an estimate that loading 1 page from the harddisk to memory is equal to reading 100 comments from that file. Just that. So, now what will be the cost. execution time of total no of pages loaded + total no comments read. Okay?
+
+Lets crete the formula:-
+    (#pages) * 1.0 + (#rows) * 0.01
+
+#pages - total no of pages for comments table
+1.0 - just a baseline value. 
+#rows - total no of comments in comments table
+0.01 - as we decided to estimate, 100 comments reading time = 1 page so, 1/100 = 0.01
+
+Lets populate some values in here.
+    985 * 1.0 + 60410 *0.01 = 1589.1
+
+Wohooooo! Look at the result of postgres query for sequentail scan, the cost value, its 1589.1 only. we did it. Also, this wasnt just an estimate formaula we made up, its what postgres actually do to calclate cost.
+
+So, clear about how postgres, decide cost time for random as well as sequential way. 
+
+
+=> Costs by postgres:-
+    https://www.postgresql.org/docs/current/runtime-config-query.html
+In this official docs, postgres has listed the cost (just as we did) for random_page_cost, seq_page_cost, row_reading, etc. Move to Planner Cost Constants section.
+seq_page_cost - 1.0           
+random_page_cost - 4.0
+cpu_tuple_cost - 0.01
+cpu_index_tuple_cost - 0.005
+cpu_operator_cost -  0.0025 (operators like *, /, +, -, etc.)
+and so on..
+
+RELATION:-
+- seq_page_cost is the base value. (you can change it 2, 3, 4, etc. but ofcourse we dont do that)
+- random_page_cost is 4times expensive that base value
+- cpu_tuple_cost is 1% expensive as the base value
+- processing a tuple from an index is 50% as expensive as processing a real row  (* by cpu_tuple_cost)
+- processing an opertor or function is 50% as expensive as processing an index tuple (* by cpu_index_tuple_cost)
+
+
+COST = 
+(# pages read sequentailly) * seq_page_cost
++
+(# pages read at random) * random_page_cost
++
+(# rows scanned) * cpu_tuple_cost
++
+(# index entries scanned) * cpu_index_tuple_cost
++
+(# times function/operator evaluated) * cpu_operator_cost
+
+
+Note:- if we are having sequentail cost, random read pages will be 0, index entries scanned will be 0 and so the function one. 
+so eventually it'll be seq + tuple cost. and in most docs, this entire cost formula is abbreviated to these two lines only. but bts, we consider all these before calculating.
+
+Note:- This is not the whole story though that postgres consider, a lot of othr caclcualtions are also consider, but for now its enough for us to know how calculation is made bts.
+
+
+=> Understanding the cost line :- Startup vs total costs
+ "Hash Join  (cost=8.31..1756.11 rows=11 width=81) (actual time=0.111..10.981 rows=7 loops=1)"
+    
+Why is there 2 numbers in cost? 9.31 and 17.56. Is it some kind of range?
+No, 
+the first no is the cost to produce the very first row.
+the second is the cost to produce all the rows.
+
+In detail:-
+(In result, hash is just a type of scan like seq scan is)
+
+- Seq Scan on comments  (cost=0.00..1589.10 rows=60410 width=72) (actual time=0.011..3.707 rows=60410 loops=1)"
+In seq scan, we send rows one by one. and the time it takes to send the first row is the first value.
+However, in seq scan the first no is always zero, because it says that for seq scan it takes 0 cost to get the first row. But what the time it takes to load from the heap file? Thats not calculated somehow. And so, its always zero.
+
+- Hash  (cost=8.30..8.30 rows=1 width=17) (actual time=0.028..0.030 rows=1 loops=1)"
+In hash scan, both the values are always same. Because it sends data all together. all rows at once. hence, both lower bound and higher bound value is always same.
+
+why we care abt startup costs at all? Because in some cases we could speed up our queries where we can start performing on the initial rows as they are ready to compute upon. 
+
+=> Costs flows up:-
+ "Hash Join  (cost=8.31..1756.11 rows=11 width=81) (actual time=0.111..10.981 rows=7 loops=1)"
+Hash join is the parent node of all. you can see that in the result of postgres query of explain. Here, the startup cost is 8.31
+How? Because it takes into account the start up cost of its immeditae child node also.
+-immeditae child nodes include hash and seq scan. wherin hash has 8.3 cost and seq has 0.00 
+- thus, hash join itslef has 0 cost (its not exactly zero, but 0. somewhere 1. )hence lets add them. 0 + 8.30 + 0 = 8.3
+- our ans is - 0.31 the .01 is for the hash join initial cost as we saw in above line.
+
+
+=> USING INDEXES:-
+    select count(*) from likes where created_at < '2013-01-01'
+result - 63022
+    explain select * from likes where created_at < '2013-01-01'
+result in seq scan. no index scan as we dont have index in this column only. lets add it.
+    create index likes_created_at_idx on likes (created_at)
+now, lets get that explain thing back
+    explain select * from likes where created_at < '2013-01-01'
+here, now result includes some bitmap thing also. Well, all what we now know is that our indexes are being used as we got that bitmap/index thing.
+
+But, now lets tweak this query only a bit. and get a whole new result. change < to >
+    explain select * from likes where created_at > '2013-01-01'
+result only has seq scan. Though we have indexes added, its only showing seq scan. why??
+
+    select count(*) from likes where created_at > '2013-01-01'  
+result - 688987
+
+here we can see that almost about 70-80% of result lies in this query. 688987 is tremendously big. So, postgres thinks that hey, index scan is going to take more time here than seq scan. as it will have that penalty of random_page_cost as well in this. and since we are fetching almost 70% of the table, its btter if we use seq scan. you see such smart decisions postgres makes for us. its cool isnt it.
+Postgres use index scan when the result is mainly small and precise. 
+So add index in those columns only where the query result is less. Now we know, that using index in every column is not required.

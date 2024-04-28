@@ -1,0 +1,104 @@
+AGGREGATION:-
+
+- We have 2 main ways. Till now we have been working with columns, now lets play with records and its values. we can achieve it by-
+1. Grouping:- reduces many rows down to fewer rows using the group by keyword
+2. Aggregates:- reduces many rows down to one value using the aggregate function.
+
+Eg:-
+    select user_id FROM COMMENTS GROUP BY user_id
+- what it does is, that it groups all the records inside the comments table, based on user_id.
+like if we have,
+user_id     comments
+1           hel
+2           hel
+3           hel
+2           hel
+1           hel
+what group by will do is:-
+1           hel
+            hel
+3           hel
+2           hel
+            hel
+groups the unique value together, based on user_id column.
+note, we can only select the grouped by column here, cant ask for anything else other than user_id from the table.
+
+
+Some aggregates:-
+count(), sum(), min(), max(), avg()
+eg-
+    SELECT max(id) FROM comments     // gets the max value of id
+    SELECT min(id) FROM comments
+    SELECT sum(id) FROM comments
+    SELECT count(id) FROM comments     // count the no. of items 
+    SELECT avg(id) FROM comments
+
+    we cant have:-
+    SELECT sum(id), user_id FROM comments
+we can only use one aggregate statement at once. nothing else can be selected.
+
+
+=> combining group by and aggregates:-
+    SELECT user_id, COUNT(id) FROM COMMENTS GROUP BY user_id
+
+// result
+    user_id	count
+        1	23
+        3	17
+        5	20
+        4	22
+        2	18
+
+It Basically gives us counts after grouping them based on user_id
+remember with group by we can only select the groupedby column. but we can also have aggregate functions like we have here i.e. count.
+what it does is, the aggregate function is applied on all the records that are grouped by. the result we get is, that the user with user_id 1, has made 23 comments; pretty useful info isnt it. similarly we can have maximum value inside a particular group.
+
+=> A gotcha with count:- It doesnt count null values. lets say I have 22 records, out of which, in user_id column I've 2 null values. And I use count on userid as below:-
+    select count(user_id) from photos;
+even though we have 22 records, we only get 20 records. Its leads to misleading info. so a workaround is:-
+    select count(*) from photos;
+what it says is, dont look at one specific column, instead give me the total no. of rows present in the table. Its more useful info as we get the actual no. of rows present irrespective of null value.
+
+
+Q1. Get the no of comments on each photo:-
+    select photo_id, count(*) as no_of_comments FROM COMMENTS GROUP BY photo_id
+
+// result:-
+    photo_id	no_of_comments
+        1       	19
+        3       	25
+        5       	20
+        2       	19
+        4       	17
+
+Just visualize the iamginory table that group by makes, it will be easy for us to undertand and create queries.
+eg- 
+photo_id        contents        count(*)      ....
+1                   c1           4
+                    c2
+                    c3
+                    c4
+3                   c1           3
+                    c2   
+                    c3
+5                   c1           2   
+                    c2  
+
+Thats how grouping is done and aggregation on every group is made.
+
+
+=> Having keyword:-
+Similar to where. the only diff is that where is use to filter the set of rows whereas jhaving is use to filter the set of groups. By groups, we can say that, having never comes without a group by. Its always used with group by only. The chances are of having an aggregate function with having keyword is also frequent.
+
+Q1. Find the no of comments for each photo where the photo_id is less than 3 and the photo has morethan 2 comments.
+    SELECT photo_id, count(*) FROM COMMENTS
+    WHERE photo_id < 3 
+    GROUP BY photo_id HAVING count(*) > 2   
+Here, we have grouped by photo_id which have count more than 2. thats how we can read it.
+AGAIN - having always comes with group by and the chances are more with an aggregate function.
+
+
+Q2. Find the user_ids where the user has commented on the first 50 photos and the user added more than 20 comments on those photos    
+    select user_id, COUNT(*) FROM COMMENTS
+    WHERE photo_id <= 50
+    group BY user_id HAVING count(*) > 20

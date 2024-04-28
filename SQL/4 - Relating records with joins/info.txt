@@ -1,0 +1,144 @@
+JOINS:
+- Produces result from merging diff rows from diff tables.
+
+AGGREGATION:
+- looks at many rows and calculates a single value. Like most, avg, least, max, etc. uses aggreagtion in a query.
+
+=> Lets start with an example, for data, refer example_data file in reosurces folder.
+we have a table of comments, users and photos.
+
+    CREATE TABLE users(
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50)
+    );
+
+    CREATE TABLE photos (
+    id SERIAL PRIMARY KEY,
+    url VARCHAR(200),
+    user_id INTEGER REFERENCES users(id)
+    ON DELETE CASCADE
+    );
+
+    CREATE TABLE comments (
+    id SERIAL PRIMARY KEY,
+    contents VARCHAR(240),
+    user_id INTEGER REFERENCES users(id)
+    ON DELETE CASCADE,
+    photo_id INTEGER REFERENCES photos(id)
+    ON DELETE CASCADE
+    );
+
+Add some data...
+
+
+Q1. Show content of comments alongwith the username of the user who wrote it.
+    SELECT contents, username FROM comments
+    JOIN users on users.id = comments.user_id
+Whats happening here? Sure it does gives us what we asked for but hw? lets see - 
+Start reading in the order we have learnt before. From comments table, join users table. means we might have an imagionary table, lets call it comments with users. It has all the fields on comments + users table. we at first, have comments table and then we iterate over the record one by one, and based on the user id, we fetch the record from the users table that matches the current iteration user_id. hence thats how we create our imagionary table and join both the records. Now from all the columns, select one contents and username column.
+
+
+Q2. List content of comments and url of the photo that comment was added to.    
+    SELECT contents, url FROM comments
+    JOIN photos on photos.id = comments.photo_id
+Same as above query it is..
+
+
+=> Some takes on join:-
+- Sometimes the order of table between 'From' and 'Join' does make a difference and sometimes its fine.
+    SELECT contents, url FROM comments
+    JOIN photos on photos.id = comments.photo_id
+Like in the above query, if I replace it as:-
+    SELECT contents, url FROM photos
+    JOIN comments on photos.id = comments.photo_id
+It will still work. but in same cases, the result is different. We'll see that shortly in which cases.
+
+- what if we have same column in both the tables we are joining?
+    select id...     // ambiguous error
+    select photos.id ...
+    select photos.id, users.id ...
+    select photos.id AS photo_id ...
+we need to mention the table at the time of selecting else we'll get an error. If we are asking for both the id, in the playgorund we are using, it might get confuse and get the same results, but if we are directly running it in postrgres it will work. as a workaround we can use AS keyword for the playgorund.
+
+- We can also replace tablename with AS keyword
+    SELECT contents FROM photos AS p
+    JOIN comments on comments.photo_id = p.id
+As just means we are renaming something.
+
+- Missing data in joins:-
+Lets say, I want url from photos table and username from users table. Easy peesy..
+    select url, username FROM photos
+    JOIN users on users.id = photos.user_id
+But let say, I added a null value,
+    INSERT INTO photos (url, user_id) values('x.com', NULL)
+Now, if run the select query, we'll get all the records, exept the null one. why? As we learnt we merge all the records from photos to users, then why not our null record is included? Because, while matching, sql drops the record whose reference it doesnt find in other table. If we want that record, we have other ways, lets see.. for that we need to know about other types of join.
+
+
+=> Types of join:
+1. INNER join- By default, till now we were using the same join. 
+    SELECT url, username FROM photos INNER JOIN users ON users.id = photos.user_id;
+Merge two tables together, if any one record doesnt match in other table, it drops the record. As we saw above, that case lies in this join.
+
+tableA -  1 2 3 4 records
+tableB - 1 2 3 records
+In joined table - 1 2 3 records (4 is dropped)
+
+
+2. LEFT OUTER Join:-
+    SELECT url, username FROM photos LEFT JOIN users ON users.id = photos.user_id;
+Here, the left table which is photos here, also called source table, records will be fully included. For the right, we dont include records which dont have a match.
+
+tableA - 1 2 3 4 records
+tableB - 1 2 3 5 records
+In joined table - 1 2 3 4 records (only 5 is dropped)
+
+
+3. RIGHT OUTER Join:-
+    SELECT url, username FROM photos RIGHT JOIN users ON users.id = photos.user_id;
+Here, the RIGHT table which is users here, also called source table, records will be fully included. For the left, we dont include records which dont have a match.
+
+tableA - 1 2 3 4 records
+tableB - 1 2 3 5 records
+In joined table - 1 2 3 5 records (only 4 is dropped)
+
+
+4. FULL Join:-
+    SELECT url, username FROM photos FULL JOIN users ON users.id = photos.user_id;
+Here, the records from both the tables will be fully included, irrespective of they match with one another or not.
+
+tableA - 1 2 3 4 records
+tableB - 1 2 3 5 records
+In joined table - 1 2 3 4 5 records (none are dropped)
+
+For the query we had above, where one of our record with null value was dropped, now we have a solution for that-
+    select url, username FROM photos
+    JOIN users on users.id = photos.user_id
+    INSERT INTO photos (url, user_id) values('x.com', NULL)
+
+SOLUTION-
+    select url, username FROM photos LEFT JOIN users on users.id = photos.user_id
+
+ALSO, We now know, the order of tables we list our query in, does makes a difference, when we use left and right outer join. 
+
+REFER THE PDF IN RESOURCES OF JOINS. VISUALS ARE GOOD TO UNDERSTAND.
+- We can also replace join with comma and on with where. 
+
+=> Using join and where together:
+Q3. Write a query to display url, contents from photos and comments resp. where the user himself has commented on his own photos. Basically we want to know who is commenting on their own photos.
+
+    select url, contents FROM photos JOIN comments
+    on comments.photo_id = photos.id
+    WHERE comments.user_id = photos.user_id
+
+The order to write is - select -> join statements -> where statements
+
+
+=> Three way joins:-
+Q3. Write a query to display url, contents, username from photos and comments resp. where the user himself has commented on his own photos. Basically we want to know who is commenting on their own photos.
+    select url, contents, username FROM comments 
+    JOIN photos on photos.id = comments.photo_id
+    JOIN users on users.id = comments.user_id AND users.id = photos.user_id
+
+
+Get more practice from such sites like - https://www.w3resource.com/sql-exercises/sql-joins-exercises.php
+     

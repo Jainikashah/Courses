@@ -1,0 +1,57 @@
+Let's filter our records based on our need:-
+
+    SELECT name, area FROM cities WHERE area > 4000
+We'll get name and area column from cities table only where area is greater than 4000.
+
+You know in which order sql reads a query?
+SELECT name - Third
+FROM cities - First
+WHERE area > 4000 - Second
+
+First it selects the data source i.e. the cities table, then it filters out the where query and removes unwanted records, later it selects the particular columns we have asked for here its name. Knowing this will make us write complicated queries easily.
+
+
+Alongwith >, some other comparison operators we can use with WHERE are:-
+    =, >, <, <=, >=, IN, <>, !=, Between, NOT IN
+
+IN - Is the value is present in a list?
+<> - Are the values not equal?
+!= - Are the values not equal?
+NOT IN - Is value not present in the list?
+Between - Is the value between other values?
+Others are self explanatory.
+
+Examples:-  
+    SELECT name, area FROM cities WHERE area = 8223
+    SELECT name, area FROM cities WHERE area != 8223
+    SELECT name, area FROM cities WHERE area <> 8223 (sme result as above query)
+    SELECT name, area FROM cities WHERE area BETWEEN 2000 AND 4000
+    SELECT name, area FROM cities WHERE name IN ('Delhi', 'Tokyo')
+    SELECT name, area FROM cities WHERE name NOT IN ('Delhi', 'Tokyo')
+    SELECT name, area FROM cities WHERE area NOT IN (2823, 8722)
+    SELECT name, area FROM cities WHERE area NOT IN (2823, 8722) AND name = 'Delhi' (compound check queries)
+    SELECT name, area FROM cities WHERE area NOT IN (2823, 2239) OR name = 'Delhi'
+    SELECT name, population / area AS density FROM cities WHERE population / area > 2000
+
+Explanation:-
+between - we'll get all the records where area is between 2000 and 4000
+IN - we can specify a list using () and add values in it. It will filter records which has these values only.
+NOT IN - opposite of IN
+We can combine two or more queries using AND, OR operators, its called compound check.
+We can also make calculations on a column (as we saw before) and add a where clause alongwith.
+
+
+=> Updating & deleting records:
+    UPDATE cities SET population = 100 WHERE name = 'Delhi'
+    DELETE FROM cities WHERE name = 'Tokyo'
+
+Update - set keyword is use to update a column.
+and delete is just self explanatory. If we have multiple records matching the query it will be affected on all of them. eg-
+    DELETE FROM phones WHERE name <> 'A'
+Will delete all the records except name with A.
+
+    DELETE FROM phones
+To delete all records from phones table.
+
+    DROP TABLE photos
+delete entire table

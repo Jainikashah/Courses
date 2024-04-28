@@ -1,0 +1,22 @@
+Database structure design patterns:-
+
+- Till now we have looked at pretty simple examples, but to undertsnad the actual performance optimizationa nd power of pstgres, we need more complicated schemas to make use of some more advanced features.
+
+- We need many diff tables, so its nice to documnet your db structure. And for that we need a schema designer that shows us all the tables and their relationships. like dbdiagram, drawsql, sqldbm, ondras, etc. This si just for documentation stuff so that we dont have to go into pgadmin again and again and look at the structure everytime we make a change.
+Some schema deisgner links:-
+- ondras.zarovi.cz/sql/demo
+The above tool is pretty cool and is specifically made fro sql. we can create tables, add fields, create relationships using primary and foreign key and so much more.
+
+- dbdiagram.io
+its more of a programming-based wherein we create tables and have a visual representation of the same.
+
+=> lets create a instagram clone db design structure. (It was on dbdiagram.io in course, but just making it here)
+
+USERS TABLE: id serial primary key, created_at timestamp, updated_at timestamp, username varchar (30)
+POSTS TABLE: id serial primary key, created_at timestamp, updated_at timestamp, url varchar(200), user_id integer references users(id)
+COMMENTS TABLE:  id serial primary key, created_at timestamp, updated_at timestamp, contents varchar(240), user_id integer references users(id), post_id integer references posts(id)
+
+FOREIGN KEYS LOGIC:-
+A user has many comments -> add reference of user in comments table.
+A posts has many comments -> add reference of posts in comments table.
+A user has many posts  -> add reference of users in posts table.

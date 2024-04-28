@@ -1,0 +1,5 @@
+Q1. Print 1 to 10
+
+
+
+A1. select * from generate_series(1, 10)
