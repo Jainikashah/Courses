@@ -1,0 +1,163 @@
+/* / google fonts / */
+ @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap');
+ @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap');
+ 
+
+
+ /* / base styling / */
+ :root{
+    --light-color : whitesmoke;
+    --text-color : rgb(17, 17, 17);
+    --text-font : 'Montserrat', sans-serif;
+    --heading-font : Serif;
+
+}
+html{
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    font-family: 'Montserrat', sans-serif;
+}
+
+ ul{
+    margin-right: 2rem;
+    list-style-type: none;
+    display: flex;
+    align-items: center;
+}
+
+a{
+    text-decoration: none;
+    color: var(--light-color);
+}
+
+li{
+    display: inline;
+    margin: .6rem;
+    font-size: .9rem;
+    font-family: var(--text-font);
+}
+
+a:hover{
+    color:rgb(233, 230, 230);
+    transform: scale(1.05);
+}
+
+
+/* / Navigation bar / */
+.navbar{
+    background-color: rgb(42, 40, 40);
+    position: fixed;
+    width: 100%;
+    padding: .6rem;
+    display: flex;
+    z-index: 2;
+    justify-content: space-between;
+}
+
+.logo{
+    font-size: 2rem;
+    margin-left: 3rem;
+    border: 1px solid grey;
+    padding: 0 1rem;
+}
+
+ .heading-section{
+    /* width: 100vw;
+    height:100vh; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+} 
+
+/* .heading-section{
+    /* width: 100vw;
+    height:100vh;  
+    display: flex;
+    justify-content: center;
+    align-items: center;
+} */
+
+.heading{
+    color:black;
+    font-size: 3rem;
+} 
+
+
+
+
+
+.mySlides {display: none;}
+img {vertical-align: middle;}
+
+.slideshow-container {
+  max-width:1380px; 
+  position: relative;
+  margin: auto;
+}
+
+.mySlides{
+    width: 100%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.text {
+  color: #f2f2f2;
+  font-size: 15px;
+  padding: 8px 12px;
+  position: absolute;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+}
+
+.numbertext {
+  color: #f2f2f2;
+  font-size: 12px;
+  padding: 8px 12px;
+  position: absolute;
+  top: 0;
+}
+
+.dot {
+  height: 15px;
+  width: 15px;
+  margin: 0 2px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.6s ease;
+}
+
+.active {
+  background-color: #717171;
+}
+
+.fade {
+  -webkit-animation-name: fade;
+  -webkit-animation-duration: 1.5s;
+  animation-name: fade;
+  animation-duration: 1.5s;
+}
+
+@-webkit-keyframes fade {
+  from {opacity: .4} 
+  to {opacity: 1}
+}
+
+@keyframes fade {
+  from {opacity: .4} 
+  to {opacity: 1}
+}
+
+@media only screen and (max-width: 300px) {
+  .text {font-size: 11px}
+}

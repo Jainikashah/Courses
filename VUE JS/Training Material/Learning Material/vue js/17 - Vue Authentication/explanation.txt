@@ -1,0 +1,33 @@
+Authentication:
+
+How auth works in any SPA?
+ i) backend server -> there's a server that doesnt care about which tech we are using in front-end,like vue or react, or whatever. 
+ It has 2 types of data - i)restricted data and ii)public data.
+ restricted data needs auth and public data doesnt.
+
+ ii) we, through vue, sends the server login data, and backend sends back a token, if the data is valid.
+ - a token is nothing but a long long string, which is created using a secret encryption key, which only a server is able to read.
+ - we store the token, either in localstorage or in vuex.
+ - any restricted data, we want to access from server, we pass that token and server validates that, if the token is decrypted successfully by server, user is able to view that data.
+
+
+Now, in firebase:
+In realtime database -> rules -> tweak this rules a bit -> 
+{
+    "rules : {
+        "coaches" : {
+            ".read": true,
+            ".write": "auth != null"
+        },
+        "requests": {
+            ".read": "auth != null",
+            ".write": false
+        }
+    }
+}
+-> click on publish.
+
+explanation:
+- the coaches is a data node we created in data in db of firebase. read true, will allow everyone to read the data, .write will give access to authenticated users only, false gives access to noone.
+
+

@@ -1,0 +1,132 @@
+Topic - Vue Js BTS: 
+
+1. What Vue Solves ? 
+
+Vue, behind the scenes uses the concept of proxies, which makes it reactive. 
+Reactive means what?
+
+Reactive means when you change a value of variable at a place, at all other places the changed value will be reflected. 
+Vanilla JS, by default, doesnt support reactivity. 
+e.g - 
+    let wish = 'Hello';
+    const completeWish = wish + ' world';
+    console.log(completeWish);
+
+    wish = "Hellooooo!";
+    console.log(completeWish);
+
+Here, even we changed the value the output of both consoles would be same. i.e. Hello world. 
+This proves JS is not reactive, which vue allows us to have.
+
+
+
+2. How Vue solves?
+Vue uses proxies. What they do is- they keep track of all the properties we define in data, and the places those properties are being used. 
+When we change the value of a property, it re-renders every place that prop's value was being used. This happens with proxy, with computed methods and watchers as well.
+
+
+
+3. More vue apps-
+We can multiple vue apps in a single app.js page. We just need to mount the section with the id. But we cannot use the data or methods of a different app, thats not allowed. Each data and method has its own scope, there's no connection between apps.
+
+Note: The html section that we mount to a vue app, is called a template. (The entire section is called a template of that app.)
+There's one more way of defining templates- 
+    const app = Vue.createApp({
+        template : `
+            <p> Tempting for Pizza </p>
+        `,
+        data() {}
+    });
+    app.mount('#disp');
+
+Using the template property, which receives a string of html elements, which in real called template.
+
+
+
+4. Refs-
+There's one more way, using which we can get the value passed by user in html, and get it inside our js file.
+Earlier we saw, its possible using v-bind, another way is Refs.
+
+Refs stores the value(entire element) inside memory and whenever we need it, we can access it with a special syntax.
+Here's how - 
+
+(js):
+    const app2 = Vue.createApp({
+    
+        data() {
+            return {
+                message : 'Hello world' 
+            }
+        },
+        methods :{
+            setText(){
+                this.message = this.$refs.userText.value;
+            }
+        }
+    });
+    app2.mount('#disp2');
+
+
+(html):
+    <section id="disp2">
+        <input ref="userText" type="text" placeholder="Type anything to get text">
+        <button type="submit" v-on:click="setText">Set Text</button>
+        <p>{{message}}</p>
+    </section>
+
+We pass a ref attribute in html element with a value that we later can use to get the value in js.
+this.message = this.$refs.userText; this returns the whole html element i.e. input.
+this.message = this.$refs.userText.value; this returns the value user passes.
+
+
+
+5. Virtual DOM concept:
+Vue uses the concept of virtual dom. Virtual DOM is nothing, but a js object that is a copy of the real DOM, (but in js format) the real DOM is in html format as thats what ur browser understands.
+
+Any change occurs on page, the effect is first shown in virtual DOM and then that virtual DOM compares it with real DOM and make the changes only to parts that are need to re-render and not the entire dom. 
+Thats how vue make the app's perfomance better.
+
+
+
+6. Vue lifecycle methods-
+ 
+ - createApp() //we have used it already
+ - beforeCreate()
+ - created()
+ - beforeMount()
+ - mounted()
+ - beforeUpdate()  //when any data changes
+ - updated()
+ - beforeUnmount()  //clean up code
+ - Unmounted()
+
+
+-Practicals
+    beforeCreate(){
+        console.log('BeforeCreate()');
+    },
+    created(){
+        console.log('created()');
+    },
+    beforeMount(){
+        console.log('beforeMount()');
+    },
+    mounted(){
+        console.log('mounted()');
+    },
+     beforeUpdate(){
+        console.log('beforeUpdate()');
+    },
+    updated(){
+        console.log('Updated()');
+    },
+    beforeUnmount(){
+        console.log('beforeUnmount()');
+    },
+    unmounted(){
+        console.log('unmounted()');
+    }
+
+In the top 3 methods, we donot even see anything on page, on 4th method is where we see the something. You can see this using sources tab and adding breakpoints as well.
+With update and beforeUpdate will be called when a data prop changes
+and unmount and beforeUnmount will be called when the app is unmounted.

@@ -1,0 +1,345 @@
+Composition API- (Vue 3 introduced feature.)
+
+- Option API: Till now, what we have been doing is called Options API. Which means, building components using data props, watchers, computed methods, etc. is Options API's approach.
+This approach is perfectly fine.
+
+Composition API is an alterantive way of building vue apps, and it was created to solve 2 main limitations of Options api, which we might face in bigger vue apps.
+
+Limitation 1: 
+    " Code that belongs together logically is split up across multiple options(data, method, etc) ".
+    - explanation: Suppose, we are performing searching and sorting in a component. That functionality requires - 2 data props, 2 methods, 1 computed and 1 watcher lets say. 
+    Even though, we want just a searching operation, our code is splited into 4 options, which might become a little combursome in large scale applications to manage indiviuality of code functionality. 
+
+Limitation 2:
+    " Re-using logic across components can be tricky or combursome ".
+    - explanation: Suppose, the above searching and sorting operation has to be performed in another component, with just a little modification. With options api, we might create 2 data props, 2 methods and so on, inside another component as well. Making re-usability of code, a little tricky.
+
+Hence, we have so many options for a single functionality in Options API, its called Options API.
+
+
+- Composition API:
+With using Composition api, our code will get replaced, with a setup ().
+Means, the data, method, computed, watch, (and lifecycle hooks) will get replaced by a setup(). 
+Which also means, that other features of vue, that is- v-ifs, templates, props, emits, etc. remains untouched by Composition api.  
+
+- Code: 
+    <p> {{ username }} </p>
+
+    // using options API:
+    data(){
+        return {
+            username: "Jainika"
+        }
+    }
+
+    // using Composition API:
+    setup(){
+    const userName = ref('Jainika');
+    setTimeout(() => { 
+      userName.value = "Niyosh" //will change value from jainika to niyosh in 2s.
+    }, 2000)
+    return {
+      username: userName
+    }
+  }
+
+explanation:
+- We, instead of using data props, use 'ref', (nothing to do with $ref, which we have used previously, for referencing dom elements).
+- ref returns a value, not any value, but a reactive value, where vue will able to watch it and update the template/dom whenever the value changes and wherever it is used.
+- we dont use this keyword in setup fuction. Because the setup() is run quite early by vue, it is runned before initailization of props, methods, data props, etc, hence we wont have access to any of the properties, we use to have in option api. e.g. this.methodName() wont give us the methodName in setup (), like it use to in data props, or at other places.
+- hence, we store in plain js const variable.
+
+- const userName = ref('Jainika'); 
+here, we pass any value, we want to be reactive. 'Jainika', the string is stored in an object BTS, where key is 'value' and value is 'Jainika'. Anytime, we change the userName, it updates it at all places. 
+
+-   return {
+      userName: userName
+    }
+in setup(), we always return an obj, which holds the values, we want <template> to have access to. The key can be anything, and is used in template. The value is the js variable that holds ref value
+
+-  userName.value = "Niyosh"
+this is how we change value of ref variables. This is understandable, because (i) userName is a const, we cannot change it directly. (ii) if we use let, instead of const, we can change userName'S  value, but that will override the ref, hence it no longer wuld be reactive, (iii) ref returns an obj, with a 'value' as key (we saw that before), and to change it, we use userName.value. 
+
+- {{ username }}
+in template, we donot write username.value, because vue directly drill into the object and returns the value in return {} of setUp method.
+
+
+
+* Ref with objects:
+
+-   const user = ref({
+      userName: 'Jainika',
+      age: 21
+    })
+     setTimeout(() => { 
+      user.value.userName = "Niysoh", // not reflected
+      user.value.age = 22
+
+    }, 2000)
+Here, the user is reactive, but its properties: userName and age are not. If we try to change user.value.age, it wont be reflected, but if we change the user.value, it will get reflected.
+
+For it to work:
+    return { user: user}
+
+    <template>
+        <p> Name: {{ user.username }} </p>
+        <p> Age: {{ user.age }} </p>
+    </template>
+
+By returning the entire object, and drilling inside it in the template, then it would be reactive.
+
+
+* Alternative of working with objects: reactive package
+    
+    import {reactive} from 'vue';
+    const user2 = reactive({
+      username: 'JainikaShah',
+      age: 21
+    })
+
+     setTimeout(() => { 
+      user2.username = "NiyoshShah",
+      user2.age = 22
+    }, 2000)
+
+    return {
+      user2: user2
+    }
+
+explanation:
+reactive package, basically replaces the default value obj, that we get from ref, and creates a proxy obj as wrapper.
+Note: Ref can work with all datatypes, but reactive can work with objects only.
+
+
+* Other helper methods in vue for ref and reactive.
+
+- isRef and isReactive:
+
+    import { isRef, isReactive } from 'vue';
+    console.log(isRef(user), isRef(user.value.username)) //true, false
+    console.log(isReactive(user2), isReactive(user2.username))  //true, false
+ 
+To get boolean if arg is ref / is reactive or not.
+
+- toRefs:
+    const userRef = toRefs(user2)
+    console.log(isRef(userRef), isRef(userRef.username))  // false, true
+
+toRefs requires an obj as an argument and convert its properties reactive by making each property ref as variable, and hence then thats what makes it reactive.
+
+
+* Methods in Composition API:
+code:
+    <button @click="setAge"> Change age </button>
+
+    setup(){
+      const age = ref(21);
+      function setNewAge(){
+        age.value = 32;
+      }
+      return {
+        setAge: setNewAge
+      }
+    }
+  
+explanation: 
+- With options api method, we can write the methodName and can change the age, by writtng: this.age=22, in method body.
+- With Composition api, we can write any function inside setUp and return them, those methods will then be available to us in template. 
+
+
+* Computed methods in Composition api:
+code:
+    import { computed } from 'vue';
+
+    setup(){
+      const computedName = computed(function() {
+          return firstname.value + ' ' + lastname.value
+        })
+    }
+
+explanation: A package that vue provides, called computed has to be imported. Computed takes a () as an arg and that () returns the computed value. We can store it in a variable. 
+Note: the stored variable, here its computedName, is nothing but a ref only. But its a read-only ref, we cannot write: computedName.value = "change", this is not allowed. 
+
+
+* V-model: 
+    <input type="text" v-model="firstname" placeholder="first name"> // -model
+    <input type="text" @input="setLastName" placeholder="last name"> // -input handler
+- Do export them from setup in return.
+
+
+* Watchers: 
+    const birth = ref('3rd');
+
+    setTimeout(() => {
+      birth.value = "11th";
+    },2000)
+
+    // single watch value, runs when birth variable changes
+    watch(birth, function(newVal, oldVal){
+      console.log('old value: ',oldVal)
+      console.log('new value: ',newVal)
+    });
+
+    // multiple watch variables, runs when any of the 1 variable in the array changes.
+    watch([birth,user2], function(newValues, oldvalues){
+      console.log('old value: ',oldvalues[0])
+      console.log('new value: ',newValues[0])
+      console.log('old value: ',oldvalues[1])
+      console.log('new value: ',newValues[1])
+    })
+
+- with watch () of composition api, we can set watchers on multiple variables in form of an array. Hence, we get the multiple old and new values as well in array.
+- no need to export watch. yeah, I know thats obvious :p
+
+
+* Using template ref in Composition api:
+code:
+    <input type="text" ref="firstnameInput" placeholder="first name">
+    <input type="text" ref="lastnameInput" placeholder="last name">
+    <button @click="setName"> set Name</button>
+
+    setup(){
+      ...code
+
+      const firstnameInput = ref(null);  //same value as template ref's
+      const lastnameInput = ref(null);
+    
+      function setName(){
+        // earlier way:
+        firstname = this.$refs.firstnameInput.value;
+
+        // with composition api:
+        firstname.value = firstnameInput.value.value;
+        lastname.value = lastnameInput.value.value;
+      }
+    }
+
+the concept of ref in setup and ref in template is quite similar and so to use template refs, we need to define them inside setup() first, maybe initialize it with null and then lets say onclick, we want to get those template refs value, herein we can get from refName.value.value. No need of this keyword and the 2 .values are for (i) the ref.value as we use in setup and  (ii) is to get the dom element's value.
+
+
+
+* Component, props with composition api.
+- For passing props and getting components in components : {...}, all is same as options api, nothing different.
+note: in one component, we can use composition api approach and in other we use options api, and make a connection between them, lets say with props, it works. (Theortically, using both approaches in one compoent alos works, but we dont mainly use them in one)
+
+- But while getting props in a setup(), its a little different. since in setup we dont get access to 'this' keyword, we use props differently.
+
+code:
+    export default {
+        props: ['username'],
+        setup(props, context){
+            const titleName = computed(() => {
+                return 'Name: ' + props.username 
+            })
+            console.log(context)
+            return {
+                fullName: titleName
+            }
+        }
+    }
+
+setup() gets an arg, props, through which we can access the props. here the best things is, the props argument is an object and is reactive. which means even if something changes in the parent component value, which is passed as props, the props obj will be reactive to that change. and will apply it to the current component.
+
+- context: this is also an arg that setup() gets. It holds 3 things: attrs, emits, slots. Info about these three is what is inside of context. 
+
+
+* Provide and Inject:
+code: 
+
+// in parent compoent:
+  import { provide } from 'vue';
+  setup(){
+      // provide:
+    const uAge = ref(22);
+    provide('userAge', uAge)
+
+    setTimeout(() => {
+      uAge.value = 23;
+    },2000)
+  }
+
+// in child component: 
+  import { computed, inject } from 'vue'
+  const userAge = inject('userAge');
+
+here, the value will be reactive, since we are using ref. Also note: that changing userAge in child component, is not at all suggested. the value should only be changed where its provided, that is inside parent component.
+
+
+lifecycle hooks: 
+Replacement of functions from options to composition.
+
+- Options API -> Composition API
+- beforeCreate, created -> Not needed. Setup() replaces them.
+- beforeMount, mounted -> onBeforeMount, onMounted.
+- beforeUpdate, updated -> onBeforeUpdated, onUpdated.
+- beforeUnmount, unmounted -> onBeforeUnmounted, onUnmounted.
+
+To use:
+      onMounted(function() {
+          console.log('On mounted')
+      })
+      onBeforeUpdate(function(){
+          console.log('On before update')
+      })
+
+      // and so on...
+
+
+Note: 
+  code:
+  const { user } = toRefs(props);
+
+    watch(user, () => {
+      enteredSearchTerm.value = '';
+    })
+
+When we have multiple props, and need to use a prop as a watch, we have to use it like the above way. 
+Because, props.user, if written as a watch, then it might give a warning, because the props is reactive, but the props properties are not. Hence, we convert the props' properties into refs, using toRefs(), after importing it, to make it reactive as well.
+
+
+
+* Router with composition api:
+one way:- To get router params, one way can be, by using props. Set props:true, in the that router and then it will be accessible through props in setup. 
+
+another way:-
+- Hooks/Composibles: vue router provides us few hooks or Composibles whatever you call it, which can be used inside the setup method, which has something specific to offer. 
+
+some of them are:
+
+i) useRoute:
+    import { useRoute } from 'vue-router';
+    const route = useRoute();
+    console.log(route.params.id)
+
+// this will log out, params, query, path, meta, and a lot of data about route for us to use.
+
+
+ii) useRouter:
+    import { useRouter } from 'vue-router'
+    const router = useRouter();
+    router.push('./products')
+
+// for programmtic navigation.
+
+iii) useStore:
+    import { useStore } from 'vuex'; 
+
+    const store = useStore();
+    const counter = computed(() => {
+    return store.getters.counter;    // for getters 
+    })
+
+    const store = useStore();
+    function inc() {
+      store.dispatch('increment'); // for actions
+    }
+
+// useStore is used for accessing store of vuex in setup(). 
+
+
+Thats it :)
+
+A brief of what we learnt:
+- Composition API: 
+- Its an alterantive of options api. It uses to setup() to expose logic/data to template.
+- Its a function-based solution that allows us to keep logically related code together.

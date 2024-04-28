@@ -1,0 +1,45 @@
+header{
+    height: 4rem;
+}
+ul{
+    margin-right: 2rem;
+    list-style-type: none;
+    display: flex;
+    align-items: center;
+}
+
+a{
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--light-color);
+}
+
+li{
+    display: inline;
+    margin: .6rem;
+    font-size: .9rem;
+    font-family: var(--text-font);
+}
+
+a:hover{
+    color:rgb(233, 230, 230);
+    transform: scale(1.05);
+}
+
+.navbar{
+    background-color: rgb(42, 40, 40);
+    position: fixed;
+    width: 100%;
+    
+    padding: .6rem;
+    display: flex;
+    z-index: 2;
+    justify-content: space-between;
+}
+
+.logo{
+    font-size: 2rem;
+    margin-left: 3rem;
+    border: 1px solid grey;
+    padding: 0 1rem;
+}

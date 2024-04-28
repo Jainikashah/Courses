@@ -1,0 +1,6 @@
+1. Whenever we add click listeners or any listeners toa custom component, (note that we donot add any listener in our custom component, nothing like click or anything, so its obvious that they shouldnt work), what vue does is, it brings up that click listener to the parent html element.
+e.g if your custom component is lying inside a html button then eventually that click on custom component you have mentioned will be taken inside that html button.
+
+
+2. Note that - while using unshift, pop, push, etc methods on array, if something changes, all the places, that array has been used, will get notify about it.
+But, with methods like filter and map (which basically returns a new array), the changes will not get applies everywhere.

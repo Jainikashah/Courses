@@ -1,0 +1,85 @@
+Vue JS Directives' List -
+
+1. v-html : It used to insert HTML content inside the tags. The normal interpolation will render the data as in plain text, but with v-html directive, the content will be render as in innerHTML of the tag.
+e.g. -
+    <div v-html="divContent"></div> 
+    data(){
+    return{
+      divContent : '<h1>Hello world</h1>'
+    }}
+
+
+
+2. v-show : It basically toggles the CSS display property of the element. The main differnce between v-show and v-if is that, v-show doesn't remove the HTML content from the DOM, instead it just toggles its display property to none, whereas the v-if directive will remove the HTML from the DOM.  
+e.g. -
+    <h1 v-show=true>Hello</h1>
+
+
+
+3. v-if : It is used to conditionally render content. It checks the specified condition and based on its truthy or falsy value, it will render. 
+e.g. - 
+    <h1 v-if=true>Hello</h1>
+
+
+
+4. v-else : It is the kind of directive which comes right after v-if or v-else-if directive. It is the default block that will run if none of the above v-ifs or v-else-if does.
+e.g. -
+    <h2 v-else> Else block </h2>
+
+
+
+5. v-else-if : It should come right after v-if or other v-else-if directives. It checks the condition, and runs, based on its truthy or falsy value. If the v-if condition returns false, then only it goes to v-else-if and checks, else not.
+e.g. - 
+    <h2 v-else-if=true>Else If Block </h2>
+
+
+
+6. v-for :  It is used to loop through the iterables like array or object. It runs the code as many times as the numbers of elements there are inside the iterable, which means it'll render the <template> based on the length of the source, we provide.
+e.g. -
+    <div v-for="item in items"> For loop </div>
+
+
+
+7. v-on : It is used to add an event-listener (custom or in-built), on the html tag. It takes any event as an argument and a function or any inline javascript expression as its value. This function / expression will run when the event triggers on the element.
+The shorthand of v-on is @. 
+e.g. -
+    <button v-on:click="handleClickMethod"> Submit </button>
+
+
+
+8. v-bind : It is used to bind any html tag attribute to a component's data object. Basically, the value of that data object will be used as the value of that attribute. Mostly, we used this with form fields.
+The shorthand of v-bind is : (colon)
+e.g.-
+    <a v-bind:href="src"> Link </a>
+    data() {
+    return {
+      src : 'https://www.google.com',
+    };
+  },
+
+
+
+9. v-model : This directive is used for having two-way binding on attributes, which means, when a value of a input field changes, the change will be reflected in its respective data object too and any change in that data object will reflect inside the value of its input field as well. That's how, we can achieve two-way binding.
+e.g.-
+    <input type="text" v-model="username">
+    data(){
+        return{
+            username : 'Default Name :p'
+        }
+    }
+
+
+
+10. v-slot : This directive allows us to make our code reusable. One usecase of v-slot can be, when the layout is same, but the content inside of it is dynamic. We can have default slots, named slots and scoped slots. 
+- Default is used incase if no name is mentioned. 
+- Name slots are used when there are multiple slot tags inside a template, so to differentiate between them.
+- Scoped slots are used to pass props from child component(where we define our slots) to parent component(where we use our slots).
+e.g.
+    <slot name="header> Default Content </header> //defining slots 
+    <template v-slot:header> Header content </template>  //using slots
+
+
+
+11. v-once: This directive renders the value only once. It never gets changed during the program. The value provided at first, is what gets render throughout the execution.
+e.g.- 
+    <h1 v-once> {{ value }} </h1>

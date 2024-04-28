@@ -1,0 +1,113 @@
+Section : Forms-
+
+1. V-model is used for two-way binding as we know. 
+
+2. Till now, we have used only text type in an input field. Let see with others
+-  using v-model, on number types, when we print the value, it prints in number format by default as vue converts all the input fields(which in vanilla js comes with string only), in their respective formats. 
+e.g. - 
+    <input id="age" name="age" type="number" v-model="userNumber" ref="userNumber"/>
+
+    console.log('username : ',this.userName);
+    console.log('userNumber : In number format using V-model : ', this.userNumber);
+    console.log('userNumber : In string format using refs : ', this.$refs.userNumber.value );
+i - in string
+ii - in number
+iii - in string, refs uses vanilla js perspective.
+
+
+-v-model methods : trim, and lazy. Trim will remove the whitespaces from user input and lazy means that v-model will not store the input at every key stroke, it will take some time.
+
+to use: 
+    v-model.trim="userInput"
+    v-model.lazy="userInput"
+
+
+
+- Dropdown value- 
+    <select id="referrer" name="referrer" v-model="userReferrer">   //using v-model itself
+        <option value="google">Google</option>
+        <option value="wom">Word of mouth</option>
+        <option value="newspaper">Newspaper</option>
+    </select>
+
+
+- Checkbox value -
+If there are multiple checkboxes and you want to get the value of all checkboxes that were ticked, then you need to initalize it with an empty array inside the data prop.
+e.g.
+        <input id="interest-news" v-model="userInterest" value="news" name="interest" type="checkbox" />
+        <input id="interest-tutorials" v-model="userInterest" value="tutorial" name="interest" type="checkbox" />
+        <input id="interest-nothing" v-model="userInterest" value="nothing" name="interest" type="checkbox" />
+ data(){
+    return {
+      userInterest : [] 
+    }
+}
+
+
+- if there's only 1, then -
+    <input id="confirm-box" v-model="userConfirm" name="confirm-box" type="checkbox" />
+
+    return {
+        userConfirm : false
+    }
+
+
+- Radio button value-
+    <input id="how-video" name="how"  v-model="userHow" value="video" type="radio" />
+    <input id="how-blogs" name="how"  v-model="userHow" value="blogs"  type="radio" />
+    <input id="how-other" name="how"  v-model="userHow" value="others"  type="radio" />
+    
+    return {
+        userHow : null,
+    }
+
+
+
+
+- Dropdown value -
+    <select id="referrer" name="referrer" v-model="userReferrer">
+        <option value="google">Google</option>
+        <option value="wom">Word of mouth</option>
+        <option value="newspaper">Newspaper</option>
+      </select>
+
+    return{
+        userReferrer : 'newspaper',
+    }
+
+
+- Adding dynamic classes,
+    <p :class="{invalid : userNameValidity === 'invalid'}"> hello </p>
+:class will take an object with prop as classname and value as either true or false
+
+
+- Using v-model kind of concept with custom components-
+
+export default {
+    props : ['value'],
+    emits : ['clickevent'],
+ 
+    methods :{
+        activateButton(option){
+            this.$emit('clickevent',option);
+        }
+    }
+}
+
+ to use : rating - <rating-control :value="rating" @clickevent="rating = $event"></rating-control>
+
+
+here, :value.. and @clickevent.. are doing what v-model does behind the scenes. Here we are using vue 2 and so its a little complex, but in vue 3 its more easier. 
+
+vue3 -
+export default {
+    props : ['modelValue'],
+    emits : ['update:modelValue'],
+ 
+    methods :{
+        activateButton(option){
+            this.$emit('update:modelValue',option);
+        }
+    }
+}
+to use - <rating-control v-model="rating"></rating-control>

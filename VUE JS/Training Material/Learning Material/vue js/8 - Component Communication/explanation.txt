@@ -1,0 +1,209 @@
+Basics:
+At first, the control goes to main.js
+In main.js :  
+    - import {createApp} from 'vue'
+this comes from the vue app, which we have used as a dependency. It has modules like createApp, that we can use to mount our app on.
+
+    - import App from './App.vue';
+Here, we import the app that is exported from app.vue file and later we mount this app(which contains all our code), to the index.html app id.
+
+    - const app = createApp(App)
+    app.mount('#app');
+Here, we mount the imported app, using createApp, to the index.html app id.
+
+
+
+- .vue files : These files extensions are special feature of vue cli, that allows us to write vue code, specifically vue components.
+
+
+- to unlock any component, means: to let any component be accessible inside another component, we need to write this inside our main.js: 
+
+    import FriendContact from './components/FriendContact.vue';
+    const app = createApp(App);
+    app.component('friend-contact', FriendContact);  
+    //first arg = 'the name we want' and second arg = 'the name we used to import the component'
+    ...
+
+here, we are importing a component, named it FriendContact, which is by default exported from that file, and declaring it, so that any other component could use it. 
+
+
+
+
+1. adding props : to let components communicate-
+
+    i : <componentName attr1="value" attr2="value2"></componentName>
+
+    ii : <template> <h1>{{attr1}}</h1> </template
+    export default{
+        props:[
+            'attr1','attr2'                  //adding props
+        ],
+        methods: {
+            toggle(){
+                this.attr1 = 'one';           //to use props
+            }
+        }
+    }
+
+convention of writing props: 
+while passing - kebab-case   (in template)
+while accepting - camelCase   (in script)
+
+
+2. App.vue - the parent component and FriendContact.vue - the child component
+
+3. Props mutation restricted-
+The props we pass, from parent to child, cannot be mutated(changed) inside child component. It will generate an error.
+The error occurs because vue runs on the principle of UNI-DIRECTIONAL DATAFLOW concept. This means that the data passed from parent to child, can only be changed inside parent. the child cannot change anything thats inside parent.
+
+Well, to change any way, there are 2 ways:
+i - to define something inside child which might trigger a () of parent, which inturn would chnage the value.
+
+ii - create a new data prop, and assign the value of props, inside it, then you change the value of that data prop anytime during the program. (note, here in any way, we arent changing anything inside parent, its just what we have in child.)
+
+
+
+4. Props validation -
+
+    props :{
+        name : {
+            type: String,
+            default : 'name'
+        },
+        phoneNumber : String,
+        emailAddress : {
+            type: String,
+            required : true,
+        },
+        isFav : {
+            required : false,
+            validator : function(value){
+                return value === '1' || value === '0'
+            }
+        }
+    },
+
+In vue, we can check if the props passed are the kind we want or not.
+one - we can just pass an array of props, as string. This will only tell vue, about the no. of props we expect. If we dont send a prop, it wont generate any errors or warnings in this way.
+
+two - To specify an object of props. wherein we can specify which type we expect. 
+two (1) - In that, we can specify an object of validations as well like required, default, type, or validator. 
+validator is a () that gets passed the value of prop, and we can check if the value matches any of our requirements.
+If the () returns true, the value is termed fine else if false, than an error is generated.
+
+
+5. sending different datatypes:
+    <friend-contact
+        v-for="friend in friends"
+        :key="friend.id"
+        :name="friend.name"
+        :emailAddress="friend.email"
+        :phoneNumber="friend.phone"
+        :isFav="true"
+    ></friend-contact>
+to send different types of data except String, we should bind them. 
+e.g. v-bind:fav="true".
+Basically, when we use v-bind:prop_name="..", We can execute any js expression.
+In above example, we are looping through an array of ojects, and so binding the props to get the dynamic value each time.
+
+
+
+6. Sending data back to parent from child component:
+
+we can create our own events, and onclick or some event, we can call any ().
+Here, what we do is: We emit a () inside child-
+    this.$emit('toggle-fav',this.id);
+here, toggle-fav is your event Name. and this.id is the data we are passig from child to parent.
+we, then call this method anywher inside our template:-
+    <button @click="toggleFav">isFavorite</button>
+Here, whenever the button will click, the toggleFav () would be called.
+
+then, in parent, when we create this component, we can add toggleFav event inside it, like this:
+     <friend-contact
+        v-for="friend in friends"
+        :key="friend.id"
+        :isFav="friend.isFav"
+        @toggle-fav="toggleFavStatus"  // - here it is
+      ></friend-contact>
+so, whenever the toggleFav method would be called, it would trigger the function taht is inside parent, (which over here is called: toggleFavStatus).
+like this-
+  methods: {
+    toggleFavStatus(friendId){
+    alert('entered');
+    }
+  },    
+
+
+
+7. like we define props in component configuration, we also define the emits, which states which events this component carries, (this is just one god practice to use)- like this:
+    emits : ['toggle-fav'],
+
+Likewise props, we can further give validations and declare more about our events:
+      emits : {
+       'toggle-fav' : function(id) {
+           if(id){
+               return true;
+           }else{
+               console.warn('id is missing');
+               return false;
+           }
+       }
+    },
+
+    toggleFav(){
+        this.$emit('toggle-fav');  //here we arent passing id, then the validation would go into false block and give us that warning.
+    }
+here, each event name is taken as key and the value is a function with the parameters that the event expects, and we can then validate those parameters.
+
+
+
+8. To prevent form submission on default:
+    <form @submit.prevent="onSubmitClick">
+onSubmitClick() is our method, we want to run on submit.
+
+
+9. shorthand way to emit a function:
+    <button @click="$emit('delete-friend', id)">Delete</button>
+here, no need to add a new method for it. this will create an event called delete-friend with an arg of id.
+
+
+10. The problem with passing props and events:
+The same problem we had in react; passing props from all the parents, right to the only children that needs it. Components are just working as for to-pass-props-or-events. 
+This could be an issue when the project is big enough and suppose, a parent have its child and grand-children, and any one of those great-grand-children, wants to change something inside parent. It has to go through all the child, parent, to reach to the main-parent and change there somthing.
+
+
+11. Solution: Provide and inject-
+we can provide data in parent and can inject that data wherever we need inside the child or grand-childs of it. note - only children and grand-children can access that data, siblings or another cannot.
+export default {
+    data() { return nos : [4,5,6]}, 
+    provide : {
+        numbers : [1,2,3]   //one way, when the data is not related to anything
+    },
+         (/ Or USE THE BELOW ONE)
+    provide(){
+        return {
+            numbers: this.nos; //here the numbers will refer to the data prop nos.
+        }
+    }
+}
+
+To use :
+export default {
+  inject: ['topics'], 
+  props: [..]
+  }
+Basically, no need of pasisng through the props.
+we can also pass methods through provide and inject them.
+
+
+- provide and inject shouldn't be the default way of communication between components. Just use it wisely, where you have to build components just to pass by the props.
+- use props and custom events as default way of communication.
+
+
+
+ques- what exactly the meaning of emit is.
+emit is a function that comes with vue components, which allows us to pass custom events up the component tree.
+
+ques- what does find() of js returns. 
+returns the element of array, with which the condition meets, else returns undefined.
+

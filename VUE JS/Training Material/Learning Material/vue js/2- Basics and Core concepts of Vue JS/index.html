@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@next" defer></script>
+    <script src="app.js" defer></script>
+    <title>Vue JS</title>
+</head>
+<style>
+    body{
+        font-family: sans-serif;
+    }
+    *{
+        padding: .3rem .1rem;
+        margin : 0;
+    }
+    button{
+        margin: .2rem 1rem;
+    }
+</style>
+<body>
+    <header>
+        <h4>VUE COURSE PRACTICE: </h4>
+    </header>
+    <section id='user-goal'>
+
+        <!-- vue data properties -->
+        <h4>{{ heading }}</h4>
+        <p>{{ courseGoal }}</p>
+
+        <!-- vue directives -->
+        <p v-html="courseGoal2"></p>
+        <a v-bind:href="vueLink">About vue JS</a>
+
+        <!-- vue methods invoking -->
+        <p>Random no generation : {{ randomNo() }}</p>
+        <br><br>
+        
+        <!-- event handling -->
+        <h4>Event handling: </h4>
+        <button v-on:click="add">Increase by 1</button> 
+        <button v-on:click="subtract(5)">Decrease by 5</button>
+        <p>Result : {{ counter }}</p>
+
+        <br><br>
+
+        <!--input fields -->
+        <h4>Input fields</h4>
+        <input type="text" v-on:input="setName">
+        <p>Your name : {{ name }}</p>
+
+        <!-- passing additional args alongwith event arg. -->
+        <input type="text" v-on:input="setfName($event, 'shah')">
+        <p>Your name : {{ fullname }}</p>
+
+
+        <br><br>
+        <!-- preventing the default reload. -->
+        <h4>Preventing default page reload </h4>
+        <form v-on:submit="submitForm">
+            <input type="text" placeholder="using vanila js"> 
+            <button type="submit">Sign up</button>
+        </form>
+
+        <form v-on:submit.prevent="submitForm2">
+            <input type="text" placeholder="using vue">
+            <button type="submit">Sign up</button>
+        </form>
+
+
+        <br><br>
+        <!-- modifier like .enter -->
+        <h4>key press modifier</h4>
+        <input type="text" placeholder="press enter after completing" v-on:input="setName" v-on:keyup.enter='confirmInput'>
+        <p>Your name : {{ confirmName }}</p>
+
+
+        <br><br>
+        <!-- v-once directive -->
+        <h4>V-once directive</h4>
+        <p v-once> counter : {{ counter }}</p>
+
+
+        <br><br>
+        <!-- one way of resetting -->
+        <h4>Resetting values</h4>
+        <input type="text" v-bind:value="inputName" v-on:input="setInputName">
+        <button v-on:click="resetInput">Reset</button>
+
+        <!-- another way of resetting-->
+        <input type="text" v-model="inputName">
+        <button v-on:click="resetInput">Reset</button>
+
+
+        <!-- computed methods -->
+        <p>{{computedMethod}}</p>
+        <p>{{normalMethod()}}</p>
+
+    </section>
+    
+</body>
+</html>

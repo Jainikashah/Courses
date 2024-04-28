@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="../assets/styles/style.css">
+</head>
+<body>
+    <h1 class="header">Admin Login Form</h1>
+
+    <div class="card">
+        <form action="dashboard.html" id="form">
+
+            <table>
+                <tr>
+                    <td><label for="username">Username : </label></td>
+                    <td> <input type="text" autocomplete="off" name="username" required id="username"></td>
+                </tr>
+
+                <tr>
+                    <td><label for="password">Password : </label></td>
+                    <td> <input type="password" autocomplete="off" name="password" required id="password"></td>
+                </tr>
+                <tr>
+                    <td colspan="2"> <input class="btn" id="submitButton" type="submit" value="LOGIN"></td>
+                </tr>
+            </table>
+            <p class="or-text">OR</p>
+            <p class="switch-btn">
+                <button id="registerBtn">Register</button>
+                <button id="userBtn">Switch to user</button>
+            </p>
+
+        </form>
+    </div>
+
+    <script src="../js/adminLogin.js" type="module"></script>
+</body>
+</html>

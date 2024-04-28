@@ -1,0 +1,5 @@
+- Code optimization before deloying:
+ - Test the entire app with erros.
+ - Refactor the Code.
+ - Use lazy loading, defineAsyncComponents, etc. features of vue to make your app faster.
+ - run npm run build to get the production version of code.

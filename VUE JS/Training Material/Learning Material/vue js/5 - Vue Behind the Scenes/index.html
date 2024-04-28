@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue JS</title>
+    <style>
+        body {font-family: sans-serif;}
+    </style>
+</head>
+<body>
+    <header>
+        <h3>Vue BTS</h3>
+    </header>
+    <section id="disp">
+        sec 1 
+    </section>
+
+
+    <section id="disp2">
+        <input ref="userText" type="text" placeholder="Type anything to get text">
+        <button type="submit" v-on:click="setText">Set Text</button>
+        <p>{{message}}</p>
+    </section>
+
+
+    <section id="disp3">
+        <input ref="userText" type="text" placeholder="Type anything to get text">
+        <button type="submit" v-on:click="setText">Set Text</button>
+        <p>{{message}}</p>
+    </section>
+
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="app.js"></script>
+</body>
+</html>

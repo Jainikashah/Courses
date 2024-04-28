@@ -1,0 +1,11 @@
+
+/*
+    What to do?-
+    
+    Create a class Details.
+    Get 3 properties from constructor - Unique Name, Date and Children (an array of objects that has same name).
+    Create a class subCategory.
+    Get 3 properties from constructor - SubName, Price and Quantity.
+    Initialize the subCategory class inside the class details.children prop, using map(). 
+
+*/

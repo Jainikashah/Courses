@@ -1,0 +1,9 @@
+1. Can we not change the value of data props inside computed methods nor can we pas parameters?
+2. Can we use if and else in watchers?
+
+3. How to emit an event form a functional component?
+4. Where to turn off the event bus in a file? and does it has to be done for each event ?
+
+5. What is the difference between emitting and passing a function and cal
+
+6. Ask about provide and inject

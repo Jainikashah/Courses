@@ -1,0 +1,32 @@
+Topic- Introducing components
+
+1. Why we need components? 
+Suppose, we have 10 cards of friends. Each having friend name and a details btn. On click of that btn, the details of that friend should be shown.
+Without components, We can use for loop to get 10 cards and if statement inside html to get the functionality of the btn.
+The error here would be, that onclick of a btn on oe friend's card, will show the details of each and every card.
+Thats not what we want. One solution could be to create a property for each friend card and passing its id's and something like that could work.
+But suppose having 100 friends, we cannot create a different prop for each of them.  
+
+Here, we need components that will help. components can be used to amke code reusable with each thing concerned about itself only.
+Also, larger code would be easy to organize with components.
+
+
+
+2. Creating components-
+Naming convention - A two word name with a - delimiter. e.g: friends-list.
+components can be accessed like html tags.
+
+creating - 
+(js):
+    app.component('friend-contact',{
+        template : `<p>Hello world</p>`,
+
+        data(){}
+        },
+
+        methods : {}
+    })
+(html):
+    <friend-contact></friend-contact>
+
+here, app is the main vue app. basically creating components are like creating mini vue apps only, which in turn is associated with the main vue app.

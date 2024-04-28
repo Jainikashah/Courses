@@ -1,0 +1,124 @@
+Diving Deeper into Components-
+
+1. Local vs Global Components:
+when we register our components inside main.js, they become Global components. Which means that we can use those components anytime anywhere inside the app.
+For smaller apps, it could be fine. But with bigger apps, all the components will load at the time, the app is loaded. Means, when browser loads our app, it will go through each and every component, either we need them at first place or not.
+This could be a performance issue.
+
+To solve - register components as local components.
+e.g. - inside the component we need the other component. Here, the-header will have scoped only inside app.vue component.
+
+    import TheHeader from './components/TheHeader.vue';
+
+    export default {
+    components : {
+        'the-header':TheHeader
+    }, //OR
+     components : {
+        TheHeader  //another way
+    },
+
+
+2. Scoped Styles:
+As we know, the styles we write inside components, aren't just scoped to that component, instead they are globally available in the app.
+
+To get styling, only for a specific component, we can use this:
+<style scoped>..</style>
+
+The scoped keyword will let the stylig affect only to the elements inside that component, not even child or parent ones.
+How vue does this is, by adding a custom attribute to the elements that are scoped. You can see that inside the dev tools -> elements
+
+
+3. slots: 
+when we create a component (lets say a card component), and want to make is work as a wrapper with dynamic contents. Well, if the content is just some data, we can use props, but if it is html content, and we want a wrapper component around it, wherein the html should be dynamic, we can use something like slot.
+
+e.g. - 
+    // inside the wrapper component:
+    <template>
+        <div>
+            <slot></slot>
+        </div>
+    </template>  ...style,srcipts, etc.
+
+
+    <wrapper>
+        <h2>Available Badges</h2>
+    </wrapper>  //to use it.
+
+the <slot> will get replaced by whatever content is there inside the wrapper (here its h2)
+
+
+4. Having multiple slots in a component:
+To achieve this, we can name our slot elements, and later can refer them with that. like this:-
+    <header>
+        <slot name="header"></slot>
+    </header> // inside the wrapper component
+
+
+    <template v-slot:header> // where we wanna use it.
+
+- If no name attribute is mentioned, that slot is taken as default.
+- we can also have default tags inside <slot>, Which will render only if there's no data passed 
+for that slot.
+e.g.   <header>
+            <slot name="header">
+                <h2>The default</h2> //will only render if there's no data passded
+            </slot>
+        </header>
+
+- we can get all the slots that are being passed, inside our script tag of that wrapper component. 
+    export default {
+        mounted(){
+            console.log(this.$slots.header);   
+        }
+    }
+
+- shorthand of writing v-slot:header, could be #header.
+
+
+
+5. Dynamic components:
+To render dynamic components, which means, having 2 components and some event, that would trigger each component at different times. One way could be using v-if, where we can conditionally render the component. Another is like this-
+
+  <!-- short hand way -->
+  <component :is="selectedComponent"></component>
+
+selectedComponent is a data prop, with value as the component name.
+
+
+
+6. Keep-alive: A wrapper component that vue provides, in which we can store our components and suppose we wanna save the data of it, when we re-rendering it somwhere else, keep-alive can do that.
+    <keep-alive>
+      <component :is="selectedComponent"></component>
+    </keep-alive>
+suppose the component we are rendering, has an input field, when user enters something, and without saving, switch to another component, if we are sing keep-alive, it will keep that field filled with the user-inputted-data, else not.
+Keep-alive bascially, stores the data of the component and doesnt destroy it, which otherwise would. 
+
+
+7. Teleport : Any component that you want to render inside a specific html element, but had written inside some other component, teleport can help us achieve that. 
+Teleport is a in-built vue component that acts as wrapper and an attribute called 'to' ,which takes a value a any css seletor, to select the html element that you want the component to render inside.
+
+e.g. 
+  <teleport to="body"> 
+        <error-dialog v-if="!isInputValid">
+            <h2>Input Error</h2>
+            <p>Kindly enter something..</p>
+            <button @click="confirmDialog">Okay</button>
+        </error-dialog>
+    </teleport>
+
+here, the dialog will appear inside body tag of our document.
+Here, the purpose of doing this, is just that our html code has to semantic. Nothing else.
+
+
+8. In vue 2, a wrapping element inside all other elements was compulsory, but in vue 3 its not.
+
+9. Naming structure - 
+components - PascalCase
+- if a component is used only once, then add the - eg TheHeading
+- if a component is used multile times and act as base then add base before it - eg BaseButton BaseCards or AppButton
+
+
+10. Folder structure - 
+If there are tons of components, then add sub-folders like UI(custom btns, cards), Layout(header, footer), and then specific-features-sub-folders like products, checkout, etc.
+

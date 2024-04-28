@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue JS</title>
+    <style>
+        body {font-family: sans-serif;}
+    </style>
+</head>
+<body>
+    <header>
+        <h3>Vue Todo list</h3>
+    </header>
+    <section id="todo">
+        <h5>My todo items</h5>
+        <input type="text" v-model="enteredItem"  v-on:keyup.enter="addGoal()">
+        <button v-on:click="addGoal()">Add Item</button>
+        <p v-if="items.length === 0">No items have been added yet.</p>
+        <ul v-else>
+            <li v-for="(item, index) in items" key="item" >
+                {{item}}
+                <button @click="removeItem(index)">Delete</button>
+            </li>
+        </ul>
+    </section>
+
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="app.js"></script>
+</body>
+</html>

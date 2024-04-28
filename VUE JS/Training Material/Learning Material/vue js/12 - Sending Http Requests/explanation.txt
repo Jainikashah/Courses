@@ -1,0 +1,151 @@
+Section : HTTPS Sending requests-
+
+1. When we submit a form, by default browser makes an http request to the same server, the app was rendered through, which in our case in localhost.
+But, we mainly use submit.prevent() and then handle the data on our own.
+
+what happens is, we get some data through our app -> we send that to our server -> there's some server-side code written -> the code mainpulates the data in its own way -> and then store that data inside the database.
+
+2. Here, we are using a firebase real-time database, to get a database, and mainly because the server-side code is written inside the firebase itself and we dont have to write it on our own.
+(but in real life, the back-end developers would be writing it).
+
+
+3. To send data we can either use axios (one of the most popular js lib for making http requests) or fetch (which comes in-built in browsers).
+Both these works BTS, which means our app isnt reloaded everytime we make a request instead our app keeps running, and in the background the request is being processed.
+
+
+4. Lets Post some data on firebase - realtime storage:
+
+code -
+   fetch('https://vue-js-demo-app-3cb87-default-rtdb.firebaseio.com/survey.json',{
+        method : 'POST',
+        headers : {
+          'Content-type': 'application/json',
+        },
+        body : JSON.stringify({name: this.enteredName, rating: this.chosenRating})
+      })
+
+
+- fetch is a in-built method that takes a url as a parameter.
+- here, till .com in the url, is provided by firebase, inside the data tab, of your real-time data storage. 
+- copy that url, and append /dbName.json (which here is survey.json).
+- the second argument is optional. If we want to post some data we use that second argument.
+- Second arg is an object, that takes a method as a prop and value of it is any http method - post, put, delete, etc.
+- second it takes headers, which is an object, wherein we mention the kind of content we'll be posting. Here we are posting data in json format, so content type should be application/json.
+- next is the body wherein we pass a javascript object which we want to store inside the database, before stringifing it, to convert that obj into json.
+
+
+
+5. Now lets get data from database:
+code -
+    methods : {
+        loadExperiences(){
+            fetch('https://vue-js-demo-app-3cb87-default-rtdb.firebaseio.com/survey.json').then((response) => {
+            if(response.ok){
+                return response.json();
+            }
+            }).then((data) => {
+            console.log(data);
+            });
+
+        }
+    }
+
+- the loadExperiences () will get called when a button is clicked.
+- its making a fetch request (with no second arg, as we are only getting data, and that is the default of fetch already, so we dont need to mention it).
+- Fetch returns a promise so we added a .then... at the end to handle that promise.
+- When the data would be loaded, in that promise, we'll receive an argument that is response here, which holds a ton of stuff, in which somewhere our data is there too.
+- firstly, we are checking if the response is ok or not, if that return 404, it wont proceed further, will only proceed at 200 status code.
+- later, we are returning response.json(), which also is a promise, and so, at the end of the block, we are again writing, .then and getting the data. 
+There, we find our data.
+
+Now, to process that data in our required format - 
+code-
+    .then((data) => {
+        const results = [];
+        for(const id in data){
+            results.push({ id: id, name: data[id].name, rating: data[id].rating});
+        }
+        this.results = results;
+    });
+
+here, inside that data, we'll have a unique id, and other stuff. We are looping through the data object, and pushing our required data inside the results array to get our desired format.
+
+
+
+6. To get the data, on page/component load, we can simply call that method inside the mounted lifecycle.
+
+
+7. To get a loading spinner, when our data is getting loaded:-
+code- 
+    <p v-if="isLoading">Loading...</p>
+    <ul v-else>
+
+
+    data(){
+        return {
+        isLoading : false
+        }
+    },
+    
+    methods : {
+        loadExperiences(){
+        this.isLoading = true .... }
+        .then((data) => {
+            this.isLoading = false;
+        }
+    },
+    mounted(){
+        this.loadExperiences();
+    }
+
+- Here, if loading is happening, then the p tag will be shown else the below one.
+- we are just creating a data prop, isloading, and setting it to true, before making the http request, and setting it to false, when we get the data.
+- here, we are setting it to false, inside the .then(..), because remember, that js is a synchronous programming language, and if we write the isloading=false, at the end of fetch, then while it'll be executing, the .then and inside its logic, will wait untill the promise is returned, but whatever is written after fetch will not wait, js will execute it right after, so if we plan to set isloading=false, after that, it wont technically make sense.
+
+
+
+8. Some catching errors :
+code i- if there's no data inside the database 
+     <p v-if="isLoading">Loading...</p>
+      <p v-if="!isLoading && (!results || results.length == 0)"> No Stored Data. Add Some.</p>
+      <ul v-else-if="!isLoading && results &&results.length>0" >
+Here, initially it'd be loading, if there are any results, will the length is greater than 0, then the list would be printed else the error msg.
+
+
+code ii - if there's a technical error like wrong url or server side error like 404 fie not found-
+  this.error = null;
+      fetch('https://vue-js-demo-app-3cb87-default-rtdb.firebaseio.com/survey.json',{
+        method : 'POST',
+        headers : {
+          'Content-type': 'application/json',
+        },
+        body : JSON.stringify({name: this.enteredName, rating: this.chosenRating})
+      }).then(response => {
+        if(response.ok){
+          this.error = "Data saved";
+        }
+        if(!response.ok){
+          throw new Error('Could not save data!');
+        }
+      }
+
+      ).catch((error) => {
+        this.error = error.message
+      })
+
+- Here, if we remove .json from url, it would be a technical error and the control will send to the catch statement.
+- if there's a server side error, lets say we forgot to mention json.stringify, then the control will not directly go to the catch, instead it will return a 404 status code. hence, we then have to check the response, and if it isnt ok, then throw an error, and then the control would be passed to catch block.
+- the error.message will print the message we pass or if we dont pass, then the default msg of error is printed.
+
+
+
+9. PUT method: It is used when we want to override an existing field of database if the id is same, or else create one.
+means: if the id exists, override the data else create new with the id.
+    code:
+    const resp = await fetch(`url/routingName/id.json`,{
+      method: 'PUT',
+      bodyL JSON.stringify(dataToPass)
+    });
+    const respData = await resp.json()
+    if(resp.ok) { //...code}
+    else{ //...error}

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users List</title>
+    <link rel="stylesheet" href="../assets/styles/navbar.css">
+    <link rel="stylesheet" href="../assets/styles/showUsers.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css">
+    
+</head>
+<body>
+    <div class="body">
+        <!-- navbar -->
+        <header>
+            <section class="navbar-section" id="navbar-section">
+                <div class="navbar" id="navbar">
+                    <div class="logo">
+                        <a href="./dashboard.html">
+                            <p>Dashboard</p>
+                        </a>
+                    </div>
+                    <ul>
+                        <a href="./viewProfile.html">
+                            <li>Profile</li>
+                        </a>
+
+                        <a href="./showUsers.html">
+                            <li>Show Users</li>
+                        </a>
+
+                        <a href="./userLogin.html">
+                            <li  id="signOutBtn">Sign Out</li>
+                        </a>
+                    </ul>
+                </div>
+            </section>
+        </header>
+
+
+        <section class="table-section" id="table-section">
+
+            <!-- headers -->
+            <div id="details">
+                <h2 class="heading">Users List-</h2>
+                <form action="" class="sort">
+                    <select name="sort" class="sort-select" id="sort">
+                        <option value="Ascending">A to Z</option>
+                        <option value="Descending">Z to A</option>
+                        <option value="createdDt" selected="selected">Created Date</option>
+                    </select>
+                </form>
+            </div>
+
+
+            <hr>
+            <table border="1" id="table"></table>
+            <p id="load-more"></p>
+        </section>
+
+        <section id="edit-section" class="edit-section">
+        
+            <div class="headings">
+            
+            <h2>Edit details-</h2>
+            <i id="closeBtn" class="fas fa-times cross-btn"></i>
+            </div>
+            
+            <form action="">
+                <label for="username">Username: </label>
+                <input type="text" autocomplete="off"  name="username" id="username">
+    <br>
+                <label for="number">Contact No: </label>
+                <input type="number"  autocomplete="off" name="number" id="number">
+    <br>
+                <label for="email">Email ID: </label>
+                <input type="email" autocomplete="off"  name="email" id="email">
+                
+    <br>
+                <label for="accountType" id="accType">Account Type: </label>
+                User: <input type="radio" value="User" name="accountType" id="user">
+                Admin: <input type="radio" value="Admin" name="accountType" id="admin">
+    <br>
+                <input type="submit" class="btn" id="saveProfileBtn" value="Save Profile">
+            </form>
+        </section>
+    
+    <section class="edit-section"  id="add-user-section">
+
+        <div class="headings">
+        
+        <h2>Add New User-</h2>
+        <i id="UsercloseBtn" class="fas fa-times cross-btn"></i>
+        </div>
+        
+        <form action="">
+            <label for="username">Username: </label>
+            <input type="text" name="username" autocomplete="off" id="new_username">
+            <p class="errorMsg"></p>
+    <br>
+            <label for="password">Password : </label>
+        <input type="password" autocomplete="off" name="password" id="new_password"/>
+            <p class="errorMsg"></p>
+        <br>
+            <label for="number">Contact No: </label>
+            <input type="number" autocomplete="off" name="number" id="new_number">
+            <p class="errorMsg"></p>
+            <br>
+            <label for="email">Email ID: </label>
+            <input type="email" autocomplete="off" name="email" id="new_email">
+            <p class="errorMsg"></p>
+            <br>
+            <label for="gender" id="genderType">Gender : </label>
+            Male -<input type="radio" name="gender" value="male" id="new_maleBtn">
+            Female - <input type="radio" name="gender" value="female" id="new_femaleBtn"> 
+
+    <br>
+            <input type="submit" class="btn" id="saveUserBtn" value="Save User">
+        </form>
+    </section>
+
+    </div>
+
+
+    <script src="../js/updatedShowUsers.js" type="module"></script>
+</body>
+</html> 

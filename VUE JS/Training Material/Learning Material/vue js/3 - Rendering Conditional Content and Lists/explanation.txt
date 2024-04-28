@@ -1,0 +1,56 @@
+1. v-if directive: 
+(html):
+    <p v-if="items.length === 0">No items have been added yet.</p>
+
+this directive is like if statement. Here if the items array property's length is 0, then only the paragraph would be shown, else not.
+In this if block, any truthyor falsy value expression is valid. (Bascially everything we write in a noraml if block)
+
+v-else and else-if:
+v-else: It can be used inside another element but, that element should come right after the if element. 
+
+v-else if : It should come after if block and before else.
+
+(html):
+ -  <p v-if="items.length === 0">No items.</p>
+    //No elements in between
+    <ul v-else-if="item.length>0"> ... </ul>
+    <ul v-else> ... </ul>
+
+Note: The if and else actually removes and adds the elements from and to the DOM.
+
+
+
+2. v-show directive: 
+This doesnt work with else or else-if. It is just an alternative of v-if, but the only differnece is that this uses css display property to show and hide elements and doesnt remove them from the dom.
+
+You can check this in inspect tools as well.
+ 
+(html):
+<p v-show="items.length === 0">No items.</p>
+
+
+
+3. v-for: 
+ (html):
+ <li v-for="item in items" key="item">{{item}}</li>
+
+This is just like  a for loop. Here, for each item in items array, we are rendering the item name.
+Also, its amazing for peroformance, as when we add a new element, only that item is rendered and no other elements or list items are re-rendered.
+keys should be used while using v-for so that the vue can uniqely identifies each element, else some unexpected results might occur.
+
+
+
+4. More about v-for: 
+
+To get the index of item-
+ - <li v-for="(item, index) in items">{{item}}</li>
+
+v-for also works with objects. 
+ - <li v-for="(value, key, index) in obj">{{value}}</li>
+
+ - <li v-for="num in 10">{{num}}</li>
+
+
+
+5. Extra info :
+Dont use v-for and v-if together on a same element, instead use a wrapper for v-if.

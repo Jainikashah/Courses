@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form</title>
+    <style>
+        body{
+            font-family: sans-serif;
+        }
+        .bold-style{ font-weight: bold; font-size: .9rem;}
+        .invalid {color: red; font-size: .9rem;}
+        .valid{color: green; font-size: .9rem;}
+    </style>
+</head>
+<body>
+    <header>
+        <h3>Form Created Using Vue JS.</h3>
+    </header>
+    <section>
+        <div>SIGN UP!</div> <br>
+        <div id="form">
+            <input type="text" :value="username" placeholder="Username" v-on:input="setUsername"> 
+            <p class="bold-style">Your Username : {{ username }}</p>
+            <br>
+            <input type="password" :value="password" placeholder="Password" v-on:input="checkPassword" v-on:keyup.enter="submitForm">
+            <p :class="passwordValidation ? 'invalid' : 'valid'">Password should be 5 characters long.</p>
+            <br><br>
+            <button type="submit" v-on:click="submitForm">Sign Up</button>
+        </div>
+    </section>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="app.js"></script>
+</body> 
+</html>

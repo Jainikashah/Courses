@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration Form</title>
+    <link rel="stylesheet" href="../assets/styles/style.css">
+</head>
+
+<body>
+    
+    <h1 class="header">User Registration Form</h1>
+
+    <div class="card">
+        <form id="form">
+            
+            <table>
+                <tr>
+                    <td><label for="username">Username  : </label></td>
+                    <td> <input type="text" autocomplete="off" name="username" id="username">
+                    <p class="name-error"></p></td>    
+                </tr>
+
+
+                <tr>
+                    <td><label for="password">Password : </label></td>
+                    <td> <input type="password" autocomplete="off" name="password"  id="password"/>
+                        <p class="pass-error"></p>
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <td><label for="gender">Gender : </label></td>
+                    <td class="radio">Male -<input type="radio" name="gender" value="male" id="maleBtn">
+                    Female - <input type="radio" name="gender" value="female" id="femaleBtn"> </td>
+                </tr>
+
+
+                <tr>
+                    <td><label for="number">Contact No : </label></td>
+                    <td><input type="number" autocomplete="off"
+                        id="number" name="number"> 
+                        <p class="num-error"></p>
+                     </td>
+                        
+                </tr>
+
+
+                <tr>
+                    <td><label for="email">Email ID : </label></td>
+                    <td><input type="email"  autocomplete="off" id="email" name="email">
+                    <p class="email-error"></p></td>
+                </tr>
+
+                
+                <tr>
+                    <td colspan="2"> <input class="btn" id="submitButton" type="submit" value="REGISTER"></td>
+                </tr>
+
+            </table>
+                <p class="or-text">OR</p>
+            <p class="switch-btn">
+                
+                <button id="loginBtn">Login</button>
+                <button id="adminBtn">Switch to admin</button>
+            </p>
+        </form>
+    </div>
+
+    <script src="../js/userRegistration.js" type="module"></script>
+</body>
+
+</html>

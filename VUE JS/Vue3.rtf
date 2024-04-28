@@ -1,0 +1,2566 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\colortbl ;\red0\green0\blue255;}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\qc\ul\f0\fs44\lang9 Vue JS - Notes\par
+
+\pard\sa200\sl276\slmult1\ulnone\fs22\par
+\b\fs28 Section 1: Basic and core concepts of VueJS.\b0\fs22\par
+
+\pard\sl276\slmult1\fs24 1. How to create a vue app ?\fs22\par
+\par
+ In vue, we can select which sections of or html page we need VUE to control and which we dont.\par
+\par
+code -  To create a new vue app:\par
+
+\pard\li720\sl276\slmult1   const app = Vue.createApp();  \par
+  app.mount('#user-goal');\par
+
+\pard\sl276\slmult1\par
+explanation: mount() takes a unique css selector that says : which section of html page we want vue to control. \par
+\par
+code:  \par
+(JS):\par
+ \tab Vue.createApp(\{\par
+    \tab\tab data : () => \{\par
+        \tab\tab return \{ \par
+          \tab\tab\tab  courseGoal : 'Finishing the course and learn all about VUE.'\par
+    \tab\tab     \};\par
+    \tab\tab\}\par
+\tab           \}\par
+\par
+
+\pard\sa200\sl276\slmult1 (html):\par
+
+\pard\li720\sa200\sl276\slmult1  - <p>\{\{ courseGoal \}\}</p>\par
+
+\pard\sa200\sl276\slmult1 here, createApp always takes an object; an object with certain properties (whose name should be same as defined in vue docs. eg data). \par
+
+\pard\sl276\slmult1 data prop takes a () and always returns an object; an object which which hold properties and values of our kind. Later we can use these names and render values of these properties dynamicaaly in html page. Later the value of courseGoal will be printed \par
+\par
+ Note: only the sections that are under vue's control will have access to these special syntax \{\{\}\}. Anywhere else it wont work.\par
+ code: \tab\par
+\tab  - \{\{ courseGoal \}\}\par
+This syntax and functionality is called Interpolation.\par
+inside these we can perform any javascript expression like ternary op, function call, etc.\par
+
+\pard\sa200\sl276\slmult1\par
+2. v-bind directive:-\par
+
+\pard\sl276\slmult1\{\{\}\} - this syntax only works in between html tags. To get the value from vue, inside something like an html attribute, we need v-bind directive.\par
+\par
+code:\par
+(js): \par
+\tab   data : () => \{\par
+        \tab\tab return \{ \par
+            \tab\tab     courseGoal : 'Finishing the course and learn all about VUE.',\par
+           \tab\tab     vueLink : '{{\field{\*\fldinst{HYPERLINK https://vue.js.org/ }}{\fldrslt{https://vue.js.org/\ul0\cf0}}}}\f0\fs22 '\par
+        \tab\tab\};\par
+    \tab       \}\par
+
+\pard\sa200\sl276\slmult1  (html):   \par
+ \tab  <a v-bind:href="vueLink">About vue JS</a>\par
+Now, the link will work properly. Add v-bind in front of any html atrribute(here is href), followed with a colon and then attribute name and the vue property name, whose value you want to render.\par
+\par
+
+\pard\sl276\slmult1 3. Methods property of vue app:\par
+(js): \par
+
+\pard\li720\sl276\slmult1  methods : \{\par
+        outputGoal : () => \{\par
+            const randomNo = Math.random();\par
+            return randomNo;\par
+        \}\par
+    \}\par
+
+\pard\sl276\slmult1\par
+(html):\par
+\tab   <p>Random no generation : \{\{ outputGoal() \}\}</p>\par
+The second property of createApp is methods.\par
+methods take an object of our-defined methods, which we can call inside html page and render the returned value of method. Example here, the random no will be rendered.\par
+\par
+4. Using data properties inside vue app.\par
+(js):\par
+
+\pard\li720\sl276\slmult1 -  outputGoal : () => \{\par
+            return this.courseGoal;\par
+    \}\par
+
+\pard\sl276\slmult1 To use data properties inside the vue app (mainly inside the methods), we need to use this keyword to access it. \par
+
+\pard\sa200\sl276\slmult1\par
+
+\pard\sl276\slmult1 5. v-html directive:  Outputting HTML from vue app.\par
+This directive tells the browser to interpret the the string as a html doc.\par
+\par
+(html):\par
+
+\pard\li720\sl276\slmult1 - <p v-html="courseGoal2"></p>\par
+
+\pard\sl276\slmult1 (js):\par
+  \tab data : () => \{\par
+       \tab\tab return \{ \par
+            \tab\tab    courseGoal2 : '<h2>Inside heading tag</h2>',\par
+        \tab\tab\};\par
+\tab            \}\par
+
+\pard\sa200\sl276\slmult1 with v-html directive, the content will be shown in <h2/> format.\par
+
+\pard\sl276\slmult1\par
+6. Event handling : \par
+(html):\par
+
+\pard\li720\sl276\slmult1  - <button v-on:click="counter++">Increase</button> //using data properties\par
+
+\pard\sl276\slmult1  \tab - <button v-on:click="subtract">Decrease</button>  //using methods\par
+ \tab - <p>Result : \{\{ counter \}\}</p>\par
+ (js):\par
+
+\pard\li720\sl276\slmult1 data: () => \{\par
+    counter : 0\par
+\},\par
+methods : \{\par
+      subtract()\{\par
+            this.counter--;\par
+        \}\par
+\}\par
+\par
+
+\pard\sl276\slmult1 v-on directive allows any js event like click, mouseover, etc. on the element.\par
+inside the double quotes you can perform any javascript expression you want to execute on press of button click.\par
+Avoid using arrow ()s, as this keyword is not used in arrow (), using arrow () can might lead to unexpected results.\par
+\par
+\par
+7. parameters in event handling :\par
+(html):\par
+
+\pard\li720\sl276\slmult1 <button v-on:click="subtract(5)">Decrease by 5</button>\par
+
+\pard\sl276\slmult1 (js):\par
+
+\pard\li720\sl276\slmult1 subtract(num)\{\par
+    this.counter = this.counter-num;\par
+\}\par
+\par
+\par
+
+\pard\sl276\slmult1 8. using input fields:\par
+
+\pard\li720\sl276\slmult1 (html):\par
+ - <input type="text" v-on:input="setName">\par
+ - <p>Your name : \{\{ name \}\}</p>\par
+\par
+(js):\par
+name : ''  //data prop\par
+\par
+setName(event)\{\par
+        this.name = event.target.value;\par
+    \}   //method prop\par
+
+\pard\sl276\slmult1\par
+the :input is a javascript method that is called everytime a new key is entered in the input field.\par
+event parameter is by default passed by the browser.\par
+note: if you have something other args to pass (here eg in setName function and also need the event then use this syntax:)\par
+(html):\par
+
+\pard\li720\sl276\slmult1  - <input type="text" v-on:input="setfName($event, 'shah')">\par
+<p>Your name : \{\{ fullname \}\}</p>\par
+
+\pard\sl276\slmult1 (js):\par
+
+\pard\li720\sl276\slmult1  - setfName(event, lname)\{\par
+    this.fullname = event.target.value + ' ' + lname;\par
+\}\par
+
+\pard\sl276\slmult1\par
+\par
+9. Theory: \par
+The vue app only re-renders the element that has to be re-render and not the entire page. you can see this using elements tab and the ones that flahses are the ones that changes. \par
+\par
+\par
+10. To avoid reload on form submit:\par
+one way - \par
+(html):\par
+
+\pard\li720\sl276\slmult1 <form v-on:submit="submitForm">\par
+    <input type="text">\par
+    <button type="submit">Sign up</button>\par
+</form>\par
+\par
+(js):\par
+submitForm(event)\{\par
+    event.preventDefault();\par
+\}\par
+
+\pard\sl276\slmult1\par
+another vue's way - \par
+\tab <form v-on:submit.prevent="submitForm2">\par
+\par
+the first way is using vanilla js and second is using vue, vue one is a lot simpler and less code.\par
+with vue code we are using modifier. we have a few modifiers thats comes with vue and prevent is one of them.\par
+\par
+other modifiers are:\par
+
+\pard\li720\sl276\slmult1  - v-on:click.right="funName"\par
+// on only right click of mouse, left is the default click.\par
+\par
+ - v-on:keyup.enter="funName"\par
+// on press of enter key the () will be called.\par
+
+\pard\sl276\slmult1\par
+11. v-once directive:\par
+ - <p v-once> starting counter : \{\{ counter \}\}</p>\par
+This directive will hold the initial value of counter, even if we change the counter's value, it still will hold the starting value only.\par
+\par
+\par
+12. Resetting value of input fields:\par
+
+\pard\li720\sl276\slmult1  - <input type="text" v-bind:value="inputName" v-on:input="setInputName">\par
+    <button v-on:click="resetInput">Reset</button>\par
+\par
+ - resetInput()\{\par
+    this.inputName = '';\par
+\},\par
+
+\pard\sl276\slmult1\par
+Here we are setting the value of inputName prop using setInputName function and then setting the value attribute to the inputName prop. Later in resetInput we are resetting the inputName prop to empty string, and so on click we'll get ''.\par
+\par
+One easy way of doing this is also using v-model: \par
+\tab  - <input type="text" v-model="inputName">\par
+\tab <button v-on:click="resetInput">Reset</button>\par
+\par
+v-model basically does what v-bind and v-on are doing in above eg. \par
+v-model directive set the value of inputName prop as what the user will enter and also set the value attribute to the inputName prop.\par
+This is an example of two way data-binding.\par
+\par
+\par
+13. One very imp. thing about VUE to know:\par
+when we call methods inside our html page, its not a good practice. why?\par
+\par
+lets know-\par
+Whenever a property of data changes, (which ofcourse happens frequently as thats how our app becomes interactive right?) , the vue app will call all the methods that we have mentioned in our html page, because Vue doesnt know, if that method has anything in common with the property that we just changed. It thinks that we might be using the prop's value inside any of the method, so it call each and every method. Which ofcourse doesnt sound realistic, because a prop's value changed and we dont want every method which doesnt even care about that prop, changes. \par
+So, its not a good practice, we'll what is one.\par
+\par
+\par
+14. Solution - Computed methods:\par
+computed methods are a property of createApp, like data and methods are.\par
+It takes an object of methods, but the convention of writing the object properties like as data properties and not like methods. Though technically they are methods too.\par
+\par
+(html):\par
+ \tab    <p>\{\{computedMethod\}\}</p>\par
+   \tab   <p>\{\{normalMethod()\}\}</p>\par
+(js):\par
+
+\pard\li720\sl276\slmult1 computed : \{\par
+    computedMethod()\{\par
+        console.log('runs once.');\par
+        this.displayValue = "Computed Method"\par
+    \}\par
+\},\par
+\par
+method : \{\par
+        normalMethod()\{\par
+            console.log('runs everytime');\par
+            this.displayValue ="Normal method";\par
+        \}\par
+\}\par
+
+\pard\sl276\slmult1 Note: we call computed methods without parenthesis.\par
+The computed methods will not run again every time if we change any props value, but only when something inside that method changes.\par
+Thats solves our problem here.\par
+\par
+\par
+15. watchers :\par
+(js):  \par
+
+\pard\li720\sl276\slmult1 watch : \{\par
+    counter(newValue, oldValue)\{\par
+        console.log('watch counter : '+ newValue, oldValue)\par
+    \}\par
+\},\par
+
+\pard\sl276\slmult1\par
+A watcher is something that takes a name of a data property or computed method prop, and act as a watcher on it. which means it will run everytime the value of those properties will change, otherwise it will not.\par
+Watcher provides us two args by default, the old value of property and new value.\par
+\par
+watchers are like alternative of computed methods, but we dont use them as an alternative thoug, because it might lead to more ines of code than it would with computed methods.\par
+\par
+So whats the actual use of watchers?\par
+We mainly use it when something changes to a certain value, and we need to perform task based on that change.\par
+e.g. when a counter reaches 50, turn it back to 0 : use watcher\par
+and on click of a button, increase counter by 1 : use computed method.\par
+e.g.2 - for making https request. \par
+\par
+\par
+16. shorthands:\par
+(html):\par
+
+\pard\li720\sl276\slmult1 for v-on:click - @:click\par
+for v-bind:value - :value\par
+
+\pard\sl276\slmult1\par
+\par
+17. Dynamic inline css-\par
+(html):\par
+\tab <div :style="\{borderColor : 'red' \}">\par
+with v-bind and on style attribute specifically, we can pass an object of style props and values that has to be applied.\par
+\par
+\par
+18. Adding css class dynamically- \par
+(html):\par
+
+\pard\li720\sl276\slmult1 // one way-\par
+<div :class="selected ? 'demo active' : 'demo' >\par
+\par
+// another way-\par
+<div :class="\{demo:true, active :selected\} ">\par
+In this way, demo class will be added always, but active class will be added only when selected property is true.\par
+\par
+//another way-\par
+<div :class="['demo', \{active: selected\}]">\par
+In this way, we are just adding an array and wrapping objects of classes in it.\par
+*/\par
+\par
+
+\pard\sa200\sl276\slmult1\fs44\par
+\b\fs28 Section 2:  Rendering Conditional Content and Lists\par
+
+\pard\sl276\slmult1\b0\fs24 1. v-if directive: \par
+(html):\par
+   \tab  <p v-if="items.length === 0">No items have been added yet.</p>\par
+this directive is like if statement. Here if the items array property's length is 0, then only the paragraph would be shown, else not.\par
+In this if block, any truthyor falsy value expression is valid. (Bascially everything we write in a noraml if block)\par
+\par
+v-else and else-if:\par
+v-else: It can be used inside another element but, that element should come right after the if element. \par
+v-else if : It should come after if block and before else.\par
+\par
+(html):\par
+
+\pard\li720\sl276\slmult1  -  <p v-if="items.length === 0">No items.</p>\par
+    //No elements in between\par
+    <ul v-else-if="item.length>0"> ... </ul>\par
+    <ul v-else> ... </ul>\par
+
+\pard\sl276\slmult1\par
+Note: The if and else actually removes and adds the elements from and to the DOM.\par
+\par
+\par
+2. v-show directive: \par
+This doesnt work with else or else-if. It is just an alternative of v-if, but the only differnece is that this uses css display property to show and hide elements and doesnt remove them from the dom.\par
+You can check this in inspect tools as well.\par
+ \par
+(html):\par
+\tab <p v-show="items.length === 0">No items.</p>\par
+\par
+\par
+3. v-for: \par
+ (html):\par
+ \tab <li v-for="item in items" key="item">\{\{item\}\}</li>\par
+\par
+This is just like  a for loop. Here, for each item in items array, we are rendering the item name.\par
+Also, its amazing for peroformance, as when we add a new element, only that item is rendered and no other elements or list items are re-rendered.\par
+keys should be used while using v-for so that the vue can uniqely identifies each element, else some unexpected results might occur.\par
+\par
+\par
+4. More about v-for: \par
+To get the index of item-\par
+ \tab - <li v-for="(item, index) in items">\{\{item\}\}</li>\par
+\par
+v-for also works with objects. \par
+ \tab - <li v-for="(value, key, index) in obj">\{\{value\}\}</li>\par
+ \tab - <li v-for="num in 10">\{\{num\}\}</li>\par
+\par
+\par
+5. Extra info :\par
+- Dont use v-for and v-if together on a same element, instead use a wrapper for v-if.\par
+- Regular js function-  When a function is not invoked from html, and is only needed in vue ap, then we can declare and define it as a regular js (), and call it from the app.\par
+\par
+\par
+\par
+\b\fs28 Section 3: Vue Js BTS: \b0\fs24\par
+\par
+1. What Vue Solves ? \par
+Vue, behind the scenes uses the concept of proxies, which makes it reactive. \par
+Reactive means what?\par
+\par
+Reactive means when you change a value of variable at a place, at all other places the changed value will be reflected. \par
+Vanilla JS, by default, doesnt support reactivity. \par
+e.g - \par
+
+\pard\li720\sl276\slmult1     let wish = 'Hello';\par
+    const completeWish = wish + ' world';\par
+    console.log(completeWish);\par
+\par
+    wish = "Hellooooo!";\par
+    console.log(completeWish);\par
+
+\pard\sl276\slmult1\par
+Here, even we changed the value the output of both consoles would be same. i.e. Hello world. \par
+This proves JS is not reactive, which vue allows us to have.\par
+\par
+2. How Vue solves?\par
+Vue uses proxies. What they do is- they keep track of all the properties we define in data, and the places those properties are being used. \par
+When we change the value of a property, it re-renders every place that prop's value was being used. This happens with proxy, with computed methods and watchers as well.\par
+\par
+3. More vue apps-\par
+We can multiple vue apps in a single app.js page. We just need to mount the section with the id. But we cannot use the data or methods of a different app, thats not allowed. Each data and method has its own scope, there's no connection between apps.\par
+\par
+Note: The html section that we mount to a vue app, is called a template. (The entire section is called a template of that app.)\par
+There's one more way of defining templates- \par
+
+\pard\li720\sl276\slmult1     const app = Vue.createApp(\{\par
+        template : `\par
+            <p> Tempting for Pizza </p>\par
+        `,\par
+        data() \{\}\par
+    \});\par
+    app.mount('#disp');\par
+
+\pard\sl276\slmult1 Using the template property, which receives a string of html elements, which in real called template.\par
+\par
+4. Refs-\par
+There's one more way, using which we can get the value passed by user in html, and get it inside our js file.\par
+Earlier we saw, its possible using v-bind, another way is Refs.\par
+\par
+Refs stores the value(entire element) inside memory and whenever we need it, we can access it with a special syntax.\par
+Here's how - \par
+\par
+(js):\par
+
+\pard\li720\sl276\slmult1     const app2 = Vue.createApp(\{\par
+    \par
+        data() \{\par
+            return \{\par
+                message : 'Hello world' \par
+            \}\par
+        \},\par
+        methods :\{\par
+            setText()\{\par
+                this.message = this.$refs.userText.value;\par
+            \}\par
+        \}\par
+    \});\par
+    app2.mount('#disp2');\par
+
+\pard\sl276\slmult1 (html):\par
+
+\pard\li720\sl276\slmult1     <section id="disp2">\par
+        <input ref="userText" type="text" placeholder="Type anything to get text">\par
+        <button type="submit" v-on:click="setText">Set Text</button>\par
+        <p>\{\{message\}\}</p>\par
+    </section>\par
+
+\pard\sl276\slmult1\par
+We pass a ref attribute in html element with a value that we later can use to get the value in js.\par
+this.message = this.$refs.userText; this returns the whole html element i.e. input.\par
+this.message = this.$refs.userText.value; this returns the value user passes.\par
+\par
+5. Virtual DOM concept:\par
+Vue uses the concept of virtual dom. Virtual DOM is nothing, but a js object that is a copy of the real DOM, (but in js format) the real DOM is in html format as thats what ur browser understands.\par
+Any change occurs on page, the effect is first shown in virtual DOM and then that virtual DOM compares it with real DOM and make the changes only to parts that are need to re-render and not the entire dom. \par
+Thats how vue make the app's perfomance better.\par
+\par
+6. Vue lifecycle methods-\par
+ - createApp() //we have used it already\par
+ - beforeCreate()\par
+ - created()\par
+ - beforeMount()\par
+ - mounted()\par
+ - beforeUpdate()  //when any data changes\par
+ - updated()\par
+ - beforeUnmount()  //clean up code\par
+ - Unmounted()\par
+\par
+Code:\par
+
+\pard\li720\sl276\slmult1     beforeCreate()\{\par
+        console.log('BeforeCreate()');\par
+    \},\par
+    created()\{\par
+        console.log('created()');\par
+    \},\par
+    beforeMount()\{\par
+        console.log('beforeMount()');\par
+    \},\par
+    mounted()\{\par
+        console.log('mounted()');\par
+    \},\par
+     beforeUpdate()\{\par
+        console.log('beforeUpdate()');\par
+    \},\par
+    updated()\{\par
+        console.log('Updated()');\par
+    \},\par
+    beforeUnmount()\{\par
+        console.log('beforeUnmount()');\par
+    \},\par
+    unmounted()\{\par
+        console.log('unmounted()');\par
+    \}\par
+
+\pard\sl276\slmult1 In the top 3 methods, we donot even see anything on page, on 4th method is where we see the something. You can see this using sources tab and adding breakpoints as well.\par
+With update and beforeUpdate will be called when a data prop changes\par
+and unmount and beforeUnmount will be called when the app is unmounted.\par
+\par
+\par
+\par
+\b\fs28 Section 4: Introducing components\b0\fs24\par
+\par
+1. Why we need components? \par
+Suppose, we have 10 cards of friends. Each having friend name and a details btn. On click of that btn, the details of that friend should be shown.\par
+Without components, We can use for loop to get 10 cards and if statement inside html to get the functionality of the btn.\par
+The error here would be, that onclick of a btn on oe friend's card, will show the details of each and every card.\par
+Thats not what we want. One solution could be to create a property for each friend card and passing its id's and something like that could work.\par
+But suppose having 100 friends, we cannot create a different prop for each of them.  \par
+\par
+Here, we need components that will help. components can be used to amke code reusable with each thing concerned about itself only.\par
+Also, larger code would be easy to organize with components.\par
+\par
+2. Creating components-\par
+Naming convention - A two word name with a - delimiter. e.g: friends-list.\par
+components can be accessed like html tags.\par
+\par
+creating - \par
+(js):\par
+
+\pard\li720\sl276\slmult1     app.component('friend-contact',\{\par
+        template : `<p>Hello world</p>`,\par
+\par
+        data()\{\}\par
+        \},\par
+\par
+        methods : \{\}\par
+    \})\par
+
+\pard\sl276\slmult1 (html):\par
+\tab     <friend-contact></friend-contact>\par
+\par
+here, app is the main vue app. basically creating components are like creating mini vue apps only, which in turn is associated with the main vue app.\par
+\par
+\par
+\par
+\b\fs28 Section 5:  Vue Development Setup\b0\fs24\par
+1. We use VUE CLI, to write our code.\par
+\par
+2. Why we need? - To have a proper web devlopment server, which vue cli provides.\par
+\par
+3. How to get VUE CLI? \par
+ to install : npm i -d @vue/cli\par
+ cmd : cd to your project folder\par
+ cmd : vue create vue-app-name\par
+ some questions will be prompted - (If asked) \par
+ i : select the stable released version\par
+ ii : choose the 3.x version (the latest one)\par
+ iii : es lint with error prevention only\par
+ iv : lint on save\par
+ v : dedicated config files\par
+ vi : no for defalult future projects \par
+ enter.\par
+ cd vue-app-name\par
+ npm run serve\par
+ got it in your browser? Its done:)\par
+\par
+\par
+4. Setup project explantion:\par
+package.json - all scripts and dependencies.\par
+since, we have vue as dependency, we dont need to add that script tag; the vue cdn, to get vue features as all of it is already imported as a dependency in package.json\par
+\par
+node modules - all the dependencies modules and packages downloaded, are stored in node modules\par
+\par
+src - contains all we'll write our code in.\par
+ main.js - configured as the entry point of our project.\par
+  wherein we mount the app id from the index.html and get necessary imports\par
+ App.vue - The app that'll be mounted on app id.\par
+\par
+The vue build workflow - \par
+    Our code -> which is full of next-gen code and Vue syntax -> on run -> convert code into standard JS code, which browser understands.\par
+ \par
+VS Code Vue extension - Vetur\par
+ \par
+\par
+\par
+\b\fs28 Section 6: First Vue App\par
+\b0\fs24\par
+Firstly, we create an app.vue file. This is basically like the one vue app, wherein we get the components in.\par
+2. In the <template> section, we write all the html code and js code inside - \{\{ \}\}\par
+3. In script we write the data and method properties of vue app.\par
+4. In style, we add the styling for the component\par
+\par
+\par
+\b\fs28 Section 7: Component Communication\par
+\b0\fs24 Basics:\par
+At first, the control goes to main.js\par
+In main.js :  \par
+    - import \{createApp\} from 'vue'\par
+this comes from the vue app, which we have used as a dependency. It has modules like createApp, that we can use to mount our app on.\par
+\par
+    - import App from './App.vue';\par
+Here, we import the app that is exported from app.vue file and later we mount this app(which contains all our code), to the index.html app id.\par
+\par
+    - const app = createApp(App)\par
+    app.mount('#app');\par
+Here, we mount the imported app, using createApp, to the index.html app id.\par
+\par
+- .vue files : These files extensions are special feature of vue cli, that allows us to write vue code, specifically vue components.\par
+\par
+- to unlock any component, means: to let any component be accessible inside another component, we need to write this inside our main.js: \par
+\par
+
+\pard\li720\sl276\slmult1     import FriendContact from './components/FriendContact.vue';\par
+    const app = createApp(App);\par
+    app.component('friend-contact', FriendContact);  \par
+    //first arg = 'the name we want' and second arg = 'the name we used to import the component'\par
+    ...\par
+
+\pard\sl276\slmult1 here, we are importing a component, named it FriendContact, which is by default exported from that file, and declaring it, so that any other component could use it. \par
+\par
+\par
+1. adding props : to let components communicate-\par
+    i : <componentName attr1="value" attr2="value2"></componentName>\par
+    ii : <template> <h1>\{\{attr1\}\}</h1> </template\par
+    export default\{\par
+        props:[\par
+            'attr1','attr2'                  //adding props\par
+        ],\par
+        methods: \{\par
+            toggle()\{\par
+                this.attr1 = 'one';           //to use props\par
+            \}\par
+        \}\par
+    \}\par
+convention of writing props: \par
+while passing - kebab-case   (in template)\par
+while accepting - camelCase   (in script)\par
+\par
+2. App.vue - the parent component and FriendContact.vue - the child component\par
+\par
+3. Props mutation restricted-\par
+The props we pass, from parent to child, cannot be mutated(changed) inside child component. It will generate an error.\par
+The error occurs because vue runs on the principle of UNI-DIRECTIONAL DATAFLOW concept. This means that the data passed from parent to child, can only be changed inside parent. the child cannot change anything thats inside parent.\par
+\par
+Well, to change any way, there are 2 ways:\par
+i - to define something inside child which might trigger a () of parent, which inturn would chnage the value.\par
+\par
+ii - create a new data prop, and assign the value of props, inside it, then you change the value of that data prop anytime during the program. (note, here in any way, we arent changing anything inside parent, its just what we have in child.)\par
+\par
+4. Props validation -\par
+    props :\{\par
+        name : \{\par
+            type: String,\par
+            default : 'name'\par
+        \},\par
+        phoneNumber : String,\par
+        emailAddress : \{\par
+            type: String,\par
+            required : true,\par
+        \},\par
+        isFav : \{\par
+            required : false,\par
+            validator : function(value)\{\par
+                return value === '1' || value === '0'\par
+            \}\par
+        \}\par
+    \},\par
+\par
+In vue, we can check if the props passed are the kind we want or not.\par
+one - we can just pass an array of props, as string. This will only tell vue, about the no. of props we expect. If we dont send a prop, it wont generate any errors or warnings in this way.\par
+\par
+two - To specify an object of props. wherein we can specify which type we expect. \par
+two (1) - In that, we can specify an object of validations as well like required, default, type, or validator. \par
+validator is a () that gets passed the value of prop, and we can check if the value matches any of our requirements.\par
+If the () returns true, the value is termed fine else if false, than an error is generated.\par
+\par
+5. sending different datatypes:\par
+    <friend-contact\par
+        v-for="friend in friends"\par
+        :key="friend.id"\par
+        :name="friend.name"\par
+        :emailAddress="friend.email"\par
+        :phoneNumber="friend.phone"\par
+        :isFav="true"\par
+    ></friend-contact>\par
+to send different types of data except String, we should bind them. \par
+e.g. v-bind:fav="true".\par
+Basically, when we use v-bind:prop_name="..", We can execute any js expression.\par
+In above example, we are looping through an array of ojects, and so binding the props to get the dynamic value each time.\par
+\par
+6. Sending data back to parent from child component:\par
+we can create our own events, and onclick or some event, we can call any ().\par
+Here, what we do is: We emit a () inside child-\par
+    \tab this.$emit('toggle-fav',this.id);\par
+here, toggle-fav is your event Name. and this.id is the data we are passig from child to parent.\par
+we, then call this method anywher inside our template:-\par
+  \tab   <button @click="toggleFav">isFavorite</button>\par
+Here, whenever the button will click, the toggleFav () would be called.\par
+\par
+then, in parent, when we create this component, we can add toggleFav event inside it, like this:\par
+
+\pard\li720\sl276\slmult1      <friend-contact\par
+        v-for="friend in friends"\par
+        :key="friend.id"\par
+        :isFav="friend.isFav"\par
+        @toggle-fav="toggleFavStatus"  // - here it is\par
+      ></friend-contact>\par
+
+\pard\sl276\slmult1 so, whenever the toggleFav method would be called, it would trigger the function taht is inside parent, (which over here is called: toggleFavStatus).\par
+like this-\par
+
+\pard\li720\sl276\slmult1   methods: \{\par
+    toggleFavStatus(friendId)\{\par
+    alert('entered');\par
+    \}\par
+  \},    \par
+
+\pard\sl276\slmult1\par
+7. like we define props in component configuration, we also define the emits, which states which events this component carries, (this is just one god practice to use)- like this:\par
+\tab     emits : ['toggle-fav'],\par
+\par
+Likewise props, we can further give validations and declare more about our events:\par
+
+\pard\li720\sl276\slmult1       emits : \{\par
+       'toggle-fav' : function(id) \{\par
+           if(id)\{\par
+               return true;\par
+           \}else\{\par
+               console.warn('id is missing');\par
+               return false;\par
+           \}\par
+       \}\par
+    \},\par
+\par
+    toggleFav()\{\par
+        this.$emit('toggle-fav');  //here we arent passing id, then the validation would go into false block and give us that warning.\par
+    \}\par
+
+\pard\sl276\slmult1 here, each event name is taken as key and the value is a function with the parameters that the event expects, and we can then validate those parameters.\par
+\par
+8. To prevent form submission on default:\par
+\tab     <form @submit.prevent="onSubmitClick">\par
+onSubmitClick() is our method, we want to run on submit.\par
+\par
+9. shorthand way to emit a function:\par
+\tab     <button @click="$emit('delete-friend', id)">Delete</button>\par
+here, no need to add a new method for it. this will create an event called delete-friend with an arg of id.\par
+\par
+10. The problem with passing props and events:\par
+The same problem we had in react; passing props from all the parents, right to the only children that needs it. Components are just working as for to-pass-props-or-events. \par
+This could be an issue when the project is big enough and suppose, a parent have its child and grand-children, and any one of those great-grand-children, wants to change something inside parent. It has to go through all the child, parent, to reach to the main-parent and change there somthing.\par
+\par
+\par
+11. Solution: Provide and inject-\par
+we can provide data in parent and can inject that data wherever we need inside the child or grand-childs of it. note - only children and grand-children can access that data, siblings or another cannot.\par
+
+\pard\li720\sl276\slmult1 export default \{\par
+    data() \{ return nos : [4,5,6]\}, \par
+    provide : \{\par
+        numbers : [1,2,3]   //one way, when the data is not related to anything\par
+    \},\par
+         (/ Or USE THE BELOW ONE)\par
+    provide()\{\par
+        return \{\par
+            numbers: this.nos; //here the numbers will refer to the data prop nos.\par
+        \}\par
+    \}\par
+\}\par
+
+\pard\sl276\slmult1\par
+To use :\par
+
+\pard\li720\sl276\slmult1 export default \{\par
+  inject: ['topics'], \par
+  props: [..]\par
+  \}\par
+
+\pard\sl276\slmult1 Basically, no need of pasisng through the props.\par
+we can also pass methods through provide and inject them.\par
+\par
+- provide and inject shouldn't be the default way of communication between components. Just use it wisely, where you have to build components just to pass by the props.\par
+- use props and custom events as default way of communication.\par
+\par
+ques- what exactly the meaning of emit is.\par
+emit is a function that comes with vue components, which allows us to pass custom events up the component tree.\par
+\par
+ques- what does find() of js returns. \par
+returns the element of array, with which the condition meets, else returns undefined.\par
+\par
+\par
+\b\fs28 Section 8:  Diving Deeper into components\b0\fs24\par
+1. Local vs Global Components:\par
+when we register our components inside main.js, they become Global components. Which means that we can use those components anytime anywhere inside the app.\par
+For smaller apps, it could be fine. But with bigger apps, all the components will load at the time, the app is loaded. Means, when browser loads our app, it will go through each and every component, either we need them at first place or not.\par
+This could be a performance issue.\par
+\par
+To solve - register components as local components.\par
+e.g. - inside the component we need the other component. Here, the-header will have scoped only inside app.vue component.\par
+code:\par
+
+\pard\li720\sl276\slmult1     import TheHeader from './components/TheHeader.vue';\par
+\par
+    export default \{\par
+    components : \{\par
+        'the-header':TheHeader\par
+    \}, //OR\par
+     components : \{\par
+        TheHeader  //another way\par
+    \},\par
+
+\pard\sl276\slmult1\par
+2. Scoped Styles:\par
+As we know, the styles we write inside components, aren't just scoped to that component, instead they are globally available in the app.\par
+\par
+To get styling, only for a specific component, we can use this:\par
+\tab <style scoped>..</style>\par
+\par
+The scoped keyword will let the stylig affect only to the elements inside that component, not even child or parent ones.\par
+How vue does this is, by adding a custom attribute to the elements that are scoped. You can see that inside the dev tools -> elements\par
+\par
+\par
+3. slots: \par
+when we create a component (lets say a card component), and want to make is work as a wrapper with dynamic contents. Well, if the content is just some data, we can use props, but if it is html content, and we want a wrapper component around it, wherein the html should be dynamic, we can use something like slot.\par
+e.g. - \par
+
+\pard\li720\sl276\slmult1     // inside the wrapper component:\par
+    <template>\par
+        <div>\par
+            <slot></slot>\par
+        </div>\par
+    </template>  ...style,srcipts, etc.\par
+    <wrapper>\par
+        <h2>Available Badges</h2>\par
+    </wrapper>  //to use it.\par
+
+\pard\sl276\slmult1\par
+the <slot> will get replaced by whatever content is there inside the wrapper (here its h2)\par
+\par
+4. Having multiple slots in a component:\par
+To achieve this, we can name our slot elements, and later can refer them with that. like this:-\par
+
+\pard\li720\sl276\slmult1     <header>\par
+        <slot name="header"></slot>\par
+    </header> // inside the wrapper component\par
+    <template v-slot:header> // where we wanna use it.\par
+
+\pard\sl276\slmult1\par
+- If no name attribute is mentioned, that slot is taken as default.\par
+- we can also have default tags inside <slot>, Which will render only if there's no data passed \par
+for that slot.\par
+
+\pard\li720\sl276\slmult1 e.g.   <header>\par
+            <slot name="header">\par
+                <h2>The default</h2> //will only render if there's no data passded\par
+            </slot>\par
+        </header>\par
+
+\pard\sl276\slmult1\par
+- we can get all the slots that are being passed, inside our script tag of that wrapper component. \par
+
+\pard\li720\sl276\slmult1     export default \{\par
+        mounted()\{\par
+            console.log(this.$slots.header);   \par
+        \}\par
+    \}\par
+
+\pard\sl276\slmult1 - shorthand of writing v-slot:header, could be #header.\par
+\par
+5. Dynamic components:\par
+To render dynamic components, which means, having 2 components and some event, that would trigger each component at different times. One way could be using v-if, where we can conditionally render the component. Another is like this-\par
+  \tab <!-- short hand way -->\par
+  \tab <component :is="selectedComponent"></component>\par
+selectedComponent is a data prop, with value as the component name.\par
+\par
+6. Keep-alive: A wrapper component that vue provides, in which we can store our components and suppose we wanna save the data of it, when we re-rendering it somwhere else, keep-alive can do that.\par
+
+\pard\li720\sl276\slmult1     <keep-alive>\par
+      <component :is="selectedComponent"></component>\par
+    </keep-alive>\par
+
+\pard\sl276\slmult1 suppose the component we are rendering, has an input field, when user enters something, and without saving, switch to another component, if we are sing keep-alive, it will keep that field filled with the user-inputted-data, else not.\par
+Keep-alive bascially, stores the data of the component and doesnt destroy it, which otherwise would. \par
+\par
+\par
+7. Teleport : Any component that you want to render inside a specific html element, but had written inside some other component, teleport can help us achieve that. \par
+Teleport is a in-built vue component that acts as wrapper and an attribute called 'to' ,which takes a value a any css seletor, to select the html element that you want the component to render inside.\par
+e.g. \par
+
+\pard\li720\sl276\slmult1   <teleport to="body"> \par
+        <error-dialog v-if="!isInputValid">\par
+            <h2>Input Error</h2>\par
+            <p>Kindly enter something..</p>\par
+            <button @click="confirmDialog">Okay</button>\par
+        </error-dialog>\par
+    </teleport>\par
+
+\pard\sl276\slmult1\par
+here, the dialog will appear inside body tag of our document.\par
+Here, the purpose of doing this, is just that our html code has to semantic. Nothing else.\par
+\par
+8. In vue 2, a wrapping element inside all other elements was compulsory, but in vue 3 its not.\par
+\par
+9. Naming structure - \par
+components - PascalCase\par
+- if a component is used only once, then add the - eg TheHeading\par
+- if a component is used multile times and act as base then add base before it - eg BaseButton BaseCards or AppButton\par
+\par
+10. Folder structure - \par
+If there are tons of components, then add sub-folders like UI(custom btns, cards), Layout(header, footer), and then specific-features-sub-folders like products, checkout, etc.\par
+\par
+\par
+\b\fs28 Section 9: The Learning Resource App:\par
+\b0\fs24\par
+1. Whenever we add click listeners or any listeners toa custom component, (note that we donot add any listener in our custom component, nothing like click or anything, so its obvious that they shouldnt work), what vue does is, it brings up that click listener to the parent html element.\par
+e.g if your custom component is lying inside a html button then eventually that click on custom component you have mentioned will be taken inside that html button.\par
+\par
+2. Note that - while using unshift, pop, push, etc methods on array, if something changes, all the places, that array has been used, will get notify about it.\par
+But, with methods like filter and map (which basically returns a new array), the changes will not get applies everywhere.\par
+\par
+\par
+\b\fs28 Section 10: Forms\par
+\b0\fs24\par
+1. V-model is used for two-way binding as we know. \par
+\par
+2. Till now, we have used only text type in an input field. Let see with others\par
+-  using v-model, on number types, when we print the value, it prints in number format by default as vue converts all the input fields(which in vanilla js comes with string only), in their respective formats. \par
+e.g. - \par
+
+\pard\li720\sl276\slmult1     <input id="age" name="age" type="number" v-model="userNumber" ref="userNumber"/>\par
+\par
+    console.log('username : ',this.userName);\par
+    console.log('userNumber : In number format using V-model : ', this.userNumber);\par
+    console.log('userNumber : In string format using refs : ', this.$refs.userNumber.value );\par
+
+\pard\sl276\slmult1 i - in string\par
+ii - in number\par
+iii - in string, refs uses vanilla js perspective.\par
+\par
+-v-model methods : trim, and lazy. Trim will remove the whitespaces from user input and lazy means that v-model will not store the input at every key stroke, it will take some time.\par
+to use: \par
+
+\pard\li720\sl276\slmult1     v-model.trim="userInput"\par
+    v-model.lazy="userInput"\par
+
+\pard\sl276\slmult1\par
+
+\pard\li720\sl276\slmult1 - Dropdown value- \par
+    <select id="referrer" name="referrer" v-model="userReferrer">   \par
+//using v-model itself\par
+        <option value="google">Google</option>\par
+        <option value="wom">Word of mouth</option>\par
+        <option value="newspaper">Newspaper</option>\par
+    </select>\par
+
+\pard\sl276\slmult1\par
+- Checkbox value -\par
+If there are multiple checkboxes and you want to get the value of all checkboxes that were ticked, then you need to initalize it with an empty array inside the data prop.\par
+
+\pard\li720\sl276\slmult1 e.g.\par
+        <input id="interest-news" v-model="userInterest" value="news" name="interest" type="checkbox" />\par
+        <input id="interest-tutorials" v-model="userInterest" value="tutorial" name="interest" type="checkbox" />\par
+        <input id="interest-nothing" v-model="userInterest" value="nothing" name="interest" type="checkbox" />\par
+ data()\{\par
+    return \{\par
+      userInterest : [] \par
+    \}\par
+\}\par
+- if there's only 1, then -\par
+    <input id="confirm-box" v-model="userConfirm" name="confirm-box" type="checkbox" />\par
+    return \{\par
+        userConfirm : false\par
+    \}\par
+\par
+
+\pard\sl276\slmult1 - Radio button value-\par
+
+\pard\li720\sl276\slmult1     <input id="how-video" name="how"  v-model="userHow" value="video" type="radio" />\par
+    <input id="how-blogs" name="how"  v-model="userHow" value="blogs"  type="radio" />\par
+    <input id="how-other" name="how"  v-model="userHow" value="others"  type="radio" />\par
+    \par
+    return \{\par
+        userHow : null,\par
+    \}\par
+- Dropdown value -\par
+    <select id="referrer" name="referrer" v-model="userReferrer">\par
+        <option value="google">Google</option>\par
+        <option value="wom">Word of mouth</option>\par
+        <option value="newspaper">Newspaper</option>\par
+      </select>\par
+\par
+    return\{\par
+        userReferrer : 'newspaper',\par
+    \}\par
+\par
+
+\pard\sl276\slmult1 - Adding dynamic classes,\par
+\tab     <p :class="\{invalid : userNameValidity === 'invalid'\}"> hello </p>\par
+:class will take an object with prop as classname and value as either true or false\par
+\par
+- Using v-model kind of concept with custom components-\par
+
+\pard\li720\sl276\slmult1 export default \{\par
+    props : ['value'],\par
+    emits : ['clickevent'],\par
+ \par
+    methods :\{\par
+        activateButton(option)\{\par
+            this.$emit('clickevent',option);\par
+        \}\par
+    \}\par
+\}\par
+
+\pard\sl276\slmult1  to use : rating - <rating-control :value="rating" @clickevent="rating = $event"></rating-control>\par
+\par
+here, :value.. and @clickevent.. are doing what v-model does behind the scenes. Here we are using vue 2 and so its a little complex, but in vue 3 its more easier. \par
+
+\pard\li720\sl276\slmult1 vue3 -\par
+export default \{\par
+    props : ['modelValue'],\par
+    emits : ['update:modelValue'],\par
+ \par
+    methods :\{\par
+        activateButton(option)\{\par
+            this.$emit('update:modelValue',option);\par
+        \}\par
+    \}\par
+\}\par
+
+\pard\sl276\slmult1 to use - <rating-control v-model="rating"></rating-control>\par
+\par
+\par
+\b\fs28 Section 11:  HTTPS Sending requests-\par
+\b0\fs24\par
+1. When we submit a form, by default browser makes an http request to the same server, the app was rendered through, which in our case in localhost.\par
+But, we mainly use submit.prevent() and then handle the data on our own.\par
+\par
+what happens is, we get some data through our app -> we send that to our server -> there's some server-side code written -> the code mainpulates the data in its own way -> and then store that data inside the database.\par
+\par
+2. Here, we are using a firebase real-time database, to get a database, and mainly because the server-side code is written inside the firebase itself and we dont have to write it on our own.\par
+(but in real life, the back-end developers would be writing it).\par
+\par
+3. To send data we can either use axios (one of the most popular js lib for making http requests) or fetch (which comes in-built in browsers).\par
+Both these works BTS, which means our app isnt reloaded everytime we make a request instead our app keeps running, and in the background the request is being processed.\par
+\par
+4. Lets Post some data on firebase - realtime storage:\par
+code -\par
+
+\pard\li720\sl276\slmult1    fetch('https://vue-js-demo-app-3cb87-default-rtdb.firebaseio.com/survey.json',\{\par
+        method : 'POST',\par
+        headers : \{\par
+          'Content-type': 'application/json',\par
+        \},\par
+        body : JSON.stringify(\{name: this.enteredName, rating: this.chosenRating\})\par
+      \})\par
+
+\pard\sl276\slmult1\par
+- fetch is a in-built method that takes a url as a parameter.\par
+- here, till .com in the url, is provided by firebase, inside the data tab, of your real-time data storage. \par
+- copy that url, and append /dbName.json (which here is survey.json).\par
+- the second argument is optional. If we want to post some data we use that second argument.\par
+- Second arg is an object, that takes a method as a prop and value of it is any http method - post, put, delete, etc.\par
+- second it takes headers, which is an object, wherein we mention the kind of content we'll be posting. Here we are posting data in json format, so content type should be application/json.\par
+- next is the body wherein we pass a javascript object which we want to store inside the database, before stringifing it, to convert that obj into json.\par
+\par
+\par
+5. Now lets get data from database:\par
+code -\par
+
+\pard\li720\sl276\slmult1     methods : \{\par
+        loadExperiences()\{\par
+            fetch('https://vue-js-demo-app-3cb87-default-rtdb.firebaseio.com/survey.json').then((response) => \{\par
+            if(response.ok)\{\par
+                return response.json();\par
+            \}\par
+            \}).then((data) => \{\par
+            console.log(data);\par
+            \});\par
+\par
+        \}\par
+    \}\par
+
+\pard\sl276\slmult1\par
+- the loadExperiences () will get called when a button is clicked.\par
+- its making a fetch request (with no second arg, as we are only getting data, and that is the default of fetch already, so we dont need to mention it).\par
+- Fetch returns a promise so we added a .then... at the end to handle that promise.\par
+- When the data would be loaded, in that promise, we'll receive an argument that is response here, which holds a ton of stuff, in which somewhere our data is there too.\par
+- firstly, we are checking if the response is ok or not, if that return 404, it wont proceed further, will only proceed at 200 status code.\par
+- later, we are returning response.json(), which also is a promise, and so, at the end of the block, we are again writing, .then and getting the data. \par
+There, we find our data.\par
+\par
+Now, to process that data in our required format - \par
+code-\par
+
+\pard\li720\sl276\slmult1     .then((data) => \{\par
+        const results = [];\par
+        for(const id in data)\{\par
+            results.push(\{ id: id, name: data[id].name, rating: data[id].rating\});\par
+        \}\par
+        this.results = results;\par
+    \});\par
+
+\pard\sl276\slmult1 here, inside that data, we'll have a unique id, and other stuff. We are looping through the data object, and pushing our required data inside the results array to get our desired format.\par
+\par
+6. To get the data, on page/component load, we can simply call that method inside the mounted lifecycle.\par
+\par
+7. To get a loading spinner, when our data is getting loaded:-\par
+code- \par
+
+\pard\li720\sl276\slmult1     <p v-if="isLoading">Loading...</p>\par
+    <ul v-else>\par
+\par
+\par
+    data()\{\par
+        return \{\par
+        isLoading : false\par
+        \}\par
+    \},\par
+
+\pard\sl276\slmult1     \par
+
+\pard\li720\sl276\slmult1     methods : \{\par
+        loadExperiences()\{\par
+        this.isLoading = true .... \}\par
+        .then((data) => \{\par
+            this.isLoading = false;\par
+        \}\par
+    \},\par
+    mounted()\{\par
+        this.loadExperiences();\par
+    \}\par
+
+\pard\sl276\slmult1\par
+- Here, if loading is happening, then the p tag will be shown else the below one.\par
+- we are just creating a data prop, isloading, and setting it to true, before making the http request, and setting it to false, when we get the data.\par
+- here, we are setting it to false, inside the .then(..), because remember, that js is a synchronous programming language, and if we write the isloading=false, at the end of fetch, then while it'll be executing, the .then and inside its logic, will wait untill the promise is returned, but whatever is written after fetch will not wait, js will execute it right after, so if we plan to set isloading=false, after that, it wont technically make sense.\par
+\par
+\par
+8. Some catching errors :\par
+code i- if there's no data inside the database \par
+
+\pard\li720\sl276\slmult1      <p v-if="isLoading">Loading...</p>\par
+      <p v-if="!isLoading && (!results || results.length == 0)"> No Stored Data. Add Some.</p>\par
+      <ul v-else-if="!isLoading && results &&results.length>0" >\par
+
+\pard\sl276\slmult1 Here, initially it'd be loading, if there are any results, will the length is greater than 0, then the list would be printed else the error msg.\par
+\par
+code ii - if there's a technical error like wrong url or server side error like 404 fie not found-\par
+
+\pard\li720\sl276\slmult1   this.error = null;\par
+      fetch('https://vue-js-demo-app-3cb87-default-rtdb.firebaseio.com/survey.json',\{\par
+        method : 'POST',\par
+        headers : \{\par
+          'Content-type': 'application/json',\par
+        \},\par
+        body : JSON.stringify(\{name: this.enteredName, rating: this.chosenRating\})\par
+      \}).then(response => \{\par
+        if(response.ok)\{\par
+          this.error = "Data saved";\par
+        \}\par
+        if(!response.ok)\{\par
+          throw new Error('Could not save data!');\par
+        \}\par
+      \}\par
+\par
+      ).catch((error) => \{\par
+        this.error = error.message\par
+      \})\par
+
+\pard\sl276\slmult1\par
+- Here, if we remove .json from url, it would be a technical error and the control will send to the catch statement.\par
+- if there's a server side error, lets say we forgot to mention json.stringify, then the control will not directly go to the catch, instead it will return a 404 status code. hence, we then have to check the response, and if it isnt ok, then throw an error, and then the control would be passed to catch block.\par
+- the error.message will print the message we pass or if we dont pass, then the default msg of error is printed.\par
+\par
+9. PUT method: It is used when we want to override an existing field of database if the id is same, or else create one.\par
+means: if the id exists, override the data else create new with the id.\par
+    code:\par
+
+\pard\li720\sl276\slmult1     const resp = await fetch(`url/routingName/id.json`,\{\par
+      method: 'PUT',\par
+      bodyL JSON.stringify(dataToPass)\par
+    \});\par
+    const respData = await resp.json()\par
+    if(resp.ok) \{ //...code\}\par
+    else\{ //...error\}\par
+\par
+\par
+\par
+
+\pard\sl276\slmult1\b\fs28 Section 12: Routing - Building Multi page SPA.\b0\fs24\par
+\par
+1. SPA : one index.html file, and our js file handlin all what to and what not to render.\par
+\par
+2. Using router : we can have routes and for each one we can render a different component. just like we would render a new page with vanilla js. Here, since its SPA, we have only one index.html and the js will completely handle the rendering part.\par
+Basically, different urls for different components\par
+\par
+3. To install router package: \par
+    npm install --save vue-router@next\par
+\par
+4. configuration : inside main.js-\par
+
+\pard\li720\sl276\slmult1     To import:  import \{ createRouter, createWebHistory \} from 'vue-router';\par
+\par
+    const router = createRouter(\{\par
+    history : createWebHistory(),\par
+    routes : []\par
+\})\par
+
+\pard\sl276\slmult1 - here, createWebHistory gets us the browser's history (the one that the user went through).\par
+\par
+code- \par
+
+\pard\li720\sl276\slmult1     import TeamList from './components/teams/TeamsList.vue';\par
+    import UserList from './components/users/UsersList.vue'\par
+\par
+    import App from './App.vue';\par
+    const router = createRouter(\{\par
+        history : createWebHistory(),\par
+        routes : [\par
+            \{ path : '/teams', component: TeamList \},\par
+            \{ path : '/users', component: UserList\}\par
+        ]\par
+    \})\par
+\par
+    const app = createApp(App)\par
+    app.use(router);\par
+
+\pard\sl276\slmult1\par
+here, we are specifying path and which component to load when that path is runned.\par
+path is what we write after our domain name. e.g- localhost:8080/teams OR {{\field{\*\fldinst{HYPERLINK www.learning.com/teams }}{\fldrslt{www.learning.com/teams\ul0\cf0}}}}\f0\fs24\par
+later we use, app.use(and pass the router inside it to let our vue app make aware of this router).\par
+app.use is used when we want to access any third party package inside our app. Inside app.use, we gotta register that package first, in order to use it.\par
+\par
+Now, where you want those components to get render at -\par
+
+\pard\li720\sl276\slmult1   <main>\par
+    <router-view></router-view>\par
+  </main>\par
+
+\pard\sl276\slmult1\par
+5. Giving links to different urls using router:\par
+  \tab   <router-link to="/users">Users</router-link> \par
+here, on click of users, the /users path will be accessed and whatever component we have registered inside the main.js, will get render.\par
+router-link prevents the browsr default reloading (i.e. re-render the entire app), instead will render the neccesarry component and will change the url to it.\par
+\par
+BTS, the router-link uses a tag only, so if you wnat some styling for router-link, you can use 'a' as css selector\par
+\par
+a.router-link-active : to use styles on it, we can use a tag and router-link gives a router-link-active class on the ones that is active, so we can give extra styling to them.\par
+the current selected route is given this class.\par
+There's also router-lin-exact-active, it is applied when the url matches exactly to the route we mentioned (inside to attribute). e.g. /teams/teamId - in here, it wont appear, but router-link-active will work.\par
+\par
+6. Programmatic navigate:\par
+Lets say, on click of a button, we want to do some stuff first and then, direct the suer to some other page. To do so: \par
+code-\par
+
+\pard\li720\sl276\slmult1     confirmInput()\{\par
+      //do something\par
+      this.$router.push('/teams');    \par
+    \}\par
+
+\pard\sl276\slmult1 here, onclick, we'll be send to /teams route. this.$router is a special () we get, when we use app.use(). just like push, we have several more methods, like .back, .forward, etc. that can be helpful.\par
+\par
+7. Passing with Route segments:\par
+
+\pard\li720\sl276\slmult1     \{ path: '/teams', component: TeamMembers\}\par
+    \{ path: '/teams/new', component: TeamMembers\}\par
+    \{ path: '/teams/:teamId', component: TeamMembers\}\par
+
+\pard\sl276\slmult1\par
+note: the first thing is, the order of writing paths matters a lot. the above mentioned is the right way. \par
+\par
+\tab -     \{ path: '/teams/:teamId', component: TeamMembers\}\par
+Here, this is for rendering dynamic url. In place of teamid, it would take any value.\par
+\par
+to get the params value in some component - \par
+code -\par
+
+\pard\li720\sl276\slmult1     this.$route.path  // will return the path if we want\par
+    const teams = this.$route.params;  // will return the params \par
+    const teamId = this.$route.params.teamId;  // will return the params with key as teamId.\par
+
+\pard\sl276\slmult1\par
+8. To give dynamic values in router-link-\par
+  \tab   <router-link :to="'/teams/' + id">View Members</router-link>\par
+you need to add a : before to, to get it work dynamically.\par
+\par
+9. Issue in route parameters and the solution.\par
+Vue router, when we are on a component which has a link of the same component but with different data/params, then it wont render anything. why? \par
+because vue router doesnt destroy components, instead cache them while user routes through the app. Hence, when we get a link that renders the same component with different data, (which is written inside created lifecycle hook,) it doesnt reaches that created method only, it instead take whats there in cache. \par
+To avoid the situation, you can add a watcher for $route. since the params, changes the change will get reflected inside the $route, so on change call the method that was called inside the created one.\par
+e.g.  \par
+
+\pard\li720\sl276\slmult1     watch : \{\par
+        $route(url) \{\par
+        this.loadData(url)\par
+        \}\par
+    \}\par
+
+\pard\sl276\slmult1\par
+10. To get the params inside the props, you can add prop=true inside the main.js where you register the route. Usage - The component becomes more reusable and flexible. Now our component only expects  a prop which would be the param value or url, No need to search through the path using $route.path.params... \par
+Basically, params are passed as props.\par
+e.g. \par
+    props : ['teamId'],  //inside component; param name, and prop name should be same\par
+\tab     \{ path: '/teams/:teamId', component: TeamMembers, props:true\} //main.js\par
+\par
+11. Two same routes for same component: you can use redirect\par
+
+\pard\li720\sl276\slmult1     \{ path: '/', redirect: '/teams'\},\par
+    \{ path : '/teams', component: TeamList \},  //also the url changes in this method\par
+    OR \par
+    \{ path : '/teams', component: TeamList, alias: '/' \},  //doesnt change the url\par
+
+\pard\sl276\slmult1\par
+12. for catch all other routes:\par
+   \tab  \{ path:'/:notFound(.*)' , redirect : '/teams'\}\par
+anything with url - /jndj, with get redirected to teams. you can also create a not found page, and redirect user to non-found page.\par
+Note: This path should be the last in all the routes.\par
+\par
+13. Nested routes:\par
+Having a route inside another route termed as a children of it.\par
+
+\pard\li720\sl276\slmult1    \{ path : '/teams', component: TeamList, children:[\par
+            \{ path: ':teamId', component: TeamMembers, props:true\}\par
+    ]\},\par
+
+\pard\sl276\slmult1\par
+    //Inside TeamList (parent) component-\par
+    \tab <router-view></router-view> //wherever you want to render it (below or above the content)\par
+\par
+Note: path of children is '/teams/:teamId', but since we are writing inside the children of \par
+/teams, we can avoid writing it. \par
+Note, now place <route-view></router-view> inside the TeamList component, this one would be for the children to get render.\par
+Nested routes are used when we want to add the content of a component below an existing component.\par
+\par
+14. giving names to routes:\par
+
+\pard\li720\sl276\slmult1   // return '/teams/'+this.id + '?sort=asc';  -earlier way\par
+    return \{ name: 'teamMembers', params: \{teamId: this.id \}, query: \{sort : 'asc'\} \} -one with the names\par
+
+\pard\sl276\slmult1\par
+    inside the routes:\par
+
+\pard\li720\sl276\slmult1     \{ name:'teams', path : '/teams', component: TeamList, children:[\par
+    \{ name:'teamMembers', path: ':teamId', component: TeamMembers, props:true\}\par
+    ]\},\par
+
+\pard\sl276\slmult1\par
+    to access query params :\par
+    \tab this.$route.query;\par
+\par
+The benefit of writing names and accesing it with them is that we incase ever change the routes path, we dont have to go to all places and change them there too, instead we'll have names which will refer to them anyways.\par
+Note: the :to in router link can take a string value(the path) or an object like we are passing here. \par
+\par
+15. Rendering multiple routes with named routes in a single component-\par
+code: \par
+
+\pard\li720\sl276\slmult1  <main>\par
+    <router-view></router-view>\par
+  </main>\par
+\par
+  <footer>\par
+    <router-view name="footer"></router-view>\par
+  </footer>\par
+\par
+    //inside the main.js\par
+    \{ path : '/users', components: \{default : UserList, footer : UsersFooter\}\},\par
+
+\pard\sl276\slmult1\par
+Here, we are adding names to the router-view, through which we can ad multiple routes inside a single component.\par
+The default requires no names(just like slots)\par
+\par
+16. Scroll behavior:\par
+This feature can enhance the user experience. Like e.g. currently if we scroll down to a component and press a button which changes something on top of the component, but by now we couldnt see it, because we are scrolled down. How if on change of anything we scroll up automatically. We can do this by scroll-behavior feature:\par
+\par
+in main.js\par
+
+\pard\li720\sl276\slmult1   routes : [ .. ],\par
+    scrollBehavior(to, from, savedPosition)\{\par
+        console.log(to, from, savedPosition);\par
+        if(savedPosition)\{\par
+            return savedPosition;\par
+        \}\par
+        return \{ left: 0, top: 0\}\par
+    \}\par
+
+\pard\sl276\slmult1\par
+scrollBehavior takes 3 arguments by default and is called automatically by vue. Here, to prints the component we are going to render, from prints the component we have came from, and savedPosition prints the exact position of where the user left from the component. \par
+Hence, scrollBehavior methods should return an object with the positions we want each component to render at. By placing them 0 from left and 0 from top, we'll end up on top each time on change of anything on component. Also here, we are looking if there's anything inside savedPosition. Basically, savedPosition is used when we use the back button of browser. On clicking the back button, we'll end up at position we left the component from. \par
+In short, savedPosition holds the value as top and left of where the user was, before he changed to another component. \par
+\par
+One amazing yet imp. thing: \par
+  \tab   scrollBehavior(_, _2, savedPosition)\par
+sometimes, we dont need the first two args, but need the 3rd one, normally this would give errors or warning, you can use _ or _2, _3 and so on to avoid those erros.\par
+\par
+\par
+17. Navigation Guards:\par
+- This feature is used when we want users not to see some pages. e.g. if the user isnt logged in, we dont want them to see a certain page. These gaurds allow us to get that functionality.\par
+code:\par
+
+\pard\li720\sl276\slmult1     router.beforeEach(function(to, from, next)\{\par
+        console.log(to, from);\par
+\par
+        // if(to.name === 'teamMembers')\{\par
+        //     next();\par
+        // \}else\{\par
+        //     next(\{name : 'teamMembers', params: \{teamId: 't2'\}\})\par
+        // \}\par
+        next();     \par
+    \})\par
+
+\pard\sl276\slmult1\par
+- write it below the router const variable declaration.\par
+- here, to and from refers the smae as above i.e. to from the component we are going and from the component we came from.\par
+- but the next is a function that takes a true/ false/ a string/ a object.\par
+- true / default (), will do no change, and the user will have access to every page.\par
+- false / next(false), will not let user view any page.\par
+- next('teamMembers') - when any page will change, it'll show the teamMembers page only.\par
+- next(\{name : 'teamMembers', params: \{teamId: 't2'\}\})  - just the same thing as above.\par
+- note- this beforeEach () is called every time a new page is rendered. \par
+\par
+More Features inside Navigation Guards Hooks:\par
+- To protect one one/ single routes / components from rendering -\par
+code:\par
+
+\pard\li720\sl276\slmult1     \{ path : '/users', components: \{default : UserList, footer : UsersFooter\},\par
+         beforeEnter(to, from, next)\{\par
+            console.log(to, from);\par
+            next(false);\par
+    \}\},\par
+
+\pard\sl276\slmult1\par
+OR (another way)\par
+\par
+code: \par
+Inside component that you want Navigation gaurds :\par
+
+\pard\li720\sl276\slmult1     beforeRouteEnter(to, from, next)\{\par
+        console.log(to, from)\par
+        next(false);\par
+    \}   //use them like we use other vue lifecycle methods.\par
+
+\pard\sl276\slmult1\par
+other guards:\par
+- beforeRouteUpdate(to, from, next)\{ \} //wrote inside component; runs before any data changes in a component, Basically when anthing updates. (the url should change for the beforeRouteUpdate method to run)\par
+- router.afterEach(to, from)\{ \} //wrote inside main.js; runs after component/ route renders.\par
+\par
+guards when user leave a page- (on the component that user is leaving; e.g. there's a form, and the changes arent saved yet and user trues to switch to aother component, for such a case, the below guards can be used where you can warn user about the unsaved changes):\par
+\par
+- BeforeRouteLeave(to, from, next) \{ \} //wrote inside component; gets called before user leaves the component.\par
+code:\par
+
+\pard\li720\sl276\slmult1       beforeRouteLeave(to, from, next)\{\par
+    console.log(to, from);\par
+    if(this.changesSaved)\{\par
+      next();\par
+    \}else\{\par
+      const userWantsToLeave = confirm('There are unsaved changes, Do you still want to leave the page?');\par
+      next(userWantsToLeave);\par
+    \}\par
+  \}\par
+
+\pard\sl276\slmult1\par
+18. Route Metadata: \par
+
+\pard\li720\sl276\slmult1     meta : \{needsAuth : true\}   //inside routes object, in mainjs\par
+    if(to.meta.needsAuth)\{ \par
+        console.log('authenticate the user');   //inside any guard, using its 'to' argument, we can access it.\par
+    \}\par
+
+\pard\sl276\slmult1 The meta is a a property that takes an object with any props/values you want. They are just used to add some extra info, which is needed during rendering of another component. We can get this data in any guards.\par
+\par
+19. File structure:\par
+src -> component (all components) , pages (all components that are rendered using routes).\par
+A router.js file, all routes related code thats inside main.js, can be shifted to router.js and that file can be imported in mainjs.\par
+\par
+\par
+\par
+\b\fs28 Section 13: Transitions and Animations\b0\fs24\par
+\par
+1. How to add Animations : Using css properties like transform, translate and animations, we can achieve it.\par
+\par
+2. Then why we need vue : Sometimes, in scenarios like when we need to disappear a component from dom, e.g. when on click of a button, a modal should appear, we can add classes to it, which def can animate the coming of modal, but when we ought to disappear it, it wont work. because, we are removing a component from dom itself, in such cases, vue can help us. \par
+\par
+3. Vue way of adding animations:\par
+Vue gives us a in-built component, called transition which we can wrap around html tags that we want to render/remove using animations.\par
+when we wrap a tag around transition component, vue gives us 6 css classes; 3 when element enters and 3 for when element is being removed from dom.\par
+.v-enter-from : what should be the initial state/position of the element.\par
+.v-enter-active : the transition property of element is written inside this.\par
+.v-enter-to : what should be the last state/position of the element.\par
+\par
+.v-leave-from : what should be the leaving position of element.\par
+.v-leave-active : the transition property of element is written inside this.\par
+.v-leave-to : what should be the end position of element.\par
+\par
+code: \par
+
+\pard\li720\sl276\slmult1     <transition>\par
+      <p v-if="paraIsVisible">Sometimes visible</p>\par
+    </transition>\par
+    <button @click="togglePara">Toggle paragraph</button>\par
+\par
+\par
+    .v-enter-from\{\par
+    opacity: 0;\par
+    transform: translateY(-30px);\par
+    \}\par
+    .v-enter-active\{\par
+    transition: all 1s ease-in-out;\par
+    \}\par
+    .v-enter-to\{\par
+    opacity: 1;\par
+    transform: translateY(0);\par
+    \}\par
+\par
+    .v-leave-from\{\par
+    opacity: 1;\par
+    transform: translateY(0);\par
+    \}\par
+    .v-leave-active\{\par
+    transition: all 1s ease-in-out;\par
+    \}\par
+    .v-leave-to\{\par
+    opacity: 0;\par
+    transform: translateY(30px);\par
+    \}\par
+
+\pard\sl276\slmult1 note : transition component can only accept 1 direct child element.\par
+\par
+\par
+3. For custom animations:\par
+code :\par
+
+\pard\li720\sl276\slmult1     .v-enter-active\{\par
+    animation: slideFade 1s ease-in-out;     /* for custom animation */\par
+    \}\par
+    @keyframes slideFade \{\par
+    0% \{\par
+        transform: translateX(0) scale(1);\par
+    \}\par
+    50%\{\par
+        transform: translateX(-120px) scale(1.2);\par
+    \}\par
+    100%\{\par
+        transform: translateX(0) scale(1);\par
+    \}\par
+    \}\par
+
+\pard\sl276\slmult1\par
+for custom animations we only need v-enter-active class, no other ones.\par
+\par
+4. For multiple transition components in a page:\par
+We can have multiple html elements, onto which we want animations. we can wrap all of them around transition component, but remember that vue gives the same names of classes to each transition component. If we want different animations for different elements, then we can add a custom prefix and that prefix will uniquely identify itself from others.\par
+\par
+code :\par
+
+\pard\li720\sl276\slmult1     <transition name="para">\par
+      <p v-if="paraIsVisible">Sometimes visible</p>\par
+    </transition>\par
+\par
+    .para-leave-active\{\par
+        transition: all 1s ease-in-out;\par
+    \}\par
+    .para-leave-to\{\par
+        opacity: 0;\par
+        transform: translateY(30px);\par
+    \} ...so on\par
+
+\pard\sl276\slmult1\par
+note : name prop only replaces the prefix 'v' to 'para'.\par
+incase of changing the entire classname: \par
+
+\pard\li720\sl276\slmult1     <transition enter-to-class="class-name-here" enter-from-class="class-name-here" enter-active-class="class-name-here"\par
+
+\pard\sl276\slmult1\par
+5. For adding transition component as a wrapper for custom components like modal :\par
+- It works the same, as long as there's just one direct child inside the custom component. for vue 2 its not a prolem as it doesnt even allow more than 1 direct child inside a template of a custom component. for vue 3, it has to be taken care of. if there's more than 1 direct child, then you might need to add that transition component inside of the custom component only.\par
+\par
+6. One exception that allows multiple child elements inside <transition> component:\par
+code: \par
+
+\pard\li720\sl276\slmult1     <transition name="fade-button" mode="out-in">\par
+        <button v-if="!usersAreVisible" @click="showUser">Show users</button>\par
+        <button v-else @click="hideUser">Hide users</button>\par
+    </transition>\par
+
+\pard\sl276\slmult1\par
+here, the code will work. It does, because if, out of all elements inside the transition component, only 1 will get render inside the dom, then we can use it. here, using if-else, it makes clear that only one elements out of the 2 buttons wil get render, so the case here completely follows the exception. \par
+\par
+7. Transitions events:\par
+code : \par
+
+\pard\li720\sl276\slmult1     <transition name="para"\par
+        @before-enter="beforeEnter"\par
+        @enter="enter" \par
+        @before-leave="beforeLeave"\par
+        @after-enter="afterEnter" \par
+        @leave="leave" \par
+        @after-leave="afterLeave">\par
+      <p v-if="paraIsVisible">Sometimes visible</p>\par
+    </transition>\par
+\par
+   beforeEnter(elm)\{\par
+      console.log('before enter',elm)\par
+    \},\par
+    beforeLeave(elm)\{\par
+      console.log('before leave', elm)\par
+    \},\par
+    enter(elm)\{\par
+      console.log('enter', elm)\par
+    \},\par
+    afterEnter(elm)\{\par
+      console.log('afterEnter',elm)\par
+    \},\par
+    leave(elm)\{\par
+      console.log('Leave',elm);\par
+    \},\par
+    afterLeave(elm)\{\par
+      console.log('afterLeave', elm)\par
+    \},\par
+
+\pard\sl276\slmult1 - here, the method beforeEnter will execute, before the element enters the dom.\par
+- and beforeLeave method will execute when the element is leaving the dom.\par
+- and enter method executes after the beforeEnter().\par
+- and afterEnter method executes after the animation is done and the element is visible completely.\par
+- leave method executes after the beforeLeave method.\par
+- and afterLeave method executes when the element leaves the dom.\par
+- the elm arg, is passed by default, which returns the element, here it would be the p tag.\par
+\par
+The use of transition events is in a usecase where, we want javacript to handle the animations and not the css. (used mostly when we are using external animation libraries.)\par
+You can view the code in app.vue, wherein we are actually executing the animations using javascript.\par
+\par
+note : these transition events will execute anyway, either we use css or we use js to control animations.\par
+\par
+8. Transition Group:\par
+When we have a list of items and need to animate all the list items. For such a case, we can use transition-group component\par
+\par
+code: \par
+
+\pard\li720\sl276\slmult1   <ul>\par
+      <transition-group tag="ul" name="list">\par
+            <li v-for=" user in users" @click="removeUser(user)" :key="user">\{\{user\}\}</li>\par
+      </transition-group>\par
+    </ul>\par
+\par
+    .list-enter-from\{\par
+    opacity: 0;\par
+    transform : translateX(-30px);\par
+    \}\par
+    .list-enter-active\{\par
+        transition: all 1s ease-in-out;\par
+    \}\par
+    .list-enter-to\{\par
+        opacity: 1;\par
+        transform: translateX(0);\par
+    \}\par
+\par
+    .list-leave-from\{\par
+        opacity: 1;\par
+        transform : translateX(0px);\par
+    \}\par
+    .list-leave-active\{\par
+        transition: all 1s ease-in;\par
+        position: absolute;\par
+    \}\par
+    .list-leave-to\{\par
+        opacity: 0;\par
+        transform: translateX(30px);\par
+    \}\par
+    .list-move\{\par
+        transition: all 1s ease;\par
+    \}\par
+
+\pard\sl276\slmult1\par
+- transition-group takes a prop of tag="any_html_elm". It wraps all the list items in dom under the specified value of tag prop, which here is ul.\par
+- transition-group comes with a .list-move class (note: list is just a prefix), this class applies to all the other list items that isnt animated. Like in our project we are using it for items, wherein the item is removed on click and all other items that isnt leaving, will change their position based on what is written inside .move class.\par
+- BTS, vue uses transform property of css to shift all other items that arent affected, to change their position, and so only, we can use transition on them.\par
+\par
+\par
+9. Animation  between routes:\par
+code : \par
+  <router-view v-slot="slotProps">\par
+    <transition name="fade" mode="out-in">\par
+      <component :is="slotProps.Component"></component>\par
+    </transition>\par
+  </router-view>\par
+\par
+- Just add this, wherever you are using router-view to render those routes components.\par
+- A weird looking syntax, but what it does is: \par
+  - we wrap the transition component of vue, inside the router-view. \par
+  - mode prop takes two args: "in-out" or  "out-in", which says, that first the new component should come and then old component should leave (in case of "in-out"), vice-versa in out-in. Mainly we prefer out-in.\par
+  - we take slotProps.Component, because we have to tell router-view where we want component to get render at inside the transition component. So we use slotProps (which by default is given to us by vue-router) and a property of it which is Component, that helps to render the routed-component\par
+\par
+\par
+\b\fs32\par
+Section 14: Vuex\par
+\par
+\b0\fs24 1. Basics :\par
+Vuex: A library for managing global state.\par
+State: A piece of data which changes e.g. on any user click, and that change triggers other changes in the app.\par
+Two states: Global State(Changes multiple components) and Local State(Affects only one component)\par
+- To install : npm i --save vuex@next  //@next installs the latest version\par
+- We create a vue store, one store per app.\par
+- To get started with store:\par
+code:\par
+
+\pard\li720\sl276\slmult1     import \{createStore\} from 'vuex';   //importing store\par
+        \par
+    const store = createStore(\{\par
+        state()\{\par
+            return \{\par
+                counter : 1\par
+            \}\par
+        \}\par
+    \});\par
+    const app = createApp(App);\par
+    app.use(store);\par
+\par
+To access:\par
+    <h2>\{\{$store.state.counter\}\}</h2>\par
+\par
+To change value of state from any other component:\par
+    addOne()\{\par
+        this.$store.state.counter++;\par
+    \}\par
+
+\pard\sl276\slmult1\par
+- createStore takes an object, with some props.\par
+- state prop is a method that return an object filled of our state values; here its the counter prop.\par
+- we then use, app.use(store) to make it available everywhere in the app.\par
+- <h2>\{\{$store.state.counter\}\}</h2> - like this we can get the values we have stored in our state, inside any other component.\par
+\par
+- We can use state (specifically global state), when the data is needed at multiple components, remember to use props when the data flow is simply between parent and child.\par
+\par
+2. Introducing Mutations:\par
+Till now, we can change, read, state from anywhere in our component, which isnt that ideal. Hence, vuex has a standard, elegant way of data flow in our app. \par
+\par
+To change something from a component to a state:\par
+Component -> Mutations -> State\par
+Mutations are a collection of methods, that triggers changes inside the state. \par
+We use Mutations so that all our state changes events happens at one place. At one glance of mutations, we can see everything that is leading to a state change. Also its good for reusability\par
+code:\par
+
+\pard\li720\sl276\slmult1       mutations: \{\par
+        increment(state)\{\par
+            state.counter = state.counter +1;\par
+        \}\par
+    \}\par
+
+\pard\sl276\slmult1 vuex gives state arg by default to mutations. this state holds the latest changed value.\par
+to call the mutations methods: (in component that changes it.)\par
+
+\pard\li720\sl276\slmult1  methods: \{\par
+        addOne()\{\par
+            this.$store.commit('increment')\par
+        \}\par
+     \}\par
+
+\pard\sl276\slmult1 incase of passing args:\par
+
+\pard\li720\sl276\slmult1    increase(state, payload)\{\par
+        state.counter = state.counter + payload.value //in store\par
+    \}\par
+    \par
+    this.$store.commit('increase', \{value:10\}) // in component\par
+\par
+    //another way\par
+        this.$store.commit(\{\par
+        type: 'increase',\par
+        value:10\par
+    \})\par
+
+\pard\sl276\slmult1 Payload arg can be anything, a string, object, etc. \par
+In second type, the entire obj is passed except the type.\par
+\par
+3. Introducing getters:\par
+Just like changing state directly, isnt a good practice in vue, reading data directly is also a same practice. Hence, we use getters to read data from state. Getters are like computed properties, that returns a computed value.\par
+State -> Getters -> Component\par
+code:\par
+
+\pard\li720\sl276\slmult1     getters: \{\par
+        finalCounter(state)\{\par
+            return state.counter + 2\par
+        \},\par
+        normalizedCounter(_, getters)\{  //here, _ bcoz we dont need state here\par
+            if(getters.finalCounter > 100)\{\par
+                return 100;\par
+            \}else\{\par
+                return getters.finalCounter;\par
+            \}\par
+        \}\par
+    \}\par
+\par
+    to access:\par
+        return this.$store.getters.normalizedCounter;\par
+\par
+In second getter, we are receiving other getters value, its possible too.\par
+\par
+\par
+4. Introducing Async code with Actions:\par
+- Suppose, we want some async code to run inside any of the methds of mutations. well, we cant do that. Asynchronous code is not allowed inside mutations. It is because, there could be times when multiple mutations might be running and needs the latest value of state, with async code, it might be prone to errors. Hence, async code is not allowed. If we try to use setTimeout, it would work, but its one of the worst practices to do.\par
+Instead, vuex has a better concept of it which is called actions. and with actions(which is also an object of methods), which we call from components and it also accepts async code.\par
+the flow is:\par
+component -> actions -> mutations -> state.\par
+\par
+Its always a best practice to add actions and call them from component, instead of calling mutations directly. though we can, but not a good thing to do. \par
+\par
+code:\par
+   actions:\{\par
+        increment(context)\{\par
+            setTimeout(function()\{\par
+                context.commit('increment')\par
+            \},2000);\par
+        \},\par
+        increase(context, payload)\{\par
+            setTimeout(function()\{\par
+                console.log('hello')\par
+                context.commit('increase',payload);\par
+            \},2000)\par
+        \}\par
+    \},\par
+\par
+    //to access: 2 ways are mentioned. Same like we committed mutations, here we use dispatch; meaningfully to dispatch actions.\par
+     methods:\{\par
+        addOne()\{ \par
+           this.$store.dispatch('increment'); //way 1\par
+        \}\par
+\par
+    addOne()\{\par
+        this.$store.dispatch(\{  //another way\par
+            type: 'increase',\par
+            value:10\par
+        \})\par
+    \}\par
+\par
+- actions get context arg by default which comes with a lot of interesting stuff. console.log it to know more.\par
+\par
+\par
+5. Some vuex utility feature:\par
+Instead of drilling inside the store everytime, to get getters and actions: one easy that is importing mapGetters and mapActions  (the same comes with mutations and state also, but since we dont use them diretly inside the component, we hardly use them).\par
+\par
+code:\par
+    import \{mapGetters, mapActions\} from 'vuex';\par
+\par
+    computed : \{\par
+       ...mapGetters(['normalizedCounter'])\par
+    \},\par
+\par
+    // to access:\par
+    <h2>\{\{normalizedCounter\}\}</h2>\par
+\par
+inside the computed, we get them. They do exactly what we have done above. mapGetters bascially is an object that we spread out (using the ... spread op), and passes the getters names we want as a string in an array.\par
+\par
+\par
+code:\par
+    to access:\par
+    <button @click="increment">Add 1</button>\par
+    <button @click="increase(\{value : 10\})">Add 1</button> //with payload\par
+\par
+     methods:\{\par
+      ...mapActions(['increment', 'increase'])\par
+    \}\par
+    OR\par
+    ...mapActions(\{\par
+        inc: 'increment',\par
+        incre: 'increase \par
+    \})  //for giving custom names\par
+\par
+\par
+6. Modules:\par
+Our store can get bigger and bigger with bigger applications. A way to organize it is using a feature called modules. \par
+Create an object, with state, mutations, getters and actions and then we can add that inside global state.\par
+Note: we cannot access state of another module inside another state's mutations or getters or actions.\par
+\par
+code:\par
+    \par
+    const counterModule = \{\par
+        state()\{return \{\par
+            counter : 1,\par
+        \}\},\par
+        mutations :\{\par
+            increment(state)\{\par
+                state.counter = state.counter +1;\par
+            \},\par
+        \},\par
+        actions :\{\par
+            increment(context)\{\par
+                setTimeout(function()\{\par
+                    context.commit('increment')\par
+                \},2000);\par
+            \},\par
+        \},\par
+        getters :\{\par
+            finalCounter(state)\{\par
+                return state.counter + 2\par
+            \},\par
+        \}\par
+\par
+\par
+    const store = createStore(\{\par
+        modules:\{\par
+            numbers: counterModule\par
+        \}, \par
+    \})\par
+
+\pard\sl276\slmult1\par
+But what if soemtimes we want to access state of another module? well, there's this way:\par
+we get rootState, rootGetters inside getters, and actions (inside context object).\par
+
+\pard\li720\sl276\slmult1 getters :\{\par
+    x(state, getters, rootState, rootGetters)\par
+\}\par
+\par
+actions\{\par
+    x(context, payload)\{\par
+        console.log(context.state, context.rootState, context.rootGetters)\par
+    \}\par
+\}\par
+
+\pard\sl276\slmult1\par
+7. Namespace feature:\par
+By default, only states are inside local scope; means only they are not accessible outside the module, but by setting Namespace as true, all others(mutations,actions, getters) gets localled scoped. The benefit of this is that, in bigger apps, we could have similar names of getters or actions or something, to avoid name clashes, we can set Namespace as true. \par
+code:\par
+
+\pard\li720\sl276\slmult1     // inside modules\par
+    const counterModule = \{\par
+    namespaced : true,\par
+    state()\{return \{\par
+        counter : 1,\par
+    \}\}, .....\par
+
+\pard\sl276\slmult1\par
+to access in components:\par
+    \tab ...mapGetters('numbers',['normalizedCounter'])\par
+- numbers is the module name here.\par
+- to add multiple getters from different modules, add an object, with key as some name you want and value as moduleName/getterName\par
+- the same goes with the mapActions and mapState also.\par
+\par
+8. Structuring code:\par
+
+\pard\li720\sl276\slmult1 store(dir) ->\par
+    modules(folder) + index.js + action.js + mutation.js + getters.js ->\par
+        (in modules) modulename (folder) -> \par
+            index.js + action.js + mutation.js + getters.js.  \par
+
+\pard\sl276\slmult1\par
+9. Extra note :\par
+To get a getter/state of another namespaced module, inside another:\par
+inside an action, get context.\par
+\tab     console.log((context.rootGetters['cart/cartItems']))\par
+\par
+\par
+\par
+\b\fs28 Section 15: Project - Find Coach\b0\fs24\par
+\par
+Point: There's nothing like the perfect blueprint for a Project. While you're going on with the development, a lot of stuff will enter and few will leave too. But having a clear road in the beginning will help you move ahead, in times when you dont know where to start.\par
+\par
+e.g of a Find a coach web app:\par
+1. Planning : \par
+    a. Define all the key features \par
+    b. Derive Vuex store layout. What data/state has to be stored inside the vuex and their actions and mutations.\par
+    c. Derive design and components layout. The connections between these components and what pages we might want.\par
+\par
+1.1 Data: \par
+    i) Coaches => list of coaches, COACH (id, firstname, lastname, description, rate)\par
+    ii) Requests => list of requests, REQUEST(coachId, message, email Id)\par
+\par
+    getters : getCoaches, getRequests\par
+    mutations : setCoaches, registerCoach, contactCoach, setRequest\par
+\par
+1.2 Layout: \par
+    i) Routes =>\par
+        /coaches  = list of coaches\par
+        /coaches/:id = specific coach details\par
+        /register = register a new coach\par
+        /contact = contact coach form\par
+        /requests = all incoming requests received\par
+\par
+    ii) Headers => Coaches | Requests\par
+    iii) Layout of all pages we'll create.\par
+1.3 Decide the packages we need : vue-router, vuex, bootstrap-vue, lodash, etc.\par
+\par
+2. Steps/Decsription of entire Project-\par
+  - Always decide the flow of data, before you start coding. Maybe a flowchart with how the data will flow.\par
+    e.g. which state needs id, to move data from and to. \par
+  - Create the directory structure, including all the sub-folders.\par
+  - Start with routes, define all the routes. dont forget / homeroute and /:notFound(.*) route, maybe add children for specific routes.\par
+  - Create components and give headings to them and sub-titles for each section of a component.\par
+  - Add global styling : inside app.vue\par
+  - Wire up all the components using links and navbars. Create entire static layout(pages) of the app.\par
+  - Create store, its modules, sub folders and then the states, mutations and...\par
+  - Remember: components are reusable pieces of code, so create components wherever needed. Dont just write everything in one file, separate it out wisely. e.g for coaches-cards, buttons, navbars, headings, etc.\par
+  - Instead of storing entire user as loggedInUser, just store its uniqueId OR TOKEN and then with that token, access its data from db. \par
+\par
+3. Router:\par
+    Router replace vs Router push: Router replace and push both does the same thing, both navigates us to another page.\par
+    But, with replace, we cannot go back to the previous page, with push we can.\par
+    e.g.- this.$router.replace('/all-courses')\par
+    use replace more when there's a form and after that some other page will replace it. \par
+validations: \par
+    To have validations on form inputs, have data properties of them as object.\par
+    e.g.- return \{ firstname: \{value: '', isValid: true\} \}\par
+    and have a isFormValid property, which will be false if any of input is wrong.\par
+    \par
+    To get red borders: <div id="firstname" :class="\{invalid: !firstname.isValid\}">\par
+    the above class will applied only if the value is invalid.\par
+    Its an easy way of doing validations on each input.\par
+DB: \par
+    use firebase as database, because it doesnt need any server side code to write and its very easy to use. \par
+Error handling:\par
+  code:\par
+
+\pard\li720\sl276\slmult1   // In error-occuring function (e.g. in api call function)\par
+    if(!Response.ok)\{\par
+        const error = new Error("error msg");\par
+        throw error\par
+    \}   \par
+\par
+  // In above function call place\par
+  try\{\par
+      ...\par
+  \} catch(error)\{\par
+      this.error = error.message\par
+  \}\par
+
+\pard\sl276\slmult1\par
+Extra:\par
+- To get a boolean value out of a value(like string, no., etc), use  double exclamation. \par
+    code: \par
+    :show = "!!propName"\par
+If propName is a string, or any truthy value, it will return true else for all falsy values, it will return false.\par
+\par
+- To get unique userID that is generated by firebase:\par
+
+\pard\li720\sl276\slmult1  const res = fetch(..., \{\par
+     method: 'POST', body: JSON.stringify(...)\par
+ \});\par
+ data.id = res.name // the name holds the unique id generated by firebase.\par
+
+\pard\sl276\slmult1\par
+\par
+\par
+\b\fs28 Section 16: Vue Authentication\b0\fs24\par
+\par
+How auth works in any SPA?\par
+ i) backend server -> there's a server that doesnt care about which tech we are using in front-end,like vue or react, or whatever. \par
+ It has 2 types of data - i)restricted data and ii)public data.\par
+ restricted data needs auth and public data doesnt.\par
+\par
+ ii) we, through vue, sends the server login data, and backend sends back a token, if the data is valid.\par
+ - a token is nothing but a long long string, which is created using a secret encryption key, which only a server is able to read.\par
+ - we store the token, either in localstorage or in vuex.\par
+ - any restricted data, we want to access from server, we pass that token and server validates that, if the token is decrypted successfully by server, user is able to view that data.\par
+\par
+Now, in firebase:\par
+
+\pard\li720\sl276\slmult1 In realtime database -> rules -> tweak this rules a bit -> \par
+\{\par
+    "rules : \{\par
+        "coaches" : \{\par
+            ".read": true,\par
+            ".write": "auth != null"\par
+        \},\par
+        "requests": \{\par
+            ".read": "auth != null",\par
+            ".write": false\par
+        \}\par
+    \}\par
+\}\par
+-> click on publish.\par
+
+\pard\sl276\slmult1 explanation:\par
+- the coaches is a data node we created in data in db of firebase. read true, will allow everyone to read the data, .write will give access to authenticated users only, false gives access to noone.\par
+\par
+\par
+\par
+\b\fs28 Section 17: Deploying vue apps:\par
+\b0\fs24\par
+- Code optimization before deloying:\par
+ - Test the entire app with erros.\par
+ - Refactor the Code.\par
+ - Use lazy loading, defineAsyncComponents, etc. features of vue to make your app faster.\par
+ - run npm run build to get the production version of code.\par
+\par
+\par
+\par
+\b\fs28 Section 18: The Composition API\b0\fs24\par
+Composition API- (Vue 3 introduced feature.)\par
+\par
+- Option API: Till now, what we have been doing is called Options API. Which means, building components using data props, watchers, computed methods, etc. is Options API's approach.\par
+This approach is perfectly fine.\par
+\par
+Composition API is an alterantive way of building vue apps, and it was created to solve 2 main limitations of Options api, which we might face in bigger vue apps.\par
+\par
+Limitation 1: \par
+    " Code that belongs together logically is split up across multiple options(data, method, etc) ".\par
+    - explanation: Suppose, we are performing searching and sorting in a component. That functionality requires - 2 data props, 2 methods, 1 computed and 1 watcher lets say. \par
+    Even though, we want just a searching operation, our code is splited into 4 options, which might become a little combursome in large scale applications to manage indiviuality of code functionality. \par
+\par
+Limitation 2:\par
+    " Re-using logic across components can be tricky or combursome ".\par
+    - explanation: Suppose, the above searching and sorting operation has to be performed in another component, with just a little modification. With options api, we might create 2 data props, 2 methods and so on, inside another component as well. Making re-usability of code, a little tricky.\par
+\par
+Hence, we have so many options for a single functionality in Options API, its called Options API.\par
+\par
+\par
+- Composition API:\par
+With using Composition api, our code will get replaced, with a setup ().\par
+Means, the data, method, computed, watch, (and lifecycle hooks) will get replaced by a setup(). \par
+Which also means, that other features of vue, that is- v-ifs, templates, props, emits, etc. remains untouched by Composition api.  \par
+\par
+- Code: \par
+
+\pard\li720\sl276\slmult1     <p> \{\{ username \}\} </p>\par
+\par
+    // using options API:\par
+    data()\{\par
+        return \{\par
+            username: "Jainika"\par
+        \}\par
+    \}\par
+
+\pard\sl276\slmult1\par
+
+\pard\li720\sl276\slmult1     // using Composition API:\par
+    setup()\{\par
+    const userName = ref('Jainika');\par
+    setTimeout(() => \{ \par
+      userName.value = "Niyosh" //will change value from jainika to niyosh in 2s.\par
+    \}, 2000)\par
+    return \{\par
+      username: userName\par
+    \}\par
+  \}\par
+
+\pard\sl276\slmult1\par
+explanation:\par
+- We, instead of using data props, use 'ref', (nothing to do with $ref, which we have used previously, for referencing dom elements).\par
+- ref returns a value, not any value, but a reactive value, where vue will able to watch it and update the template/dom whenever the value changes and wherever it is used.\par
+- we dont use this keyword in setup fuction. Because the setup() is run quite early by vue, it is runned before initailization of props, methods, data props, etc, hence we wont have access to any of the properties, we use to have in option api. e.g. this.methodName() wont give us the methodName in setup (), like it use to in data props, or at other places.\par
+- hence, we store in plain js const variable.\par
+\par
+\tab - const userName = ref('Jainika'); \par
+here, we pass any value, we want to be reactive. 'Jainika', the string is stored in an object BTS, where key is 'value' and value is 'Jainika'. Anytime, we change the userName, it updates it at all places. \par
+\par
+
+\pard\li720\sl276\slmult1 -   return \{\par
+      userName: userName\par
+    \}\par
+
+\pard\sl276\slmult1 in setup(), we always return an obj, which holds the values, we want <template> to have access to. The key can be anything, and is used in template. The value is the js variable that holds ref value\par
+\par
+\tab -  userName.value = "Niyosh"\par
+this is how we change value of ref variables. This is understandable, because (i) userName is a const, we cannot change it directly. (ii) if we use let, instead of const, we can change userName'S  value, but that will override the ref, hence it no longer wuld be reactive, (iii) ref returns an obj, with a 'value' as key (we saw that before), and to change it, we use userName.value. \par
+\par
+\tab - \{\{ username \}\}\tab\par
+in template, we donot write username.value, because vue directly drill into the object and returns the value in return \{\} of setUp method.\par
+\par
+- Ref with objects:\par
+
+\pard\li720\sl276\slmult1    const user = ref(\{\par
+      userName: 'Jainika',\par
+      age: 21\par
+    \})\par
+     setTimeout(() => \{ \par
+      user.value.userName = "Niysoh", // not reflected\par
+      user.value.age = 22\par
+\par
+    \}, 2000)\par
+
+\pard\sl276\slmult1 Here, the user is reactive, but its properties: userName and age are not. If we try to change user.value.age, it wont be reflected, but if we change the user.value, it will get reflected.\par
+\par
+For it to work:\par
+
+\pard\li720\sl276\slmult1     return \{ user: user\}\par
+\par
+    <template>\par
+        <p> Name: \{\{ user.username \}\} </p>\par
+        <p> Age: \{\{ user.age \}\} </p>\par
+    </template>\par
+
+\pard\sl276\slmult1\par
+By returning the entire object, and drilling inside it in the template, then it would be reactive.\par
+\par
+- Alternative of working with objects: reactive package\par
+  \par
+
+\pard\li720\sl276\slmult1     import \{reactive\} from 'vue';\par
+    const user2 = reactive(\{\par
+      username: 'JainikaShah',\par
+      age: 21\par
+    \})\par
+\par
+     setTimeout(() => \{ \par
+      user2.username = "NiyoshShah",\par
+      user2.age = 22\par
+    \}, 2000)\par
+\par
+    return \{\par
+      user2: user2\par
+    \}\par
+
+\pard\sl276\slmult1 explanation:\par
+reactive package, basically replaces the default value obj, that we get from ref, and creates a proxy obj as wrapper.\par
+Note: Ref can work with all datatypes, but reactive can work with objects only.\par
+\par
+- Other helper methods in vue for ref and reactive.\par
+\par
+- isRef and isReactive:\par
+
+\pard\li720\sl276\slmult1     import \{ isRef, isReactive \} from 'vue';\par
+    console.log(isRef(user), isRef(user.value.username)) //true, false\par
+    console.log(isReactive(user2), isReactive(user2.username))  //true, false\par
+
+\pard\sl276\slmult1 To get boolean if arg is ref / is reactive or not.\par
+- toRefs:\par
+    const userRef = toRefs(user2)\par
+    console.log(isRef(userRef), isRef(userRef.username))  // false, true\par
+toRefs requires an obj as an argument and convert its properties reactive by making each property ref as variable, and hence then thats what makes it reactive.\par
+\par
+- Methods in Composition API:\par
+code:\par
+
+\pard\li720\sl276\slmult1     <button @click="setAge"> Change age </button>\par
+\par
+    setup()\{\par
+      const age = ref(21);\par
+      function setNewAge()\{\par
+        age.value = 32;\par
+      \}\par
+      return \{\par
+        setAge: setNewAge\par
+      \}\par
+    \}\par
+
+\pard\sl276\slmult1 explanation: \par
+- With options api method, we can write the methodName and can change the age, by writtng: this.age=22, in method body.\par
+- With Composition api, we can write any function inside setUp and return them, those methods will then be available to us in template. \par
+\par
+- Computed methods in Composition api:\par
+code:\par
+
+\pard\li720\sl276\slmult1     import \{ computed \} from 'vue';\par
+\par
+    setup()\{\par
+      const computedName = computed(function() \{\par
+          return firstname.value + ' ' + lastname.value\par
+        \})\par
+    \}\par
+
+\pard\sl276\slmult1\par
+explanation: A package that vue provides, called computed has to be imported. Computed takes a () as an arg and that () returns the computed value. We can store it in a variable. \par
+Note: the stored variable, here its computedName, is nothing but a ref only. But its a read-only ref, we cannot write: computedName.value = "change", this is not allowed. \par
+\par
+- V-model: \par
+    <input type="text" v-model="firstname" placeholder="first name"> // -model\par
+    <input type="text" @input="setLastName" placeholder="last name"> // -input handler\par
+- Do export them from setup in return.\par
+\par
+- Watchers: \par
+
+\pard\li720\sl276\slmult1     const birth = ref('3rd');\par
+    setTimeout(() => \{\par
+      birth.value = "11th";\par
+    \},2000)\par
+    // single watch value, runs when birth variable changes\par
+    watch(birth, function(newVal, oldVal)\{\par
+      console.log('old value: ',oldVal)\par
+      console.log('new value: ',newVal)\par
+    \});\par
+
+\pard\sl276\slmult1\par
+    // multiple watch variables, runs when any of the 1 variable in the array changes.\par
+
+\pard\li720\sl276\slmult1     watch([birth,user2], function(newValues, oldvalues)\{\par
+      console.log('old value: ',oldvalues[0])\par
+      console.log('new value: ',newValues[0])\par
+      console.log('old value: ',oldvalues[1])\par
+      console.log('new value: ',newValues[1])\par
+    \})\par
+
+\pard\sl276\slmult1 - with watch () of composition api, we can set watchers on multiple variables in form of an array. Hence, we get the multiple old and new values as well in array.\par
+- no need to export watch. yeah, I know thats obvious :p\par
+\par
+- Using template ref in Composition api:\par
+code:\par
+
+\pard\li720\sl276\slmult1     <input type="text" ref="firstnameInput" placeholder="first name">\par
+    <input type="text" ref="lastnameInput" placeholder="last name">\par
+    <button @click="setName"> set Name</button>\par
+\par
+    setup()\{\par
+      ...code\par
+
+\pard\sl276\slmult1\par
+
+\pard\li720\sl276\slmult1       const firstnameInput = ref(null);  //same value as template ref's\par
+      const lastnameInput = ref(null);\par
+    \par
+      function setName()\{\par
+        // earlier way:\par
+        firstname = this.$refs.firstnameInput.value;\par
+\par
+        // with composition api:\par
+        firstname.value = firstnameInput.value.value;\par
+        lastname.value = lastnameInput.value.value;\par
+      \}\par
+    \}\par
+
+\pard\sl276\slmult1\par
+the concept of ref in setup and ref in template is quite similar and so to use template refs, we need to define them inside setup() first, maybe initialize it with null and then lets say onclick, we want to get those template refs value, herein we can get from refName.value.value. No need of this keyword and the 2 .values are for (i) the ref.value as we use in setup and  (ii) is to get the dom element's value.\par
+\par
+- Component, props with composition api.\par
+- For passing props and getting components in components : \{...\}, all is same as options api, nothing different.\par
+note: in one component, we can use composition api approach and in other we use options api, and make a connection between them, lets say with props, it works. (Theortically, using both approaches in one compoent alos works, but we dont mainly use them in one)\par
+\par
+- But while getting props in a setup(), its a little different. since in setup we dont get access to 'this' keyword, we use props differently.\par
+\par
+code:\par
+    \tab export default \{\par
+
+\pard\li720\sl276\slmult1         props: ['username'],\par
+        setup(props, context)\{\par
+            const titleName = computed(() => \{\par
+                return 'Name: ' + props.username \par
+            \})\par
+            console.log(context)\par
+            return \{\par
+                fullName: titleName\par
+            \}\par
+        \}\par
+    \}\par
+
+\pard\sl276\slmult1\par
+setup() gets an arg, props, through which we can access the props. here the best things is, the props argument is an object and is reactive. which means even if something changes in the parent component value, which is passed as props, the props obj will be reactive to that change. and will apply it to the current component.\par
+\par
+- context: this is also an arg that setup() gets. It holds 3 things: attrs, emits, slots. Info about these three is what is inside of context. \par
+\par
+- Provide and Inject:\par
+code: \par
+// in parent compoent:\par
+  import \{ provide \} from 'vue';\par
+  setup()\{\par
+      // provide:\par
+    const uAge = ref(22);\par
+    provide('userAge', uAge)\par
+\par
+    setTimeout(() => \{\par
+      uAge.value = 23;\par
+    \},2000)\par
+  \}\par
+\par
+// in child component: \par
+  import \{ computed, inject \} from 'vue'\par
+  const userAge = inject('userAge');\par
+\par
+here, the value will be reactive, since we are using ref. Also note: that changing userAge in child component, is not at all suggested. the value should only be changed where its provided, that is inside parent component.\par
+\par
+lifecycle hooks: \par
+Replacement of functions from options to composition.\par
+\par
+- Options API -> Composition API\par
+- beforeCreate, created -> Not needed. Setup() replaces them.\par
+- beforeMount, mounted -> onBeforeMount, onMounted.\par
+- beforeUpdate, updated -> onBeforeUpdated, onUpdated.\par
+- beforeUnmount, unmounted -> onBeforeUnmounted, onUnmounted.\par
+\par
+To use:\par
+
+\pard\li720\sl276\slmult1       onMounted(function() \{\par
+          console.log('On mounted')\par
+      \})\par
+      onBeforeUpdate(function()\{\par
+          console.log('On before update')\par
+      \})\par
+\par
+      // and so on...\par
+\par
+\par
+Note: \par
+  code:\par
+  const \{ user \} = toRefs(props);\par
+\par
+    watch(user, () => \{\par
+      enteredSearchTerm.value = '';\par
+    \})\par
+
+\pard\sl276\slmult1\par
+When we have multiple props, and need to use a prop as a watch, we have to use it like the above way. \par
+Because, props.user, if written as a watch, then it might give a warning, because the props is reactive, but the props properties are not. Hence, we convert the props' properties into refs, using toRefs(), after importing it, to make it reactive as well.\par
+\par
+- Router with composition api:\par
+one way:- To get router params, one way can be, by using props. Set props:true, in the that router and then it will be accessible through props in setup. \par
+\par
+another way:-\par
+- Hooks/Composibles: vue router provides us few hooks or Composibles whatever you call it, which can be used inside the setup method, which has something specific to offer. \par
+\par
+some of them are:\par
+i) useRoute:\par
+
+\pard\li720\sl276\slmult1     import \{ useRoute \} from 'vue-router';\par
+    const route = useRoute();\par
+    console.log(route.params.id)\par
+
+\pard\sl276\slmult1 // this will log out, params, query, path, meta, and a lot of data about route for us to use.\par
+\par
+ii) useRouter:\par
+
+\pard\li720\sl276\slmult1     import \{ useRouter \} from 'vue-router'\par
+    const router = useRouter();\par
+    router.push('./products')\par
+
+\pard\sl276\slmult1 // for programmtic navigation.\par
+\par
+iii) useStore:\par
+
+\pard\li720\sl276\slmult1     import \{ useStore \} from 'vuex'; \par
+    const store = useStore();\par
+    const counter = computed(() => \{\par
+    return store.getters.counter;    // for getters \par
+    \})\par
+\par
+    const store = useStore();\par
+    function inc() \{\par
+      store.dispatch('increment'); // for actions\par
+    \}\par
+
+\pard\sl276\slmult1 // useStore is used for accessing store of vuex in setup(). \par
+Thats it :)\par
+\par
+A brief of what we learnt:\par
+- Composition API: \par
+- Its an alterantive of options api. It uses to setup() to expose logic/data to template.\par
+- Its a function-based solution that allows us to keep logically related code together.\par
+\par
+\par
+\par
+\b\fs28 Section 19: Mixins and Custom Composition Functions:\b0\fs24\par
+\par
+Things to reuse:\par
+i) HTML structure : Using common components.\par
+ii) For same logic : Use mixins.\par
+\par
+How to use mixins?\par
+- Create a mixin.js (any name) file.\par
+- Add the script code, excluding the components : \{\} and mixins : [] configuration.\par
+- We can share data, methods, computeds, watchers or lifecycle hooks across the components, but not components : \{\}\par
+- We gotta write them separately in components only.\par
+- Mixins basically add the script inside the component that imports it.\par
+ e.g.:\par
+
+\pard\li720\sl276\slmult1     import alertMixin from '../mixins/alert';\par
+    export default \{\par
+    components: \{\par
+        UserAlert,\par
+    \},\par
+    mixins: [alertMixin]\par
+    \};\par
+
+\pard\sl276\slmult1\par
+2. All about mixins:\par
+ - The data, methods, computed, etc. in a mixin, gets merged to the component that calls the mixin.\par
+ - But if, there are two same name properties lets say, in data, in mixin and that component, then who wins? well, then the component property overrides the mixins property (only in case of name clash)\par
+ - The same happens with other options like methods, lifecycle hooks, or computed, etc.\par
+ - Global mixin: the script that's available in every component. \par
+  To add: in main.js\par
+
+\pard\li720\sl276\slmult1     //vue2:\par
+        import \{ globalMixins \} from "@/mixins/global"\par
+        Vue.mixin(globalMixins)\par
+    //vue3:\par
+        import \{ globalMixins \} from "@/mixins/global"\par
+        app.mixin(globalMixins)\par
+
+\pard\sl276\slmult1\par
+3. Disadvantages of mixins:\par
+ - With larger apps, its difficult to know where the data is coming from. For different developers, it can be hard to know where some Functions (thats define in a mixin) is coming from, specially whenthere are 3-4 mixins in a component. \par
+\par
+ - solution: use Composition api feature: Custom Composition functions / hooks / composibles.\par
+    - create a hooks folder.\par
+    - add a new file.\par
+    - the function name should start with use... (just a convention).    \par
+    - export that function. \par
+    - inside that function write the code that has to be shareable, like refs, functions, etc.\par
+    - return whatever in any form, not necessarily to be an object, that is required inside the component thats imports it.\par
+    - import it inside the component.\par
+    - extract using destructure, if its an iterable, (the return statement of hook.) and return them in setup as an object.\par
+\par
+    code:\par
+
+\pard\li720\sl276\slmult1      // hook.js\par
+     import \{ref\} from 'vue';\par
+\par
+    export default function useAlert()\{\par
+        const alertIsVisible = ref(false);\par
+        function hideAlert()\{\par
+        alertIsVisible.value = false;\par
+        \}\par
+        return [\par
+        alertIsVisible,\par
+        hideAlert\par
+        ]\par
+    \} \par
+
+\pard\sl276\slmult1     // inside component.vue \par
+
+\pard\li720\sl276\slmult1     setup()\{    \par
+        const [ alertIsVisible, showAlert, hideAlert ] = useAlert()\par
+\par
+        return \{ \par
+        alertIsVisible,\par
+        showAlert,\par
+        hideAlert\par
+        \}\par
+    \}\par
+\par
+\par
+\par
+
+\pard\sl276\slmult1\b\fs28 Section 20:  Filters vue 2\par
+\b0\fs24\par
+Filters and mixins:\par
+- Filters is something that takes an input and return a transformed input inside the <template>. \par
+It doesnt change the data itself, but returns a formatted one, that user can see.\par
+\par
+// local filter, is accessible only inside the component.\par
+
+\pard\li720\sl276\slmult1 <template>\par
+\tab <div>\par
+\tab\tab <p>\par
+\tab\tab\tab\{\{ text | uppercaseFilter\}\}\par
+\tab\tab </p>\par
+\tab </div>\par
+</template>\par
+
+\pard\sl276\slmult1\par
+
+\pard\li720\sl276\slmult1 <script>\par
+...\tab\par
+\tab data()\{\par
+\tab\tab return \{\par
+\tab\tab\tab text: 'hello there!'\par
+\tab\tab\}\par
+\tab\},\par
+\tab filters: \{\par
+\tab\tab toUppercase(value)\{\par
+\tab\tab\tab return value.toUpperCase()\par
+\tab\tab\}\par
+\tab\}\par
+</script>\par
+
+\pard\sl276\slmult1\par
+- Global filters: The ones that are accessible everywhere inside the app.\par
+Create a filter.js file and add all the filters inside of it like this:\par
+code:\par
+
+\pard\li720\sl276\slmult1\tab Vue.filter('to-lowecase', function(val) \{\par
+\tab\tab return val.toLowerCase()\par
+\tab\}) \par
+and import this inside the main.js file.\par
+(same goes with mixins too)\par
+
+\pard\sl276\slmult1  \par
+- chain filters: The value gets to the first filter, gets the formatted value and that formatted value is passed to another filter.\par
+code:\par
+\tab\{\{ text | toUpperCase | toLowerCase \}\}\par
+\par
+\par
+\par
+\par
+}
+ 

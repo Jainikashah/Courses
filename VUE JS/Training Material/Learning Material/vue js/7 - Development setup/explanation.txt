@@ -1,0 +1,40 @@
+1. We use VUE CLI, to write our code.
+
+2. Why we need? - To have a proper web devlopment server, which vue cli provides.
+
+3. How to get VUE CLI? 
+ to install : npm i -d @vue/cli
+ cmd : cd to your project folder
+ cmd : vue create vue-app-name
+ some questions will be prompted - (If asked) 
+ i : select the stable released version
+ ii : choose the 3.x version (the latest one)
+ iii : es lint with error prevention only
+ iv : lint on save
+ v : dedicated config files
+ vi : no for defalult future projects 
+ enter.
+ cd vue-app-name
+ npm run serve
+ got it in your browser? Its done:)
+
+
+4. Setup project explantion:
+package.json - all scripts and dependencies.
+since, we have vue as dependency, we dont need to add that script tag; the vue cdn, to get vue features as all of it is already imported as a dependency in package.json
+
+node modules - all the dependencies modules and packages downloaded, are stored in node modules
+
+src - contains all we'll write our code in.
+ main.js - configured as the entry point of our project.
+  wherein we mount the app id from the index.html and get necessary imports
+
+ App.vue - The app that'll be mounted on app id.
+
+
+The vue build workflow - 
+    Our code -> which is full of next-gen code and Vue syntax -> on run -> convert code into standard JS code, which browser understands.
+ 
+VS Code Vue extension - Vetur
+ 
+

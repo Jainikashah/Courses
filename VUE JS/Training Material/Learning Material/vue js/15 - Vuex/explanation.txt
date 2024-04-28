@@ -1,0 +1,260 @@
+1. Basics :
+Vuex: A library for managing global state.
+State: A piece of data which changes e.g. on any user click, and that change triggers other changes in the app.
+Two states: Global State(Changes multiple components) and Local State(Affects only one component)
+
+- To install : npm i --save vuex@next  //@next installs the latest version
+
+- We create a vue store, one store per app.
+
+- To get started with store:
+code:
+    import {createStore} from 'vuex';   //importing store
+        
+    const store = createStore({
+        state(){
+            return {
+                counter : 1
+            }
+        }
+    });
+    const app = createApp(App);
+    app.use(store);
+
+To access:
+    <h2>{{$store.state.counter}}</h2>
+
+To change value of state from any other component:
+    addOne(){
+        this.$store.state.counter++;
+    }
+
+- createStore takes an object, with some props.
+- state prop is a method that return an object filled of our state values; here its the counter prop.
+- we then use, app.use(store) to make it available everywhere in the app.
+- <h2>{{$store.state.counter}}</h2> - like this we can get the values we have stored in our state, inside any other component.
+
+- We can use state (specifically global state), when the data is needed at multiple components, remember to use props when the data flow is simply between parent and child.
+
+
+2. Introducing Mutations:
+Till now, we can change, read, state from anywhere in our component, which isnt that ideal. Hence, vuex has a standard, elegant way of data flow in our app. 
+
+To change something from a component to a state:
+Component -> Mutations -> State
+Mutations are a collection of methods, that triggers changes inside the state. 
+We use Mutations so that all our state changes events happens at one place. At one glance of mutations, we can see everything that is leading to a state change. Also its good for reusability
+
+
+code:
+      mutations: {
+        increment(state){
+            state.counter = state.counter +1;
+        }
+    }
+vuex gives state arg by default to mutations. this state holds the latest changed value.
+
+to call the mutations methods: (in component that changes it.)
+ methods: {
+        addOne(){
+            this.$store.commit('increment')
+        }
+     }
+
+incase of passing args:
+
+   increase(state, payload){
+        state.counter = state.counter + payload.value //in store
+    }
+    
+    this.$store.commit('increase', {value:10}) // in component
+
+    //another way
+        this.$store.commit({
+        type: 'increase',
+        value:10
+    })
+    
+ 
+Payload arg can be anything, a string, object, etc. 
+In second type, the entire obj is passed except the type.
+
+
+3. Introducing getters:
+Just like changing state directly, isnt a good practice in vue, reading data directly is also a same practice. Hence, we use getters to read data from state. Getters are like computed properties, that returns a computed value.
+
+State -> Getters -> Component
+code:
+    getters: {
+        finalCounter(state){
+            return state.counter + 2
+        },
+        normalizedCounter(_, getters){  //here, _ bcoz we dont need state here
+            if(getters.finalCounter > 100){
+                return 100;
+            }else{
+                return getters.finalCounter;
+            }
+        }
+    }
+
+    to access:
+        return this.$store.getters.normalizedCounter;
+
+In second getter, we are receiving other getters value, its possible too.
+
+
+4. Introducing Async code with Actions:
+- Suppose, we want some async code to run inside any of the methds of mutations. well, we cant do that. Asynchronous code is not allowed inside mutations. It is because, there could be times when multiple mutations might be running and needs the latest value of state, with async code, it might be prone to errors. Hence, async code is not allowed. If we try to use setTimeout, it would work, but its one of the worst practices to do.
+Instead, vuex has a better concept of it which is called actions. and with actions(which is also an object of methods), which we call from components and it also accepts async code.
+the flow is:
+component -> actions -> mutations -> state.
+
+Its always a best practice to add actions and call them from component, instead of calling mutations directly. though we can, but not a good thing to do. 
+
+code:
+   actions:{
+        increment(context){
+            setTimeout(function(){
+                context.commit('increment')
+            },2000);
+        },
+        increase(context, payload){
+            setTimeout(function(){
+                console.log('hello')
+                context.commit('increase',payload);
+            },2000)
+        }
+    },
+
+    //to access: 2 ways are mentioned. Same like we committed mutations, here we use dispatch; meaningfully to dispatch actions.
+     methods:{
+        addOne(){ 
+           this.$store.dispatch('increment'); //way 1
+        }
+
+    addOne(){
+        this.$store.dispatch({  //another way
+            type: 'increase',
+            value:10
+        })
+    }
+
+- actions get context arg by default which comes with a lot of interesting stuff. console.log it to know more.
+
+
+5. Some vuex utility feature:
+Instead of drilling inside the store everytime, to get getters and actions: one easy that is importing mapGetters and mapActions  (the same comes with mutations and state also, but since we dont use them diretly inside the component, we hardly use them).
+
+code:
+    import {mapGetters, mapActions} from 'vuex';
+
+    computed : {
+       ...mapGetters(['normalizedCounter'])
+    },
+
+    // to access:
+    <h2>{{normalizedCounter}}</h2>
+
+inside the computed, we get them. They do exactly what we have done above. mapGetters bascially is an object that we spread out (using the ... spread op), and passes the getters names we want as a string in an array.
+
+
+code:
+    to access:
+    <button @click="increment">Add 1</button>
+    <button @click="increase({value : 10})">Add 1</button> //with payload
+
+     methods:{
+      ...mapActions(['increment', 'increase'])
+    }
+    OR
+    ...mapActions({
+        inc: 'increment',
+        incre: 'increase 
+    })  //for giving custom names
+
+
+6. Modules:
+Our store can get bigger and bigger with bigger applications. A way to organize it is using a feature called modules. 
+Create an object, with state, mutations, getters and actions and then we can add that inside global state.
+Note: we cannot access state of another module inside another state's mutations or getters or actions.
+
+code:
+    
+    const counterModule = {
+        state(){return {
+            counter : 1,
+        }},
+        mutations :{
+            increment(state){
+                state.counter = state.counter +1;
+            },
+        },
+        actions :{
+            increment(context){
+                setTimeout(function(){
+                    context.commit('increment')
+                },2000);
+            },
+        },
+        getters :{
+            finalCounter(state){
+                return state.counter + 2
+            },
+        }
+
+
+    const store = createStore({
+        modules:{
+            numbers: counterModule
+        }, 
+    })
+
+
+But what if soemtimes we want to access state of another module? well, there's this way:
+we get rootState, rootGetters inside getters, and actions (inside context object).
+
+getters :{
+    x(state, getters, rootState, rootGetters)
+}
+
+actions{
+    x(context, payload){
+        console.log(context.state, context.rootState, context.rootGetters)
+    }
+}
+
+7. Namespace feature:
+By default, only states are inside local scope; means only they are not accessible outside the module, but by setting Namespace as true, all others(mutations,actions, getters) gets localled scoped. The benefit of this is that, in bigger apps, we could have similar names of getters or actions or something, to avoid name clashes, we can set Namespace as true. 
+
+code:
+    // inside modules
+    const counterModule = {
+    namespaced : true,
+    state(){return {
+        counter : 1,
+    }}, .....
+
+to access in components:
+    ...mapGetters('numbers',['normalizedCounter'])
+
+- numbers is the module name here.
+- to add multiple getters from different modules, add an object, with key as some name you want and value as moduleName/getterName
+- the same goes with the mapActions and mapState also.
+
+
+8. Structuring code:
+
+store(dir) ->
+    modules(folder) + index.js + action.js + mutation.js + getters.js ->
+        (in modules) modulename (folder) -> 
+            index.js + action.js + mutation.js + getters.js.  
+
+
+9. Extra note :
+
+To get a getter/state of another namespaced module, inside another:
+
+inside an action, get context.
+    console.log((context.rootGetters['cart/cartItems']))
+

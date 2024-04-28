@@ -1,0 +1,76 @@
+Mixins and Custom Composition Functions:
+
+Things to reuse:
+i) HTML structure : Using common components.
+ii) For same logic : Use mixins.
+
+How to use mixins?
+- Create a mixin.js (any name) file.
+- Add the script code, excluding the components : {} and mixins : [] configuration.
+- We can share data, methods, computeds, watchers or lifecycle hooks across the components, but not components : {}
+- We gotta write them separately in components only.
+- Mixins basically add the script inside the component that imports it.
+ 
+ e.g.:
+ 
+    import alertMixin from '../mixins/alert';
+    export default {
+    components: {
+        UserAlert,
+    },
+    mixins: [alertMixin]
+    };
+
+
+2. All about mixins:
+ - The data, methods, computed, etc. in a mixin, gets merged to the component that calls the mixin.
+ - But if, there are two same name properties lets say, in data, in mixin and that component, then who wins? well, then the component property overrides the mixins property (only in case of name clash)
+ - The same happens with other options like methods, lifecycle hooks, or computed, etc.
+ - Global mixin: the script that's available in every component. 
+  To add: in main.js
+    //vue2:
+        import { globalMixins } from "@/mixins/global"
+        Vue.mixin(globalMixins)
+    //vue3:
+        import { globalMixins } from "@/mixins/global"
+        app.mixin(globalMixins)
+
+3. Disadvantages of mixins:
+ - With larger apps, its difficult to know where the data is coming from. For different developers, it can be hard to know where some Functions (thats define in a mixin) is coming from, specially whenthere are 3-4 mixins in a component. 
+
+ - solution: use Composition api feature: Custom Composition functions / hooks / composibles.
+    - create a hooks folder.
+    - add a new file.
+    - the function name should start with use... (just a convention).    
+    - export that function. 
+    - inside that function write the code that has to be shareable, like refs, functions, etc.
+    - return whatever in any form, not necessarily to be an object, that is required inside the component thats imports it.
+    - import it inside the component.
+    - extract using destructure, if its an iterable, (the return statement of hook.) and return them in setup as an object.
+
+
+    code:
+     // hook.js
+     import {ref} from 'vue';
+
+    export default function useAlert(){
+        const alertIsVisible = ref(false);
+        function hideAlert(){
+        alertIsVisible.value = false;
+        }
+        return [
+        alertIsVisible,
+        hideAlert
+        ]
+    } 
+
+    // inside component.vue 
+    setup(){    
+        const [ alertIsVisible, showAlert, hideAlert ] = useAlert()
+
+        return { 
+        alertIsVisible,
+        showAlert,
+        hideAlert
+        }
+    }

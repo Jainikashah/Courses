@@ -1,0 +1,279 @@
+SECTION : Routing - Building Multi page SPA.
+
+1. SPA : one index.html file, and our js file handlin all what to and what not to render.
+
+2. Using router : we can have routes and for each one we can render a different component. just like we would render a new page with vanilla js. Here, since its SPA, we have only one index.html and the js will completely handle the rendering part.
+Basically, different urls for different components
+
+3. To install router package: 
+    npm install --save vue-router@next
+
+4. configuration : inside main.js-
+
+    To import:  import { createRouter, createWebHistory } from 'vue-router';
+
+    const router = createRouter({
+    history : createWebHistory(),
+    routes : []
+})
+
+- here, createWebHistory gets us the browser's history (the one that the user went through).
+
+
+code- 
+    import TeamList from './components/teams/TeamsList.vue';
+    import UserList from './components/users/UsersList.vue'
+
+    import App from './App.vue';
+    const router = createRouter({
+        history : createWebHistory(),
+        routes : [
+            { path : '/teams', component: TeamList },
+            { path : '/users', component: UserList}
+        ]
+    })
+
+    const app = createApp(App)
+    app.use(router);
+
+here, we are specifying path and which component to load when that path is runned.
+path is what we write after our domain name. e.g- localhost:8080/teams OR www.learning.com/teams
+later we use, app.use(and pass the router inside it to let our vue app make aware of this router).
+app.use is used when we want to access any third party package inside our app. Inside app.use, we gotta register that package first, in order to use it.
+
+Now, where you want those components to get render at -
+  <main>
+    <router-view></router-view>
+  </main>
+
+
+
+5. Giving links to different urls using router:
+
+    <router-link to="/users">Users</router-link> 
+here, on click of users, the /users path will be accessed and whatever component we have registered inside the main.js, will get render.
+router-link prevents the browsr default reloading (i.e. re-render the entire app), instead will render the neccesarry component and will change the url to it.
+
+BTS, the router-link uses a tag only, so if you wnat some styling for router-link, you can use 'a' as css selector
+
+a.router-link-active : to use styles on it, we can use a tag and router-link gives a router-link-active class on the ones that is active, so we can give extra styling to them.
+the current selected route is given this class.
+There's also router-lin-exact-active, it is applied when the url matches exactly to the route we mentioned (inside to attribute). e.g. /teams/teamId - in here, it wont appear, but router-link-active will work.
+
+
+6. Programmatic navigate:
+Lets say, on click of a button, we want to do some stuff first and then, direct the suer to some other page. To do so: 
+code-
+    confirmInput(){
+      //do something
+      this.$router.push('/teams');    
+    }
+here, onclick, we'll be send to /teams route. this.$router is a special () we get, when we use app.use(). just like push, we have several more methods, like .back, .forward, etc. that can be helpful.
+
+
+7. Passing with Route segments:
+
+    { path: '/teams', component: TeamMembers}
+    { path: '/teams/new', component: TeamMembers}
+    { path: '/teams/:teamId', component: TeamMembers}
+
+note: the first thing is, the order of writing paths matters a lot. the above mentioned is the right way. 
+
+-     { path: '/teams/:teamId', component: TeamMembers}
+Here, this is for rendering dynamic url. In place of teamid, it would take any value.
+
+to get the params value in some component - 
+code -
+    this.$route.path  // will return the path if we want
+    const teams = this.$route.params;  // will return the params 
+    const teamId = this.$route.params.teamId;  // will return the params with key as teamId.
+
+
+8. To give dynamic values in router-link-
+    <router-link :to="'/teams/' + id">View Members</router-link>
+
+you need to add a : before to, to get it work dynamically.
+
+
+9. Issue in route parameters and the solution.
+Vue router, when we are on a component which has a link of the same component but with different data/params, then it wont render anything. why? 
+because vue router doesnt destroy components, instead cache them while user routes through the app. Hence, when we get a link that renders the same component with different data, (which is written inside created lifecycle hook,) it doesnt reaches that created method only, it instead take whats there in cache. 
+To avoid the situation, you can add a watcher for $route. since the params, changes the change will get reflected inside the $route, so on change call the method that was called inside the created one.
+e.g.  
+    watch : {
+        $route(url) {
+        this.loadData(url)
+        }
+    }
+
+
+10. To get the params inside the props, you can add prop=true inside the main.js where you register the route. Usage - The component becomes more reusable and flexible. Now our component only expects  a prop which would be the param value or url, No need to search through the path using $route.path.params... 
+Basically, params are passed as props.
+e.g. 
+    props : ['teamId'],  //inside component; param name, and prop name should be same
+
+    { path: '/teams/:teamId', component: TeamMembers, props:true} //main.js
+
+
+
+11. Two same routes for same component: you can use redirect
+    { path: '/', redirect: '/teams'},
+    { path : '/teams', component: TeamList },  //also the url changes in this method
+    OR 
+    { path : '/teams', component: TeamList, alias: '/' },  //doesnt change the url
+
+
+12. for catch all other routes:
+    { path:'/:notFound(.*)' , redirect : '/teams'}
+anything with url - /jndj, with get redirected to teams. you can also create a not found page, and redirect user to non-found page.
+Note: This path should be the last in all the routes.
+
+
+13. Nested routes:
+Having a route inside another route termed as a children of it.
+   { path : '/teams', component: TeamList, children:[
+            { path: ':teamId', component: TeamMembers, props:true}
+    ]},
+
+    //Inside TeamList (parent) component-
+    <router-view></router-view> //wherever you want to render it (below or above the content)
+
+Note: path of children is '/teams/:teamId', but since we are writing inside the children of 
+/teams, we can avoid writing it. 
+Note, now place <route-view></router-view> inside the TeamList component, this one would be for the children to get render.
+Nested routes are used when we want to add the content of a component below an existing component.
+
+14. giving names to routes:
+  // return '/teams/'+this.id + '?sort=asc';  -earlier way
+    return { name: 'teamMembers', params: {teamId: this.id }, query: {sort : 'asc'} } -one with the names
+
+    inside the routes:
+    { name:'teams', path : '/teams', component: TeamList, children:[
+    { name:'teamMembers', path: ':teamId', component: TeamMembers, props:true}
+    ]},
+
+    to access query params :
+    this.$route.query;
+
+The benefit of writing names and accesing it with them is that we incase ever change the routes path, we dont have to go to all places and change them there too, instead we'll have names which will refer to them anyways.
+Note: the :to in router link can take a string value(the path) or an object like we are passing here. 
+
+
+15. Rendering multiple routes with named routes in a single component-
+code: 
+ <main>
+    <router-view></router-view>
+  </main>
+
+  <footer>
+    <router-view name="footer"></router-view>
+  </footer>
+
+    //inside the main.js
+    { path : '/users', components: {default : UserList, footer : UsersFooter}},
+
+Here, we are adding names to the router-view, through which we can ad multiple routes inside a single component.
+The default requires no names(just like slots)
+
+
+16. Scroll behavior:
+This feature can enhance the user experience. Like e.g. currently if we scroll down to a component and press a button which changes something on top of the component, but by now we couldnt see it, because we are scrolled down. How if on change of anything we scroll up automatically. We can do this by scroll-behavior feature:
+
+in main.js
+  routes : [ .. ],
+    scrollBehavior(to, from, savedPosition){
+        console.log(to, from, savedPosition);
+        if(savedPosition){
+            return savedPosition;
+        }
+        return { left: 0, top: 0}
+    }
+
+
+scrollBehavior takes 3 arguments by default and is called automatically by vue. Here, to prints the component we are going to render, from prints the component we have came from, and savedPosition prints the exact position of where the user left from the component. 
+Hence, scrollBehavior methods should return an object with the positions we want each component to render at. By placing them 0 from left and 0 from top, we'll end up on top each time on change of anything on component. Also here, we are looking if there's anything inside savedPosition. Basically, savedPosition is used when we use the back button of browser. On clicking the back button, we'll end up at position we left the component from. 
+In short, savedPosition holds the value as top and left of where the user was, before he changed to another component. 
+
+One amazing yet imp. thing: 
+    scrollBehavior(_, _2, savedPosition)
+sometimes, we dont need the first two args, but need the 3rd one, normally this would give errors or warning, you can use _ or _2, _3 and so on to avoid those erros.
+
+
+17. Navigation Guards:
+- This feature is used when we want users not to see some pages. e.g. if the user isnt logged in, we dont want them to see a certain page. These gaurds allow us to get that functionality.
+
+e.g.
+code: 
+
+    router.beforeEach(function(to, from, next){
+        console.log(to, from);
+
+        // if(to.name === 'teamMembers'){
+        //     next();
+        // }else{
+        //     next({name : 'teamMembers', params: {teamId: 't2'}})
+        // }
+        next();     
+    })
+
+- write it below the router const variable declaration.
+- here, to and from refers the smae as above i.e. to from the component we are going and from the component we came from.
+- but the next is a function that takes a true/ false/ a string/ a object.
+- true / default (), will do no change, and the user will have access to every page.
+- false / next(false), will not let user view any page.
+- next('teamMembers') - when any page will change, it'll show the teamMembers page only.
+- next({name : 'teamMembers', params: {teamId: 't2'}})  - just the same thing as above.
+- note- this beforeEach () is called every time a new page is rendered. 
+
+
+More Features inside Navigation Guards Hooks:
+- To protect one one/ single routes / components from rendering -
+code:
+    { path : '/users', components: {default : UserList, footer : UsersFooter},
+         beforeEnter(to, from, next){
+            console.log(to, from);
+            next(false);
+    }},
+
+
+OR (another way)
+
+code: 
+Inside component that you want Navigation gaurds :
+    beforeRouteEnter(to, from, next){
+        console.log(to, from)
+        next(false);
+    }   //use them like we use other vue lifecycle methods.
+
+
+other guards:
+- beforeRouteUpdate(to, from, next){ } //wrote inside component; runs before any data changes in a component, Basically when anthing updates. (the url should change for the beforeRouteUpdate method to run)
+- router.afterEach(to, from){ } //wrote inside main.js; runs after component/ route renders.
+
+guards when user leave a page- (on the component that user is leaving; e.g. there's a form, and the changes arent saved yet and user trues to switch to aother component, for such a case, the below guards can be used where you can warn user about the unsaved changes):
+
+- BeforeRouteLeave(to, from, next) { } //wrote inside component; gets called before user leaves the component.
+code:
+      beforeRouteLeave(to, from, next){
+    console.log(to, from);
+    if(this.changesSaved){
+      next();
+    }else{
+      const userWantsToLeave = confirm('There are unsaved changes, Do you still want to leave the page?');
+      next(userWantsToLeave);
+    }
+  }
+
+
+18. Route Metadata: 
+    meta : {needsAuth : true}   //inside routes object, in mainjs
+    if(to.meta.needsAuth){ 
+        console.log('authenticate the user');   //inside any guard, using its 'to' argument, we can access it.
+    }
+
+The meta is a a property that takes an object with any props/values you want. They are just used to add some extra info, which is needed during rendering of another component. We can get this data in any guards.
+
+
+19. File structure:
+src -> component (all components) , pages (all components that are rendered using routes).
+A router.js file, all routes related code thats inside main.js, can be shifted to router.js and that file can be imported in mainjs.

@@ -1,0 +1,163 @@
+import User from "../models/User.js";
+import * as msg from '../constants/messages.js';
+import * as page from '../constants/pagesUrl.js';
+
+// getting HTML elements:
+const username = document.getElementById("username");
+const password = document.getElementById("password");
+const number = document.getElementById("number");
+const email = document.getElementById("email");
+const submitButton = document.getElementById("submitButton");
+const maleRadioBtn = document.getElementById("maleBtn");
+const femaleRadioBtn = document.getElementById("femaleBtn");
+const loginBtn = document.getElementById('loginBtn');
+let gender = null;
+
+
+adminBtn.addEventListener('click', (e) =>{
+  e.preventDefault();
+  window.location.href = page.adminRegistrationPage;
+})  
+
+loginBtn.addEventListener('click', (e)=>{
+  e.preventDefault();
+  window.location.href = page.userLoginPage;
+})
+
+// storing data in local storage:
+const storeData = () => {
+    if (maleRadioBtn.checked) {
+      gender = "Male";
+    } else if (femaleRadioBtn.checked) {
+      gender = "Female";
+    }
+  
+    const user = new User({  
+      userName: `${username.value}`,
+      password: `${password.value}`,
+      email: `${email.value}`,
+      number: `${number.value}`,
+      gender: gender,
+      key : Math.random(),
+      status : 'Active',
+      currentDt : Date.now(),
+      updatedDt : '-'
+    });
+
+    const toStoreData = [];
+    toStoreData.push(user);
+    let prevData =  localStorage.getItem('userDetails');
+
+    if(prevData){
+        prevData = JSON.parse(prevData);
+        toStoreData.push(...prevData);
+    }
+
+    localStorage.setItem("userDetails", JSON.stringify(toStoreData)); 
+    alert(msg.registrationSuccessMsg);
+};
+
+
+// validating all input fields:
+const areInputsEmpty = () => {
+  return isNotEmpty(username) && isNotEmpty(password) && isNotEmpty(number) && isNotEmpty(email) ? false :  true; 
+}
+
+const areInputsValid = () => {
+  return isPasswordValid(password) && isNumberValid(number) && isEmailValid(email)  ? true : false;
+}
+
+const isNotEmpty = (inputField) => {
+
+  if (inputField.value.trim() == "") {
+      document.querySelector(`#${inputField.id} + p`).innerHTML = msg.notEmptyMsg
+      inputField.setCustomValidity("Invalid field.");
+      return false;
+  } else {
+      document.querySelector(`#${inputField.id} + p`).innerHTML = "";
+      inputField.setCustomValidity("")
+      return true;
+  }
+
+};
+
+const isPasswordValid = (password) => {
+  if(password.value.length < 6){
+    document.querySelector(`#${password.id} + p`).innerHTML = msg.passwordErrorMsg;
+    password.setCustomValidity("Invalid field.");
+    return false;
+  }else{
+    document.querySelector(`#${password.id} + p`).innerHTML = '';
+    password.setCustomValidity('');
+    return true;
+
+  }
+}
+
+const isNumberValid = (number) => {
+  if(number.value.length > 10 || number.value.length < 10){
+    document.querySelector(`#${number.id} + p`).innerHTML = msg.numberErrorMsg;
+    number.setCustomValidity("Invalid field.");
+    return false;
+
+  }else{
+    document.querySelector(`#${number.id} + p`).innerHTML = '';
+    number.setCustomValidity('');
+    return true;
+
+  }
+}
+
+const isEmailValid = (email) => {
+  if(email.checkValidity()){
+    document.querySelector(`#${email.id} + p`).innerHTML = '';
+    email.setCustomValidity('');    
+    return true;
+ 
+  }else{
+    document.querySelector(`#${email.id} + p`).innerHTML = msg.emailErrorMsg;
+    email.setCustomValidity("Invalid field.");
+    return false;
+  }
+}
+
+
+// storin' data after validations:
+submitButton.addEventListener("click", (e) => {
+  e.preventDefault();
+ 
+  if(!areInputsEmpty())
+  {
+     areInputsValid() ? storeData() : false;   
+    window.location.href="./userLogin.html"
+  }else{
+      areInputsEmpty();
+  }
+});
+
+
+// other event listener:s
+username.addEventListener('keyup', e => {
+  isNotEmpty(username, 'Username');
+});
+
+password.addEventListener('keyup', e => {
+  isNotEmpty(password, 'Password');
+  isPasswordValid(password);
+})
+
+number.addEventListener('keyup', e => {
+  isNotEmpty(number, 'Contact No.');
+  isNumberValid(number);
+})
+
+email.addEventListener('keyup', e => {
+  isNotEmpty(email, 'Email ID');
+  isEmailValid(email);
+})
+
+
+
+
+
+

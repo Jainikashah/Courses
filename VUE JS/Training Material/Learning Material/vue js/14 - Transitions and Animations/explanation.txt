@@ -1,0 +1,209 @@
+Section : Transitions and Animations-
+
+1. How to add Animations : Using css properties like transform, translate and animations, we can achieve it.
+
+2. Then why we need vue : Sometimes, in scenarios like when we need to disappear a component from dom, e.g. when on click of a button, a modal should appear, we can add classes to it, which def can animate the coming of modal, but when we ought to disappear it, it wont work. because, we are removing a component from dom itself, in such cases, vue can help us. 
+
+3. Vue way of adding animations:
+Vue gives us a in-built component, called transition which we can wrap around html tags that we want to render/remove using animations.
+when we wrap a tag around transition component, vue gives us 6 css classes; 3 when element enters and 3 for when element is being removed from dom.
+.v-enter-from : what should be the initial state/position of the element.
+.v-enter-active : the transition property of element is written inside this.
+.v-enter-to : what should be the last state/position of the element.
+
+.v-leave-from : what should be the leaving position of element.
+.v-leave-active : the transition property of element is written inside this.
+.v-leave-to : what should be the end position of element.
+
+code: 
+    <transition>
+      <p v-if="paraIsVisible">Sometimes visible</p>
+    </transition>
+    <button @click="togglePara">Toggle paragraph</button>
+
+
+    .v-enter-from{
+    opacity: 0;
+    transform: translateY(-30px);
+    }
+    .v-enter-active{
+    transition: all 1s ease-in-out;
+    }
+    .v-enter-to{
+    opacity: 1;
+    transform: translateY(0);
+    }
+
+    .v-leave-from{
+    opacity: 1;
+    transform: translateY(0);
+    }
+    .v-leave-active{
+    transition: all 1s ease-in-out;
+    }
+    .v-leave-to{
+    opacity: 0;
+    transform: translateY(30px);
+    }
+
+
+note : transition component can only accept 1 direct child element.
+
+
+3. For custom animations:
+
+code :
+    .v-enter-active{
+    animation: slideFade 1s ease-in-out;     /* for custom animation */
+    }
+    @keyframes slideFade {
+    0% {
+        transform: translateX(0) scale(1);
+    }
+    50%{
+        transform: translateX(-120px) scale(1.2);
+    }
+    100%{
+        transform: translateX(0) scale(1);
+    }
+    }
+
+for custom animations we only need v-enter-active class, no other ones.
+
+
+4. For multiple transition components in a page:
+We can have multiple html elements, onto which we want animations. we can wrap all of them around transition component, but remember that vue gives the same names of classes to each transition component. If we want different animations for different elements, then we can add a custom prefix and that prefix will uniquely identify itself from others.
+
+code :
+    <transition name="para">
+      <p v-if="paraIsVisible">Sometimes visible</p>
+    </transition>
+
+    .para-leave-active{
+        transition: all 1s ease-in-out;
+    }
+    .para-leave-to{
+        opacity: 0;
+        transform: translateY(30px);
+    } ...so on
+
+note : name prop only replaces the prefix 'v' to 'para'.
+incase of changing the entire classname: 
+    <transition enter-to-class="class-name-here" enter-from-class="class-name-here" enter-active-class="class-name-here"
+
+
+5. For adding transition component as a wrapper for custom components like modal :
+- It works the same, as long as there's just one direct child inside the custom component. for vue 2 its not a prolem as it doesnt even allow more than 1 direct child inside a template of a custom component. for vue 3, it has to be taken care of. if there's more than 1 direct child, then you might need to add that transition component inside of the custom component only.
+
+
+6. One exception that allows multiple child elements inside <transition> component:
+code: 
+    <transition name="fade-button" mode="out-in">
+        <button v-if="!usersAreVisible" @click="showUser">Show users</button>
+        <button v-else @click="hideUser">Hide users</button>
+    </transition>
+
+here, the code will work. It does, because if, out of all elements inside the transition component, only 1 will get render inside the dom, then we can use it. here, using if-else, it makes clear that only one elements out of the 2 buttons wil get render, so the case here completely follows the exception. 
+
+
+7. Transitions events:
+ 
+code : 
+    <transition name="para"
+        @before-enter="beforeEnter"
+        @enter="enter" 
+        @before-leave="beforeLeave"
+        @after-enter="afterEnter" 
+        @leave="leave" 
+        @after-leave="afterLeave">
+      <p v-if="paraIsVisible">Sometimes visible</p>
+    </transition>
+
+   beforeEnter(elm){
+      console.log('before enter',elm)
+    },
+    beforeLeave(elm){
+      console.log('before leave', elm)
+    },
+    enter(elm){
+      console.log('enter', elm)
+    },
+    afterEnter(elm){
+      console.log('afterEnter',elm)
+    },
+    leave(elm){
+      console.log('Leave',elm);
+    },
+    afterLeave(elm){
+      console.log('afterLeave', elm)
+    },
+- here, the method beforeEnter will execute, before the element enters the dom.
+- and beforeLeave method will execute when the element is leaving the dom.
+- and enter method executes after the beforeEnter().
+- and afterEnter method executes after the animation is done and the element is visible completely.
+- leave method executes after the beforeLeave method.
+- and afterLeave method executes when the element leaves the dom.
+- the elm arg, is passed by default, which returns the element, here it would be the p tag.
+
+The use of transition events is in a usecase where, we want javacript to handle the animations and not the css. (used mostly when we are using external animation libraries.)
+You can view the code in app.vue, wherein we are actually executing the animations using javascript.
+
+note : these transition events will execute anyway, either we use css or we use js to control animations.
+
+
+8. Transition Group:
+When we have a list of items and need to animate all the list items. For such a case, we can use transition-group component
+
+code: 
+  <ul>
+      <transition-group tag="ul" name="list">
+            <li v-for=" user in users" @click="removeUser(user)" :key="user">{{user}}</li>
+      </transition-group>
+    </ul>
+
+    .list-enter-from{
+    opacity: 0;
+    transform : translateX(-30px);
+    }
+    .list-enter-active{
+        transition: all 1s ease-in-out;
+    }
+    .list-enter-to{
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .list-leave-from{
+        opacity: 1;
+        transform : translateX(0px);
+    }
+    .list-leave-active{
+        transition: all 1s ease-in;
+        position: absolute;
+    }
+    .list-leave-to{
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    .list-move{
+        transition: all 1s ease;
+    }
+
+- transition-group takes a prop of tag="any_html_elm". It wraps all the list items in dom under the specified value of tag prop, which here is ul.
+- transition-group comes with a .list-move class (note: list is just a prefix), this class applies to all the other list items that isnt animated. Like in our project we are using it for items, wherein the item is removed on click and all other items that isnt leaving, will change their position based on what is written inside .move class.
+- BTS, vue uses transform property of css to shift all other items that arent affected, to change their position, and so only, we can use transition on them.
+
+
+9. Animation  between routes:
+code : 
+  <router-view v-slot="slotProps">
+    <transition name="fade" mode="out-in">
+      <component :is="slotProps.Component"></component>
+    </transition>
+  </router-view>
+
+- Just add this, wherever you are using router-view to render those routes components.
+- A weird looking syntax, but what it does is: 
+  - we wrap the transition component of vue, inside the router-view. 
+  - mode prop takes two args: "in-out" or  "out-in", which says, that first the new component should come and then old component should leave (in case of "in-out"), vice-versa in out-in. Mainly we prefer out-in.
+  - we take slotProps.Component, because we have to tell router-view where we want component to get render at inside the transition component. So we use slotProps (which by default is given to us by vue-router) and a property of it which is Component, that helps to render the routed-component

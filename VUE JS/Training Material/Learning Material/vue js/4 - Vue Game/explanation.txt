@@ -1,0 +1,2 @@
+1. Regular js function- 
+When a function is not invoked from html, and is only needed in vue ap, then we can declare and define it as a regular js (), and call it from the app.

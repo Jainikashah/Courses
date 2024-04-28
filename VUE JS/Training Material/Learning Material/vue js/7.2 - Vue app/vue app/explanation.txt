@@ -1,0 +1,4 @@
+1. Firstly, we create an app.vue file. This is basically like the one vue app, wherein we get the components in.
+2. In the <template> section, we write all the html code and js code inside - {{ }}
+3. In script we write the data and method properties of vue app.
+4. In style, we add the styling for the component

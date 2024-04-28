@@ -1,0 +1,46 @@
+Filters and mixins:
+- Filters is something that takes an input and return a transformed input inside the <template>. 
+It doesnt change the data itself, but returns a formatted one, that user can see.
+
+
+// local filter, is accessible only inside the component.
+<template>
+	<div>
+		<p>
+			{{ text | uppercaseFilter}}
+		</p>
+	</div>
+</template>
+
+
+<script>
+...	
+	data(){
+		return {
+			text: 'hello there!'
+		}
+	},
+	filters: {
+		toUppercase(value){
+			return value.toUpperCase()
+		}
+	}
+</script>
+
+
+
+- Global filters: The ones that are accessible everywhere inside the app.
+Create a filter.js file and add all the filters inside of it like this:
+
+code:
+	Vue.filter('to-lowecase', function(val) {
+		return val.toLowerCase()
+	}) 
+and import this inside the main.js file.
+(same goes with mixins too)
+ 
+
+- chain filters: The value gets to the first filter, gets the formatted value and that formatted value is passed to another filter.
+
+code:
+{{ text | toUpperCase | toLowerCase }}

@@ -1,0 +1,345 @@
+
+/* Eplanation
+
+1. In vue, we can select which sections of or html page we need VUE to control and which we dont.
+
+ - const app = Vue.createApp();  
+here we create a new vue app that will take care of the functionality.
+
+ - app.mount('#user-goal');
+mount() takes a unique css selector that says : which section of html page we want vue to control. 
+ 
+
+(js): 
+-  Vue.createApp({
+    data : () => {
+        return { 
+            courseGoal : 'Finishing the course and learn all about VUE.'
+        };
+    }
+
+}
+here, createApp always takes an object; an object with certain properties (whose name should be same as defined in vue docs. eg data). 
+data prop takes a () and always returns an object; an object which which hold properties and values of our kind. Later we can use these names and render values of these properties dynamicaaly in html page. like below:- 
+
+(html):
+ - <p>{{ courseGoal }}</p>
+ here the value of courseGoal will be printed.
+
+ Note: only the sections that are under vue's control will have access to these special syntax {{}}. Anywhere else it wont work.
+  
+ - {{ courseGoal }}
+This syntax and functionality is called Interpolation.
+inside these we can perform any javascript expression like ternary op, function call, etc.
+
+
+
+2. v-bind directive:-
+{{}} - this syntax only works in between html tags. To get the value from vue, inside something like an html attribute, we need v-bind directive.
+
+syntax:
+(js): 
+ -   data : () => {
+        return { 
+            courseGoal : 'Finishing the course and learn all about VUE.',
+            vueLink : 'https://vue.js.org/'
+        };
+    }
+
+ (html):   
+ - <a v-bind:href="vueLink">About vue JS</a>
+
+Now, the link will work properly. Add v-bind in front of any html atrribute(here is href), followed with a colon and then attribute name and the vue property name, whose value you want to render.
+
+
+
+3. Methods prop of vue app:
+
+(js): 
+- methods : {
+        outputGoal : () => {
+            const randomNo = Math.random();
+            return randomNo;
+        }
+    }
+
+(html):
+ - <p>Random no generation : {{ outputGoal() }}</p>
+
+The second property of createApp is methods.
+methods take an object of our-defined methods, which we can call inside html page and render the returned value of method. Example here, the random no will be rendered.
+
+
+
+4. Using data properties inside vue app.
+
+(js):
+-  outputGoal : () => {
+            return this.courseGoal;
+    }
+
+To use data properties inside the vue app (mainly inside the methods), we need to use this keyword to access it. 
+
+
+
+5. v-html directive:  Outputting HTML from vue app.
+This directive tells the browser to interpret the the string as a html doc.
+
+(html):
+- <p v-html="courseGoal2"></p>
+
+(js):
+  data : () => {
+        return { 
+            courseGoal2 : '<h2>Inside heading tag</h2>',
+        };
+}
+
+with v-html directive, the content will be shown in <h2/> format.
+
+
+
+6. Event handling : 
+(html):
+ - <button v-on:click="counter++">Increase</button> //using data properties
+ - <button v-on:click="subtract">Decrease</button>  //using methods
+
+ - <p>Result : {{ counter }}</p>
+
+ (js):
+data: () => {
+    counter : 0
+},
+methods : {
+      subtract(){
+            this.counter--;
+        }
+}
+
+v-on directive allows any js event like click, mouseover, etc. on the element.
+inside the double quotes you can perform any javascript expression you want to execute on press of button click.
+Avoid using arrow ()s, as this keyword is not used in arrow (), using arrow () can might lead to unexpected results.
+
+
+
+
+7. parameters in event handling :
+
+(html):
+<button v-on:click="subtract(5)">Decrease by 5</button>
+
+(js):
+subtract(num){
+    this.counter = this.counter-num;
+}
+
+
+
+8. using input fields:
+
+(html):
+ - <input type="text" v-on:input="setName">
+ - <p>Your name : {{ name }}</p>
+
+(js):
+name : ''  //data prop
+
+setName(event){
+        this.name = event.target.value;
+    }   //method prop
+
+
+the :input is a javascript method that is called everytime a new key is entered in the input field.
+event parameter is by default passed by the browser.
+
+
+note: if you have something other args to pass (here eg in setName function and also need the event then use this syntax:)
+
+ - <input type="text" v-on:input="setfName($event, 'shah')">
+<p>Your name : {{ fullname }}</p>
+
+
+ - setfName(event, lname){
+    this.fullname = event.target.value + ' ' + lname;
+}
+
+
+
+9. Theory: 
+
+The vue app only re-renders the element that has to be re-render and not the entire page. you can see this using elements tab and the ones that flahses are the ones that changes. 
+
+
+
+10. To avoid reload on form submit:
+
+one way - 
+(html):
+<form v-on:submit="submitForm">
+    <input type="text">
+    <button type="submit">Sign up</button>
+</form>
+
+(js):
+submitForm(event){
+    event.preventDefault();
+}
+
+another vue's way - 
+<form v-on:submit.prevent="submitForm2">
+
+the first way is using vanilla js and second is using vue, vue one is a lot simpler and less code.
+with vue code we are using modifier. we have a few modifiers thats comes with vue and prevent is one of them.
+
+
+other modifiers are:
+ - v-on:click.right="funName"
+// on only right click of mouse, left is the default click.
+
+ - v-on:keyup.enter="funName"
+// on press of enter key the () will be called.
+
+
+
+11. v-once directive:
+
+ - <p v-once> starting counter : {{ counter }}</p>
+This directive will hold the initial value of counter, even if we change the counter's value, it still will hold the starting value only.
+
+
+
+12. Resetting value of input fields:
+ - <input type="text" v-bind:value="inputName" v-on:input="setInputName">
+    <button v-on:click="resetInput">Reset</button>
+
+ - resetInput(){
+    this.inputName = '';
+},
+
+
+Here we are setting the value of inputName prop using setInputName function and then setting the value attribute to the inputName prop. Later in resetInput we are resetting the inputName prop to empty string, and so on click we'll get ''.
+
+One easy way of doing this is also using v-model: 
+ - <input type="text" v-model="inputName">
+<button v-on:click="resetInput">Reset</button>
+
+v-model basically does what v-bind and v-on are doing in above eg. 
+v-model directive set the value of inputName prop as what the user will enter and also set the value attribute to the inputName prop.
+This is an example of two way data-binding.
+
+
+
+
+13. One very imp. thing about VUE to know:
+when we call methods inside our html page, its not a good practice. why?
+
+lets know-
+Whenever a property of data changes, (which ofcourse happens frequently as thats how our app becomes interactive right?) , the vue app will call all the methods that we have mentioned in our html page, because Vue doesnt know, if that method has anything in common with the property that we just changed. It thinks that we might be using the prop's value inside any of the method, so it call each and every method. Which ofcourse doesnt sound realistic, because a prop's value changed and we dont want every method which doesnt even care about that prop, changes. 
+So, its not a good practice, we'll what is one.
+
+
+
+14. Solution - Computed methods:
+computed methods are a property of createApp, like data and methods are.
+It takes an object of methods, but the convention of writing the object properties like as data properties and not like methods. Though technically they are methods too.
+
+
+(html):
+    <p>{{computedMethod}}</p>
+    <p>{{normalMethod()}}</p>
+
+
+(js):
+
+computed : {
+    computedMethod(){
+        console.log('runs once.');
+        this.displayValue = "Computed Method"
+    }
+},
+
+method : {
+        normalMethod(){
+            console.log('runs everytime');
+            this.displayValue ="Normal method";
+        }
+}
+
+
+Note: we call computed methods without parenthesis.
+The computed methods will not run again every time if we change any props value, but only when something inside that method changes.
+Thats solves our problem here.
+
+
+
+15. watchers :
+  
+(js):  
+watch : {
+    counter(newValue, oldValue){
+        console.log('watch counter : '+ newValue, oldValue)
+    }
+},
+
+A watcher is something that takes a name of a data property or computed method prop, and act as a watcher on it. which means it will run everytime the value of those properties will change, otherwise it will not.
+Watcher provides us two args by default, the old value of property and new value.
+
+watchers are like alternative of computed methods, but we dont use them as an alternative thoug, because it might lead to more ines of code than it would with computed methods.
+
+So whats the actual use of watchers?
+We mainly use it when something changes to a certain value, and we need to perform task based on that change.
+e.g. when a counter reaches 50, turn it back to 0 : use watcher
+and on click of a button, increase counter by 1 : use computed method.
+e.g.2 - for making https request. 
+
+
+
+
+16. shorthands:
+
+(html):
+for v-on:click - @:click
+for v-bind:value - :value
+
+
+
+
+17. Dynamic inline css-
+
+(html):
+<div :style="{borderColor : 'red' }">
+
+with v-bind and on style attribute specifically, we can pass an object of style props and values that has to be applied.
+
+
+
+18. Adding css class dynamically- 
+
+(html):
+
+// one way-
+<div :class="selected ? 'demo active' : 'demo' >
+
+// another way-
+<div :class="{demo:true, active :selected} ">
+In this way, demo class will be added always, but active class will be added only when selected property is true.
+
+//another way-
+<div :class="['demo', {active: selected}]">
+In this way, we are just adding an array and wrapping objects of classes in it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
