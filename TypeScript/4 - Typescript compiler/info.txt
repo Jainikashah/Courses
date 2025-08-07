@@ -1,0 +1,63 @@
+Typescript Configuration:
+
+`tsc --init`
+- by running this cmd, a tsconfig file will be created that lets us change typescript behavior. The file consist of almost all the typescript related settings that we can change, read upon it, here's some most basic ones.
+
+
+Note: if we run tsc app.ts cmd, it wont consider tsconfig as it is for the entire project. Hence, for our files to consider the changes, as we do below, we need to run cmd as `tsc` yah just that.
+Also use `tsc --watch` to make typescript run all the time, you dont need to run it manually. It will automatically generate output based on changes.
+
+
+
+    // "disableReferencedProjectLoad": true,             /* Reduce the number of projects loaded automatically by TypeScript. */
+- The above setting is used when we have multiple projects inside a project, and all are using typescript. By default, ts will run all those files. If we uncomment this setting, it wont auto load all the ts files, as for one project we only want ts to run its implementation for that one project, otherwise it will take a lot of time.
+
+    "target": "es2016",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+- The above setting specifies which version of javascript do we want to output our code in. like the js file that is created should be of which version. If we using ts in browser, we should make sure that all browsers support that version. if we take too higher version, older browsers might not support those newer js code. (some more changes are required to see actual output, we'll see those changes soon).
+
+
+    // "lib": [],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
+This setting, by default has some libraries in it pre-added. Like we saw, HTMLElement class that we could refer to while referecing a dom input element; that HTMLElement is not part of ts, instead its a library that ts by default includes. if we want to override and more to it, we can add in this array of lib setting.
+
+    // other jsx related setting
+jsx related settings are used when we are working with react or some framework and want to make changes in our jsx code.
+
+
+    "module": "commonjs",                                /* Specify what module code is generated. */
+For node js modern code import-exports, we need to add, "NodeNext".
+For vite or any module bundler if we are usin, we need to add "Preserve"
+
+    // "rootDir": "./",      
+It specifies which folder my sourcecode is in, eg ./src 
+
+
+    // "allowJs": true,                             
+If uncommented, it will also let us write js & ts both under a single folder.
+
+    // "noEmit": true,                                  
+It will not generate any compilation file like .js, will just compile that file. 
+
+    // "outDir": "./", 
+Specifies the output directory for all js outputted files. 
+
+    // "noEmitOnError": true,   
+By default, when we run our tsc cmd for a file, even if we get errors, it still generates the output js file. To stop generating incase of errors, uncomment the above setting.
+
+We can add more typechecks like, if we want to restrict Any keyword usage, null usage, etc. that all we can handle from tsconfig type checks block.
+Besides configuring compilation and type checking, we can also use to imrpove code quality, like below:
+    {
+        noUnusedLocals: true, // helps to detect usused variables
+        noUnusedParamteres: true,  // helps to detect unused func parameters
+        noFallthroughCasesInSwitch: true // helps to detect cases with break or return 
+    }
+
+
+OK, now how to run node code in ts:
+    import fs from "node:fs";
+if I write this, it should work right? As node is intsalled in my  machine.
+But typescript doesnt understand this. As by default, only HTMLElement that we saw before, is understandable by tyepscript.
+It doesnt understand, node code, or lodash, moment, react, vue, etc. libraries code. For us to tell TypeScript abt them, we need to install their respective libraries. 
+eg for node:
+    npm i @types/node --save-dev
+
+Now, ts wont throw that error border.

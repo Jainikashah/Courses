@@ -1,0 +1,303 @@
+Class is a blueprint of an object.
+
+Classes in ts:
+    class User {
+        username: string = "Default"
+        age: number;
+        constructor(name: string, age: number){
+            this.username = name;
+            this.age = age;
+        }
+    }
+    new User('Jainika', 25);
+
+
+// Need to define properties on class object, only then it can be accessible in constructor.
+// Need to define datatypes for args in constructor & while defining properties 
+// Contructor works just as a function, hence we can use ? optional chaining or default params, etc as we did with functions.
+
+
+=> Really cool shortcut in ts:
+To ahieve above code in ts via a shortcut:
+    class User{
+        constructor(public name: string, public age: number) {}
+    }
+    const myname = (new user('jainika', 25)).name;
+
+hee? is  that it? yep. it is.
+Ok ok, explaining..
+
+Here, what ts is doing bts, is, creating properties named, 'name' & 'age' and assigning values also, which will come via constructor instantiation.
+If we compile the code in js, we'll see something like this:
+    class User{
+        name;
+        age;
+        constructor(name, age){
+            this.name = name;
+            this.age = age;
+        }
+    }
+
+
+
+=> But hey, what are these public/private keywords?
+- These keywords can be added in properties or methods of a class. eg:
+    class User {
+        public hobbie: string[] = [];
+        protected hobbie: string[] = [];
+        constructor(public name: string, public age: number){
+            this.sayHello();
+        }
+        private sayHello(){
+            console.log(`Hello ${this.name}`);
+        }
+    }
+    const me = new User('Jainika', 25);
+    me.sayHello() // not allowed 
+    me.hobbie.push('Sports');
+
+Private: accessing properties inside the class is allowed, but not outside
+Public: can be accessed anywhere
+Protected: works like private, but inherited class have access to the properties. 
+
+In vanilla js, we use #keyword to make a property in a class private.
+    #hobbie: string[] = [];
+
+
+=> Readonly
+    class User {
+        public readonly name: string = "Jainika";
+        private readonly age: number = 23;
+        readonly hobbie: string[] = [];
+    }
+
+    let me = new User();
+    me.name = "hello" // not allowed
+    me.age = 36 // not allowed
+    me.hobbie.push('Sports'); // pushing is allowed
+
+they are for readonly properties. we can get the values of it, but cant assign new values. Maybe like constant.
+
+
+=> Getter:
+    class User {
+        constructor(private name: string, private lastname: string){}
+        get fullName(){
+            // this.name = "hello"  // this is still allowed but not recommended.
+            return this.name + " " + this.lastname
+        }
+    }
+    const u1 = new User('jainika', 'shah')
+    u1.fullName;
+
+Getter: also called get accessor.
+We call it like properties, not with parenthesis, even though it look like a function
+It is compulsory to add a return statement in a getter 
+It allows us to get values which are private. 
+We can also set a getter as private, but then we wont be able to access it outside the class.
+
+
+=> Setter:
+    // => Setter
+    class User {
+        private name: string = 'Jainika';
+        set username(name: string){
+            // can check some validation
+            this.name = name
+        }
+    }
+
+    const u1 = new User()
+    u1.username = 'newJainika'
+
+Ya, even though setter looks like a function, its actually works like a property. we store values in it while instantiation.
+Note: Setter function takes eaxctlyyyyy 1 parameter.
+
+
+=> STATIC:
+Static keyword can be used with proterties and methods, and to access them we dont need to create an instance, instead just with the classname. 
+    class User {
+        static age: number = 23;
+        static getAge(){
+            return this.age
+        }
+    }
+    User.age = 10;
+    console.log(User.getAge())
+    console.log(User.age);
+
+One usecase is, that we can keep counter of instances that were created with a specific class.
+    class MyClass {
+        static counter: number = 0;
+
+        constructor() {
+            MyClass.counter++;
+        }
+
+        static getCounter(): number {
+            return MyClass.counter;
+        }
+    }
+
+    const obj1 = new MyClass();
+    const obj2 = new MyClass();
+
+    console.log(MyClass.getCounter()); // Output: 2
+
+Static is basically used for utility functions, that are not specific to an instance, but an utility to that class itself.
+
+
+=> INHERITANCE:
+can also be done in vanilla js.
+
+    // INHERITANCE
+        class Person {
+        name: string = "";
+        public age: number = 0;
+        constructor(name: string, age: number){
+            this.name = name;
+            this.age = age;
+        }
+        getName(){
+            console.log(this.name)
+            return this.name
+        }
+    }
+
+    class employee extends Person{
+        salary: number = 0;
+        constructor(name: string, age: number, salary: number){
+            super(name, age);  // it is mandatory, even if we dont have a constructor in parent, its still mandatory to call the base call constructor from child
+            super.getName();
+            this.salary = salary;
+        }
+    }
+
+    const e1 = new employee("Jainika", 25, 10000);
+    console.log(e1);
+    const p1 = new Person("J2", 21);
+    console.log(p1)
+
+ // it is mandatory to call super(), even if we dont have a constructor in parent, its still mandatory to call the base class constructor from child
+
+to set & get properties of base call
+    class employee extends Person{
+        salary: number = 0;
+        constructor(name: string, age: number, salary: number){
+            super(name, age);  // it is mandatory, even if we dont have a constructor in parent, its still mandatory to call the base call constructor from child
+            super.getName();
+            this.salary = salary;
+        }
+        work(){
+            this.name = "hello"
+            console.log(this.name)
+        }
+    }
+
+Here, we can access the properties becuase they are public, but incase of private, it wont let us access base class properties
+For such scenario, we use protected keyword. Protected means, it wont be allowed to use outside the class with objects, but will be allowed in child classes that have inherited.
+
+Ok one doubt. Can I access child class properties in parent class? 
+Nope. But if we want to, we can pass it in super() constructor from child.
+
+=> ABSTRACT CLASSES:
+Just a typescript feature, not available in vanilla js
+Such classes are used as base class only. we cannot create objects out of it. Instead they act like base of another classes. 
+eg- We can have a base UIElement abstract class and other actual html class elements can inherit the common properties out from it.
+
+    // // ABSTRACT 
+    // class UIELEMENT {
+    //     constructor(id: number | string){}
+    // }
+
+    // class HtmlElement extends UIELEMENT {
+    //     constructor(id: number | string){
+    //         super(id)
+    //     }
+    // }
+here if we try to instantiate UIELEMENT, it will throw error.
+Also if we see our js code after compilation, there wont be anything like abstract, as it a ts specific feature only.
+
+
+
+=> INTERFACES:
+- ts specific only
+- Interfaces are used to give type definitions to objects AND can also be used as contracts by implementing them in classes.
+
+    // INTERFACES:
+    interface Person {
+        name: string;
+        age: number;
+
+        walk(arg1: string):void
+        run(arg1: string):number
+    }
+
+    // Its just like giving a definition of what actual class would be like. we dont put logic in here, just the types definition of arguments, properties, return types, etc.
+
+
+
+// DECALARATION MERGING:
+    interface Person {
+        gender: 'male' | 'female';
+    }
+
+OKY. Why I need interface? Cant I use that type thing we learned earlier? sure. but there are some subtle differences, out of which one is, DECALARATION MERGING.
+It means, I can create an interface with a same name that already exists & it wont give me error, instead it will combine the two.
+Why would we want that?
+Lets say, in cases where we are using a third prty interface, and we want to add a new our-own property, we can use DECALARATION MERGING
+
+
+implementing this interface via object & Classes
+
+
+    let user: Person = {
+        name: "Jainika",
+        age: 25,
+        walk(arg1: string): void {
+            console.log("I am walking") // here goes our logic
+        },
+        run(arg1: string): number {
+            return 20;
+        },
+        // any other property addition will throw error.
+    }
+
+
+// when we use an interface which is implemented in a class, we call it as a contract. we can have other properties and methods also, apart from whats implemented. but mandatory ones should be there, which are in contract.
+
+    class Users implements Person {
+        constructor(public name: string, public age: number, public otherProps: string){}
+        walk(){
+            return "I am walking"
+        }
+        run(){
+            return 20; // as it takes number return type
+        }
+    }
+
+We can add these types as function arg's types as well.
+    function addUser(user: Person) {
+        user.name ...
+    }
+When we know that user will have a name, as the arg takes person as an interface, we wont get any error, neither in run time .
+Its so cool & safe.
+
+// extending interfaces
+    interface LivingCreatures extends Person, Animal {
+        role: 'user' | 'animal'
+    }
+
+just like we extend classes, we can extend interfaces too.
+
+// we can also define a function type, using interfaces and type both.
+
+    type sumFn = (a:number) => number;
+
+    interface sumFn2 {
+        (a: number): number
+    }
+
+    function sumFn(a: number): number {
+        return a;
+    }

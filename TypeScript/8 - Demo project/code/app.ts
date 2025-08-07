@@ -1,0 +1,1 @@
+// create a linkedlist with all properties as private. that shows length of linkedlist, and print all the values. Add functionality must. can try delete and insert at specific position func too.

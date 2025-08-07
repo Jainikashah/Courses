@@ -1,0 +1,122 @@
+=> DERIVING TYPES FROM TYPES
+
+1. typeof operator
+- In js, we have typeof operator that returns the type of the variable. 
+eg- 
+    const userName = "Max";
+    console.log( typeof userName );  // string
+
+Similary, we also have a typeof operator in ts. That helps us in our ts code.
+    type userName = typeof userName;
+here, we defined a new type called userName.
+We right now, know that its string, but we might not know if the value comes userinput or from apis.
+hence, we can use the typeof operator to tell ts, that it would be of const userName variable type.
+(Fun fact: ts knows when u use const and let. hence, with let if you hover over the variable, it shows type as string, with const it shows type as "Max". becuase const's value cant be changed.)
+
+
+// More useful example:
+
+    const userSettings = {
+        difficulty: 'easy',
+        minLevel: 10,
+        players: ['John', 'Jane'];
+    }
+
+    type settings = typeof userSettings;
+    // otherwise I'd have to write the entire type definition. this looks at userSettings variable and automatically based on the values, derives their datatype and assign it to our type settings variable. hover over settings to see.
+
+    function loadsetting(s: typeof userSettings){}
+    // we can also use it with function args.
+
+lets say, we have an api response, and want to assign the type of that response to a variable.
+we wont write each and every api property and assign the type of it, instead we'll use typeof.
+Typeof in ts, is used to give types of an already defined value. 
+
+
+// eg with function:
+    function sum(a: number, b: number){
+        return a + b;
+    }
+
+    function sub(a: number, b: number){
+        return a - b;
+    }
+
+    type sumFn = typeof sum;
+    type subFn = typeof sub;
+    function match(cb: sumFn | subFn){
+        // come code
+    }
+
+
+=> Keyof operator
+- exclusive in ts
+- It should be followed by a 'type' only. like in below type user. 
+- It combines all the keys of an object and make a union of it, for us to make a type check on any variable.
+
+    type user = { name: string, age: number }
+    type userKeys = keyof user;
+    let validKey: userKeys;  // here userKeys will denote, 'name' | 'age'
+    validKey = 'age';
+    validKey = 'name';
+    validKey = 'anuthingelse' // error
+
+
+Real world usecase:
+        function utilityFun<T extends object, U extends keyof T>(obj: T, key: U){
+            // some utility function, tht takes an object an arg1 and a key of that object as arg2.
+            // eg: 
+            // { name: 'jane', age: 25}, T can be this objec and key can be either name or age.
+        }
+
+        utilityFun({
+            name: 'jane',
+            age: 13
+        }, 'name'); // here, it allows me to add either name or age only
+
+        utilityFun({
+            id: 12,
+            data: 'hello',
+            name: 'jane',
+        }, 'data'); // either id, data or name.
+
+here, we are explicitly telling ts about the args. 
+we dont know what kind of object exactly will be passed, but it should def be an object type, hence we did: T extends object 
+
+now we want to make sure, that the second arg, should be one of the keys from the object passed, hence we did: U extends keyof T.
+
+
+
+=> Indexed access types:
+Lets say we have a type object. Whose one of the properties we need to be used as a type of another type object. 
+Ok, I know that didnt make much sense.
+
+        type AppUser = {
+            name: 'string';
+            permissions: {
+                id: string,
+                name: string,
+                desc: string
+            }[];
+        } // {}[] - this denotes the variable is an array of objects.
+        type perms = AppUser['permissions'];  // syntax should be this only
+
+- here, we make sure perms type is of AppUser.permissions type, hover to see it.
+- it helps in removing duplicacy of code. and if I ever want to change the permissions type, I'll have to do it 2 places, with Indexed access, only at one place, its fine.
+
+we can also do:
+        type perms = AppUser['permissions'];  // this holds an array of objects, permissions.
+        type perm = perms[number]; // this holds the exact permission object only.
+
+        // can also do:
+        type names = string[]; // holds an array of strings
+        type name = names[number]; // name will hold a string
+
+names[number]; 
+here, number is just a syntax that says, look into the names array, and fetch the type of the value stored inside it. If its string, it'd be string type only (removes the array basically) 
+same goes for perm = perms[number]; // here, as perms consist object inside array, perm will be an object
+
+
+
+=> Mapped types:
+- An easy way to convert an object type to another.

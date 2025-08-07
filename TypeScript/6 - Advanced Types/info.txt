@@ -1,0 +1,189 @@
+Advanced Types:
+
+=> INTERSECTION:
+INTERSECTION is used to combine two different types into 1. 
+can be done using type or interface keyword. 
+usecase: when we have a sharedObj that is used multiple times & need to incorporate that with other separate objects, we can use it. 
+
+as follows:
+
+    type sepData1 = {
+        path: string;
+        content: string;
+    }
+
+    type sepData2 = {
+        path: string;
+        content: string;
+    }
+
+    type sharedData = {
+        data: string[];
+    }
+
+    type combinedDat1 = sepData1 & sharedData;   // combinedDat1 will have both properties of sepData1 & sharedData
+    type combinedDat2 = sepData2 & sharedData;
+
+
+
+    // same with interfaces:
+    interface sepinterface1 {
+        path: string;
+        content: string;
+    }
+
+    interface sepinterface2 {
+        path: string;
+        content: string;
+    }
+
+    interface sharedinterface {
+        interface: string[];
+    }
+
+    interface combinedInt1 extends sepinterface1, sharedinterface {};
+    interface combinedInt2 extends sepinterface2, sharedinterface {};
+
+
+
+we can also use types with union types:
+    let val = sepData1 | sepData2
+
+To check if a class object is of a certain class, we can use instanceOf opertor. eg:
+    class User {
+        ...
+    }
+    const u1 = new User();
+    const u2 = new xyzClass();
+    if(ui instanceOf User) {
+        .. true
+    } 
+    if(u1 instanceOf User) // false
+
+
+
+=> Type predicate:
+This is when we call a function which returns a boolean value, but alongwith it also tells typescript that the return value is of the argument passed, so work acc. 
+Didnt got it right? Lets see an eg:
+
+        function isString(value: any): value is string {
+        return typeof value === 'string';
+        }
+
+        function processValue(value: string | number) {
+            if (isString(value)) {
+                // TypeScript knows that 'value' is a string here
+                console.log(value.toUpperCase());
+                return;
+            }
+            // TypeScript knows that 'value' is a number here
+            console.log(value.toFixed(2));
+            return;
+        }
+here, isString is a predicate function, which returns a boolean value, whether its a string or not. 
+In if, block of processValue function, we have added condition using the function.
+Now typescript knows, that the value is a string, has it lets us use toUpperCase function directly, otherwise it gives us warning that it can be a string or a number.
+similaryly, if the block is false, then TypeScript knows that its a number definitely, hence it lets us use toFixed() function directly.
+
+
+
+=> Function overloads:
+    // Function overloads:
+    function getLength(val: string | any[]){
+        if(typeof val === 'string'){
+            return `${ val.split(' ').length } words`;  // this I want to split words to get the length
+        }
+        return val.length // this exists on array 
+    }
+
+    const noOfWords = getLength("Hello world");
+    noOfWords.length  // this.exists on string, but not on number. hence throwing error
+    const arrayLength = getLength(['1', '2', '3']);
+
+Here, ts doesnt understand that since I have passed a string value, the function will return me a string value, hence it should allow me to do = noOfWords.length, this on noOfWords variable. 
+Becuase getLength will return a string for string arg and number for array arg. 
+To fix this, we can use 
+        const noOfWords = getLength("Hello world") as string;
+this explicitly tells ts that its a string, but this doesnt look ideal. 
+
+Here, comes fucntion overloads to our rescue!
+Ts allows us to add multiple function signatures to one function, in which function body relies.
+
+    function getLength(val: string): string;
+    function getLength(val: any[]): number;
+    function getLength(val: string | any[]){
+        if(typeof val === 'string'){
+            return `${ val.split(' ').length } words`;  // this I want to split words to get the length
+        }
+        return val.length // this exists on array 
+    }
+
+    const noOfWords = getLength("Hello world");
+    noOfWords.length  // this.exists on string, but not on number. hence throwing error
+    const arrayLength = getLength(['1', '2', '3']);
+
+here, I have mentioned that getLength when get a string as an agr, it will return a string value
+and when it gets an array, it will return number
+and then comes the function body.
+now, we can use noOfWords.length directly without any explict type coersion.
+
+
+
+=> Index types:
+    type user = {
+        [anyPropName: string]: number | boolean;
+    }
+
+Here, we have created a type user, which will have some property which we dont know name of yet. So we can add anyPropName and add a type of it. Rem, the string type is the datatype of the key here. 
+and the follows our values' types which are number or boolean. 
+hence we can access it like:
+    let u1: user = {};
+    u1.age = 24;
+    u1.34 = 24 // thwos error as key should be of string only.
+    u1.name = 'jainika' //thows error as value should be eithernumber or boolean
+we can add any numbers of items in the object. There's no restriction.
+what we did above can also we achieved by:
+    let obj: Record<string, number | boolean>
+
+
+
+
+AS CONST:
+    let roles = ['admin', 'guest', 'normal'];
+    roles.push("giberishRole") // here I can push anything. But I only want push opertaion, instead just defining the array. even with const varible, push is allow on arrays.
+
+    // we can do this, hover over roles2 and you'd see readonly. Thats what as const do 
+    let roles2 = ['admin', 'guest', 'normal'] as const;
+    // roles2.push("giberishRole")  // error;
+    roles[0] // accessible and knows its gonna be admin always.
+
+Makes our array readonly.
+
+
+
+=> Satisfies:
+satisfies ensures that all variables fit the definition and have all the required properties in the object.
+        const obj = {
+            prop1: 'hello',
+            prop2: 'world'
+        }
+        console.log(obj.prop3) // thows error saying prop3 doesnt exist.
+- here, its a valid error thrown by ts.
+
+
+    const obj: Record<string, string> = {
+        prop1: 'Hello',
+        prop2: 'World'
+    }
+    console.log(obj.prop3)  // no error is throws as record<string, string> doesnt check for properties if exists or not, it only checks for type.
+- but it doesnt throw error when we add record<..> as record only checks for type validation and not property exist validation
+
+
+    // fix: 
+    const obj = {
+        prop1: 'Hello',
+        prop2: 'World'
+    } satisfies Record<string, string>
+    console.log(obj.prop3)  // now throws error as thats what we wanted
+
+Satisfies checks if that property exists or not, and also for type, we just add it atlast.

@@ -1,0 +1,4 @@
+DEMO Calculator project:
+
+`tsc --init`
+- first to get the config file, make sure the es version is latest like es2022. and strict property is true, in tsconfig.

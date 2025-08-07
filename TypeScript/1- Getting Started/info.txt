@@ -1,0 +1,29 @@
+Typescript:
+- Its an extension to js language.
+- Can be called a superset of js, means whats in js is in ts, but on top of it, it adds more features to the language, that makes js less bug-prone.
+
+Why to use ts?
+- To avoid bugs that might come during run-time. It catches those bugs, by making strict type check on values, and make us fix it at compile time only.
+Lets see one example:
+    const a = 10;
+    const b = "20";
+    return a + b 
+Here, if we run with plain js, ans would be = 1020.
+but when Typescript is added, it will throw error, saying 20 is not a number, its a string. 
+FunFact: If we do -, * or other numeric operators with string, it works fine. Why? Because these operators are specifically for number types, hence js convert the string into number if possible, otherwise throw NAN.
+
+
+=> Installing ts:
+- Typescript files are store in .ts file, and unfortunately, ts file cant be run in browser. Browser needs js. For node, deno, etc. server-side languages, running ts directly, works. Because the runtime itself supports ts, for browser it doesnt.
+Hence, to run it in browser, we need a tool that compiles ts to js. and that compiled code is given to browser.
+
+To install:
+    `npm i -g typescript`
+
+Run a ts code (app.ts in practical) by `tsc app.ts`
+It will automatically create a js file. (with no ts code)
+and that js file is linked in our index.html page, under script.
+
+NOTE: Sometimes vs code give error for duplicate variables, even though we havent. I guess it checks it from js file which is indeed our duplicated code. To fix it: `tsc --init` 
+this will create a tsconfig file which solves the issue.
+OR you can just close that opened .js file, it will remove that error too.
